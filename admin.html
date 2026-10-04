@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Complete Master CMS Panel | Hello Meow Cafe Cabanatuan</title>
+  <link rel="icon" type="image/png" href="https://res.cloudinary.com/tfk63bnl/image/upload/f_auto,q_auto/hmc_logo">
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              DEFAULT: '#006B88',
+              dark: '#004255',
+              turquoise: '#00A896',
+              'turquoise-hover': '#008577',
+              'turquoise-light': '#E6F7F5',
+              orange: '#FF6B35',
+              'orange-hover': '#E05522',
+              'orange-light': '#FFF0EB',
+              cream: '#F8F9FA',
+              muted: '#4B5563'
+            }
+          },
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            heading: ['"Outfit"', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  
+  <style>
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #F1F5F9;
+      border-radius: 8px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #CBD5E1;
+      border-radius: 8px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #94A3B8;
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-gray-950 text-gray-100 flex flex-col antialiased selection:bg-brand-turquoise selection:text-white">
+
+  <!-- Top Header Bar -->
+  <header class="bg-gray-900 border-b border-gray-800 sticky top-0 z-50 px-6 py-4 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <img src="https://res.cloudinary.com/tfk63bnl/image/upload/f_auto,q_auto/hmc_logo" alt="Logo" class="w-10 h-10 rounded-full object-cover border border-brand-turquoise">
+      <div>
+        <h1 class="font-heading font-extrabold text-lg text-white tracking-tight">Hello Meow CMS Master Dashboard</h1>
+        <p class="text-xs text-brand-turquoise font-medium">Menu & Events Management System</p>
+      </div>
+    </div>
+    <div class="flex items-center gap-3">
+      <button onclick="exportJSONData()" class="px-3 py-1.5 rounded-xl bg-gray-800 hover:bg-gray-700 text-xs font-bold text-gray-300 border border-gray-700 transition-all flex items-center gap-1.5">
+        📥 Export JSON Backup
+      </button>
+      <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/25 text-xs font-bold">
+        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+        Live Local Sync Active
+      </span>
+    </div>
+  </header>
+
+  <!-- Main Content Layout -->
+  <main class="flex-1 max-w-7xl w-full mx-auto p-6 md:p-10 space-y-10">
+
+    <!-- Navigation / Section Toggles -->
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-gray-900 p-4 rounded-2xl border border-gray-800">
+      <div class="flex items-center gap-2">
+        <button onclick="switchTab('menu')" id="navMenuBtn" class="px-5 py-2.5 rounded-xl font-heading font-bold text-xs uppercase tracking-wider bg-brand-orange text-white shadow-md transition-all">
+          🍔 Complete Menu Manager (<span id="menuCountBadge">0</span>)
+        </button>
+        <button onclick="switchTab('events')" id="navEventsBtn" class="px-5 py-2.5 rounded-xl font-heading font-bold text-xs uppercase tracking-wider bg-gray-800 text-gray-300 hover:bg-gray-700 transition-all">
+          🗓️️ Events Manager (<span id="eventCountBadge">0</span>)
+        </button>
+      </div>
+      <div class="flex items-center gap-3 text-xs text-gray-400">
+        <button onclick="resetToFactoryDefault()" class="text-rose-400 hover:text-rose-300 underline font-semibold">Reset to Default</button>
+      </div>
+    </div>
+
+    <!-- ================= SECTION 1: MENU MANAGER ================= -->
+    <section id="menuSection" class="space-y-8">
+      <!-- Add / Edit Menu Form -->
+      <div class="bg-gray-900 rounded-3xl p-6 md:p-8 border border-gray-800 shadow-xl">
+        <div class="flex justify-between items-center mb-6 pb-4 border-b border-gray-800">
+          <div>
+            <h2 id="menuFormTitle" class="font-heading font-bold text-xl text-white">➕ Add New Menu Item</h2>
+            <p class="text-xs text-gray-400 mt-0.5">Fill out details to publish a new menu choice.</p>
+          </div>
+          <button type="button" id="menuCancelEditBtn" onclick="resetMenuForm()" class="hidden text-xs text-rose-400 hover:text-rose-300 font-semibold underline">
+            Cancel Edit
+          </button>
+        </div>
+
+        <form id="menuForm" onsubmit="handleMenuSubmit(event)" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          <input type="hidden" id="editMenuOriginalCategory" value="">
+          <input type="hidden" id="editMenuOriginalName" value="">
+          
+          <div>
+            <label class="block text-xs font-semibold text-gray-300 mb-1.5">Category</label>
+            <select id="menuFormCategory" class="w-full px-4 py-3 rounded-xl bg-gray-950 border border-gray-800 text-white text-sm focus:outline-none focus:border-brand-turquoise">
+              <option value="Must Try!">Must Try!</option>
+              <option value="Rice Meal">Rice Meal</option>
+              <option value="Pasta">Pasta</option>
+              <option value="Sandwich">Sandwich</option>
+              <option value="Salad">Salad</option>
+              <option value="Waffle">Waffle</option>
+              <option value="Ramen">Ramen</option>
+              <option value="Appetizers">Appetizers</option>
+              <option value="Cocktails">Cocktails</option>
+              <option value="Coffee">Coffee</option>
+              <option value="Non-Coffee">Non-Coffee</option>
+              <option value="Refreshment">Refreshment</option>
+              <option value="Dessert">Dessert</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-gray-300 mb-1.5">Item Name</label>
+            <input type="text" id="menuFormName" required placeholder="e.g. White Almond Coffee" class="w-full px-4 py-3 rounded-xl bg-gray-950 border border-gray-800 text-white text-sm focus:outline-none focus:border-brand-turquoise">
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-gray-300 mb-1.5">Price</label>
+            <input type="text" id="menuFormPrice" required placeholder="e.g. ₱175.00" class="w-full px-4 py-3 rounded-xl bg-gray-950 border border-gray-800 text-white text-sm focus:outline-none focus:border-brand-turquoise">
+          </div>
+
+          <div class="sm:col-span-2 lg:col-span-1">
+            <label class="block text-xs font-semibold text-gray-300 mb-1.5">Description</label>
+            <input type="text" id="menuFormDesc" required placeholder="Short appetizing description..." class="w-full px-4 py-3 rounded-xl bg-gray-950 border border-gray-800 text-white text-sm focus:outline-none focus:border-brand-turquoise">
+          </div>
+
+          <div class="sm:col-span-2 lg:col-span-4 flex items-center gap-3 pt-2">
+            <button type="submit" id="menuSubmitBtn" class="px-8 py-3 rounded-xl bg-brand-turquoise text-white font-heading font-bold text-xs uppercase tracking-wider hover:bg-brand-turquoise-hover transition-colors shadow-lg shadow-brand-turquoise/20">
+              Save Menu Item
+            </button>
+            <button type="button" onclick="resetMenuForm()" class="px-6 py-3 rounded-xl bg-gray-800 text-gray-300 font-heading font-bold text-xs uppercase tracking-wider hover:bg-gray-700 transition-colors">
+              Reset Form
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Menu Inventory Table -->
+      <div class="bg-gray-900 rounded-3xl p-6 md:p-8 border border-gray-800 shadow-xl">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 pb-4 border-b border-gray-800">
+          <div>
+            <h3 class="font-heading font-bold text-xl text-white">📋 Complete Master Menu Inventory</h3>
+            <p class="text-xs text-gray-400">All categories and items populated completely.</p>
+          </div>
+          <div class="w-full sm:w-64">
+            <input type="text" id="menuSearchInput" onkeyup="filterMenuTable()" placeholder="Search items or categories..." class="w-full px-4 py-2 rounded-xl bg-gray-950 border border-gray-800 text-white text-xs focus:outline-none focus:border-brand-turquoise">
+          </div>
+        </div>
+
+        <div class="overflow-x-auto custom-scrollbar">
+          <table class="w-full text-left border-collapse text-sm">
+            <thead>
+              <tr class="bg-gray-950 text-xs text-gray-400 uppercase tracking-wider border-b border-gray-800">
+                <th class="p-4">Category</th>
+                <th class="p-4">Item Name</th>
+                <th class="p-4">Price</th>
+                <th class="p-4">Description</th>
+                <th class="p-4 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="menuTableBody" class="divide-y divide-gray-800">
+              <!-- Populated dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= SECTION 2: EVENTS MANAGER ================= -->
+    <section id="eventsSection" class="space-y-8 hidden">
+      <!-- Add / Edit Event Form -->
+      <div class="bg-gray-900 rounded-3xl p-6 md:p-8 border border-gray-800 shadow-xl">
+        <div class="flex justify-between items-center mb-6 pb-4 border-b border-gray-800">
+          <div>
+            <h2 id="eventFormTitleText" class="font-heading font-bold text-xl text-white">➕ Add New Event</h2>
+            <p class="text-xs text-gray-400 mt-0.5">Create community gatherings or cat adoption drives with custom images.</p>
+          </div>
+          <button type="button" id="eventCancelEditBtn" onclick="resetEventForm()" class="hidden text-xs text-rose-400 hover:text-rose-300 font-semibold underline">
+            Cancel Edit
+          </button>
+        </div>
+
+        <form id="eventForm" onsubmit="handleEventSubmit(event)" class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+          <input type="hidden" id="editEventIndex" value="">
+
+          <div>
+            <label class="block text-xs font-semibold text-gray-300 mb-1.5">Event Title</label>
+            <input type="text" id="eventFormTitle" required placeholder="e.g. Rescue Adoption Sunday" class="w-full px-4 py-3 rounded-xl bg-gray-950 border border-gray-800 text-white text-sm focus:outline-none focus:border-brand-turquoise">
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-gray-300 mb-1.5">Date Display</label>
+            <input type="text" id="eventFormDate" required placeholder="e.g. November 15, 2026" class="w-full px-4 py-3 rounded-xl bg-gray-950 border border-gray-800 text-white text-sm focus:outline-none focus:border-brand-turquoise">
+          </div>
+
+          <div class="sm:col-span-2">
+            <label class="block text-xs font-semibold text-gray-300 mb-1.5">Event Image (Upload File OR Provide Image URL)</label>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-[11px] text-gray-400 mb-1">Upload from computer:</label>
+                <input type="file" id="eventFormFile" accept="image/*" onchange="handleImageUpload(event)" class="w-full px-3 py-2 rounded-xl bg-gray-950 border border-gray-800 text-white text-xs file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-brand-turquoise file:text-white hover:file:bg-brand-turquoise-hover cursor-pointer">
+              </div>
+              <div>
+                <label class="block text-[11px] text-gray-400 mb-1">Or paste Image URL:</label>
+                <input type="url" id="eventFormImage" placeholder="https://res.cloudinary.com/..." class="w-full px-4 py-2.5 rounded-xl bg-gray-950 border border-gray-800 text-white text-sm focus:outline-none focus:border-brand-turquoise">
+              </div>
+            </div>
+            <!-- Image preview box -->
+            <div id="imagePreviewContainer" class="mt-3 hidden items-center gap-3 bg-gray-950 p-3 rounded-xl border border-gray-800 max-w-sm">
+              <img id="imagePreviewThumb" src="" alt="Preview" class="w-12 h-12 rounded-lg object-cover bg-gray-800">
+              <div class="text-xs">
+                <p class="font-bold text-white">Image Loaded Successfully</p>
+                <span class="text-brand-turquoise">Ready to save</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="sm:col-span-2">
+            <label class="block text-xs font-semibold text-gray-300 mb-1.5">Event Description</label>
+            <textarea id="eventFormDesc" required rows="3" placeholder="Provide details about the event..." class="w-full px-4 py-3 rounded-xl bg-gray-950 border border-gray-800 text-white text-sm focus:outline-none focus:border-brand-turquoise"></textarea>
+          </div>
+
+          <div class="sm:col-span-2 flex items-center gap-3 pt-2">
+            <button type="submit" id="eventSubmitBtn" class="px-8 py-3 rounded-xl bg-brand-turquoise text-white font-heading font-bold text-xs uppercase tracking-wider hover:bg-brand-turquoise-hover transition-colors shadow-lg shadow-brand-turquoise/20">
+              Save Event
+            </button>
+            <button type="button" onclick="resetEventForm()" class="px-6 py-3 rounded-xl bg-gray-800 text-gray-300 font-heading font-bold text-xs uppercase tracking-wider hover:bg-gray-700 transition-colors">
+              Reset Form
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Events List / Table -->
+      <div class="bg-gray-900 rounded-3xl p-6 md:p-8 border border-gray-800 shadow-xl">
+        <div class="flex justify-between items-center mb-6 pb-4 border-b border-gray-800">
+          <div>
+            <h3 class="font-heading font-bold text-xl text-white">🗓️️ Scheduled Events</h3>
+            <p class="text-xs text-gray-400">Review, update, or remove active events gallery posts.</p>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto custom-scrollbar">
+          <table class="w-full text-left border-collapse text-sm">
+            <thead>
+              <tr class="bg-gray-950 text-xs text-gray-400 uppercase tracking-wider border-b border-gray-800">
+                <th class="p-4">Image</th>
+                <th class="p-4">Title</th>
+                <th class="p-4">Date</th>
+                <th class="p-4">Description</th>
+                <th class="p-4 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="eventsTableBody" class="divide-y divide-gray-800">
+              <!-- Populated dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-gray-900 border-t border-gray-800 py-6 px-6 text-center text-xs text-gray-500 mt-auto">
+    <p>&copy; 2026 Hello Meow Cafe Cabanatuan &bull; Standalone Content Management System</p>
+  </footer>
+
+  <!-- JavaScript Logic with All-Day Breakfast Category Removed -->
+  <script>
+    // Menu Dataset without All-Day Breakfast
+    const defaultMenuData = {
+      'Must Try!': [
+        { name: 'Chicken Con Carne & Fries', desc: 'Savory chicken con carne served over crispy golden fries', price: '₱249.00' },
+        { name: 'Ube Latte', desc: 'Sweet and creamy signature ube flavored iced latte', price: '₱175.00' },
+        { name: 'KITTY TREAT TRIO', desc: 'Assorted delightful treats combo with special drink', price: '₱299.00' },
+        { name: 'Seasalt Latte', desc: 'Smooth signature coffee topped with sweet and salty cream', price: '₱175.00' },
+        { name: 'Beef Mami With Egg', desc: 'Hearty warm beef noodle soup served with a boiled egg', price: '₱185.00' },
+        { name: 'Bacon Sandwich Solo', desc: 'Toasted sandwich loaded with savory crisp bacon slices', price: '₱155.00' }
+      ],
+      'Rice Meal': [
+        { name: 'Bibimbap', desc: 'Korean mixed rice bowl with seasoned meat, fresh vegetables, egg, and gochujang', price: '₱250.00' },
+        { name: 'Chicken Teriyaki Rice', desc: 'Tender chicken glazed in sweet teriyaki sauce over steamed rice', price: '₱220.00' },
+        { name: 'Pork Tonkatsu Rice', desc: 'Crispy breaded pork cutlet served with rice and tonkatsu sauce', price: '₱230.00' },
+        { name: '2pc Crispy Chicken With Rice And Iced Tea', desc: 'Crispy fried chicken paired with steamed rice and refreshing iced tea', price: '₱199.00' },
+        { name: 'Beef Bulgogi Rice', desc: 'Marinated tender sliced beef stir-fried in sweet soy sauce over rice', price: '₱249.00' }
+      ],
+      'Pasta': [
+        { name: 'Chicken Alfredo', desc: 'Creamy alfredo pasta served with tender chicken and side waffles', price: '₱250.00' },
+        { name: 'Spaghetti Bolognese', desc: 'Classic pasta tossed in a rich meat and tomato sauce', price: '₱210.00' },
+        { name: 'Carbonara', desc: 'Rich and creamy pasta with bacon and parmesan cheese', price: '₱220.00' },
+        { name: 'Pesto Pasta with Shrimp', desc: 'Herby basil pesto pasta topped with succulent grilled shrimp', price: '₱260.00' }
+      ],
+      'Sandwich': [
+        { name: 'Meow Clubhouse', desc: 'Classic multi-layered club sandwich served with fries', price: '₱225.00' },
+        { name: 'Tuna Melt Sandwich', desc: 'Toasted sandwich filled with creamy tuna salad and melted cheese', price: '₱185.00' },
+        { name: 'Ham and Cheese Croissant', desc: 'Buttery flaky croissant layered with ham and cheese', price: '₱175.00' },
+        { name: 'Egg Drop Sandwich', desc: 'Fluffy scrambled eggs with signature sauce in thick brioche bread', price: '₱165.00' }
+      ],
+      'Salad': [
+        { name: 'Tuna Korean Salad', desc: 'Fresh crisp salad mix topped with seasoned tuna, fresh veggies, croutons, and Korean dressing', price: '₱225.00' },
+        { name: 'Caesar Salad', desc: 'Crisp romaine lettuce with parmesan, croutons, and Caesar dressing', price: '₱195.00' },
+        { name: 'Asian Sesame Chicken Salad', desc: 'Crisp greens topped with grilled chicken, sesame dressing, and wonton crisps', price: '₱230.00' }
+      ],
+      'Waffle': [
+        { name: 'Biscoff Waffle', desc: 'Crispy golden waffle topped with rich Biscoff spread, whipped cream, sprinkles, and a cherry', price: '₱199.00' },
+        { name: 'Nutella Banana Waffle', desc: 'Warm waffle spread with Nutella and topped with fresh banana slices', price: '₱185.00' },
+        { name: 'Classic Butter & Honey Waffle', desc: 'Warm golden waffle drizzled with pure honey and rich butter', price: '₱140.00' }
+      ],
+      'Ramen': [
+        { name: 'Laksa', desc: 'Rich and savory spiced laksa noodle soup topped with sliced chicken, soft-boiled egg, and fish balls', price: '₱299.00' },
+        { name: 'Shoyu Ramen', desc: 'Flavorful soy sauce-based ramen with noodles, chashu, and egg', price: '₱260.00' },
+        { name: 'Spicy Kimchi Ramen', desc: 'Korean-fusion spicy noodle soup with kimchi, pork slices, and egg', price: '₱275.00' }
+      ],
+      'Appetizers': [
+        { name: 'Cheese Sticks', desc: 'Crispy fried golden cheese sticks served with a tasty dip', price: '₱175.00' },
+        { name: 'Crincut Fries', desc: 'Crispy crinkle-cut golden seasoned potato fries', price: '₱150.00' },
+        { name: 'Chicken Wings (6pcs)', desc: 'Crispy flavored chicken wings with choice of dip', price: '₱210.00' },
+        { name: 'Nacho Chips with Cheese & Salsa', desc: 'Crunchy tortilla chips loaded with warm melted cheese and salsa', price: '₱185.00' },
+        { name: 'Pork Dumplings (Steamed/Fried)', desc: 'Delicious savory Asian dumplings served with special dipping sauce', price: '₱165.00' }
+      ],
+      'Cocktails': [
+        { name: 'Mojito', desc: 'Classic refreshing cocktail featuring white rum, fresh mint, lime juice, and soda water', price: '₱175.00' },
+        { name: 'Blue Lagoon', desc: 'Vibrant blue refreshing cocktail with citrus notes', price: '₱185.00' },
+        { name: 'Sunrise Sunset', desc: 'Fruit-infused cocktail with layered tropical flavors', price: '₱190.00' }
+      ],
+      'Coffee': [
+        { name: 'Cafe Americano', desc: 'Classic bold espresso shot diluted with water', price: '₱150.00' },
+        { name: 'Caramel Macchiato', desc: 'Espresso combined with vanilla, fresh milk, and caramel drizzle', price: '₱185.00' },
+        { name: 'Cafe Latte', desc: 'Smooth espresso balanced with steamed milk and a light layer of foam', price: '₱175.00' },
+        { name: 'Spanish Latte', desc: 'Rich espresso combined with textured milk and sweetened condensed milk', price: '₱185.00' },
+        { name: 'Mocha', desc: 'Rich espresso blended with smooth chocolate and milk', price: '₱185.00' },
+        { name: 'White Almond Coffee', desc: 'Sweet nutty almond flavored creamy espresso beverage', price: '₱160.00' },
+        { name: 'Hot Cappuccino', desc: 'Traditional equal parts espresso, steamed milk, and thick foam', price: '₱175.00' },
+        { name: 'Honey Lotus Latte', desc: 'Delightful specialty latte infused with honey and lotus flavor', price: '₱185.00' },
+        { name: 'Mocha Forest Cookie', desc: 'Specialty cookie-infused rich mocha blend', price: '₱185.00' },
+        { name: 'Butter Cookie Latte', desc: 'Smooth latte featuring sweet buttery cookie notes', price: '₱185.00' },
+        { name: 'Chocolate Chip Cookie Coffee', desc: 'Dessert-inspired sweet coffee drink with chocolate bits', price: '₱185.00' },
+        { name: 'Mocha Hazelnut', desc: 'Classic mocha enhanced with nutty hazelnut syrup', price: '₱185.00' },
+        { name: 'Almond Cookie Mocha', desc: 'Rich mocha with almond and cookie flavor undertones', price: '₱185.00' }
+      ],
+      'Non-Coffee': [
+        { name: 'Blueberry Matcha', desc: 'Delicious fusion of vibrant matcha green tea and sweet blueberry flavor', price: '₱185.00' },
+        { name: 'Strawberry Matcha', desc: 'Sweet strawberry puree combined with smooth earthy matcha', price: '₱185.00' },
+        { name: 'Dark Chocolate', desc: 'Rich and velvety cocoa beverage', price: '₱160.00' },
+        { name: 'Taro Cheesecake', desc: 'Creamy and sweet taro drink with rich cheesecake flavor profile', price: '₱195.00' },
+        { name: 'Ube Quezo', desc: 'Filipino favorite ube blend topped with rich cheese flavor notes', price: '₱195.00' },
+        { name: 'Blueberry Muffin Drink', desc: 'Sweet pastry-inspired blueberry beverage', price: '₱195.00' },
+        { name: 'Tri Choco', desc: 'Triple chocolate decadent blended non-coffee drink', price: '₱195.00' },
+        { name: 'Red Velvet', desc: 'Smooth velvety cocoa beverage with red velvet cream notes', price: '₱195.00' },
+        { name: 'Strawberry Smooth', desc: 'Creamy and fruity strawberry blended cooler', price: '₱195.00' },
+        { name: 'Creamy Butterfly Rose', desc: 'Floral blue pea butterfly flower infused creamy beverage', price: '₱195.00' },
+        { name: 'Matcha Cookie Pot', desc: 'Earthy matcha drink topped with crushed cookie bits', price: '₱185.00' },
+        { name: 'Raspberry Tart', desc: 'Tangy and sweet raspberry dessert drink', price: '₱195.00' },
+        { name: 'Honeydew', desc: 'Refreshing sweet melon flavored creamy drink', price: '₱195.00' }
+      ],
+      'Refreshment': [
+        { name: 'Berry Swirl', desc: 'Refreshing fruity berry swirl cooler beverage', price: '₱150.00' },
+        { name: 'Lychee Fruit Tea', desc: 'Sweet and refreshing fruit tea infused with real lychee flavor', price: '₱140.00' },
+        { name: 'Peach Mango Cooler', desc: 'Tropical fruit refresher with peach and mango chunks', price: '₱145.00' },
+        { name: 'Blue Lemonade', desc: 'Vibrant blue citrus lemonade with a refreshing twist', price: '₱130.00' }
+      ],
+      'Dessert': [
+        { name: 'Hello Meow Crepe', desc: 'Delicate sweet crepe served with drizzle and toppings', price: '₱150.00' },
+        { name: 'Tres Leches', desc: 'Decadent, ultra-moist three-milk dessert cake', price: '₱185.00' },
+        { name: 'Cheesecake Slice', desc: 'Rich and creamy classic New York cheesecake slice', price: '₱170.00' },
+        { name: 'Triple Chocolate Cutesy', desc: 'Rich multi-layered chocolate cake slice', price: '₱165.00' },
+        { name: 'Ube Bread', desc: 'Soft sweet bread filled with halaya ube filling', price: '₱120.00' }
+      ]
+    };
+
+    const defaultEventsData = [
+      {
+        title: "Paws & Coffee Meetup",
+        date: "September 20, 2026",
+        image: "https://res.cloudinary.com/tfk63bnl/image/upload/f_auto,q_auto/hmc_banner",
+        description: "A wonderful afternoon gathering with local cat parents, sharing tips on feline wellness and enjoying fresh artisanal brews."
+      },
+      {
+        title: "Rescue Cat Adoption Sunday",
+        date: "October 4, 2026",
+        image: "https://res.cloudinary.com/tfk63bnl/image/upload/f_auto,q_auto/hmc_logo",
+        description: "Finding forever homes for our rescue cats! Three of our lovely feline residents were successfully matched with loving families."
+      }
+    ];
+
+    // Load from LocalStorage or Fallback
+    let menuData = JSON.parse(localStorage.getItem('hmc_menu_complete_v2')) || defaultMenuData;
+    let eventsData = JSON.parse(localStorage.getItem('hmc_events_complete_v2')) || defaultEventsData;
+
+    function saveMenu() {
+      localStorage.setItem('hmc_menu_complete_v2', JSON.stringify(menuData));
+      renderMenuTable();
+    }
+
+    function saveEvents() {
+      localStorage.setItem('hmc_events_complete_v2', JSON.stringify(eventsData));
+      renderEventsTable();
+    }
+
+    function resetToFactoryDefault() {
+      if (confirm('Are you sure you want to reset all menu items and events to factory defaults?')) {
+        localStorage.removeItem('hmc_menu_complete_v2');
+        localStorage.removeItem('hmc_events_complete_v2');
+        menuData = JSON.parse(JSON.stringify(defaultMenuData));
+        eventsData = JSON.parse(JSON.stringify(defaultEventsData));
+        renderMenuTable();
+        renderEventsTable();
+        alert('Successfully restored complete menu defaults!');
+      }
+    }
+
+    function exportJSONData() {
+      const data = { menu: menuData, events: eventsData };
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'hello-meow-complete-cms-backup.json';
+      a.click();
+    }
+
+    // Tab Switcher
+    function switchTab(tab) {
+      const menuSec = document.getElementById('menuSection');
+      const eventsSec = document.getElementById('eventsSection');
+      const menuBtn = document.getElementById('navMenuBtn');
+      const eventsBtn = document.getElementById('navEventsBtn');
+
+      if (tab === 'menu') {
+        menuSec.classList.remove('hidden');
+        eventsSec.classList.add('hidden');
+        menuBtn.className = 'px-5 py-2.5 rounded-xl font-heading font-bold text-xs uppercase tracking-wider bg-brand-orange text-white shadow-md transition-all';
+        eventsBtn.className = 'px-5 py-2.5 rounded-xl font-heading font-bold text-xs uppercase tracking-wider bg-gray-800 text-gray-300 hover:bg-gray-700 transition-all';
+      } else {
+        eventsSec.classList.remove('hidden');
+        menuSec.classList.add('hidden');
+        eventsBtn.className = 'px-5 py-2.5 rounded-xl font-heading font-bold text-xs uppercase tracking-wider bg-brand-orange text-white shadow-md transition-all';
+        menuBtn.className = 'px-5 py-2.5 rounded-xl font-heading font-bold text-xs uppercase tracking-wider bg-gray-800 text-gray-300 hover:bg-gray-700 transition-all';
+      }
+    }
+
+    // --- MENU CRUD LOGIC ---
+    function renderMenuTable(filterQuery = '') {
+      const tbody = document.getElementById('menuTableBody');
+      const countBadge = document.getElementById('menuCountBadge');
+      if (!tbody) return;
+
+      tbody.innerHTML = '';
+      let totalCount = 0;
+      const query = filterQuery.toLowerCase();
+
+      for (const [category, items] of Object.entries(menuData)) {
+        items.forEach((item, index) => {
+          totalCount++;
+          if (query && !item.name.toLowerCase().includes(query) && !category.toLowerCase().includes(query) && !item.desc.toLowerCase().includes(query)) {
+            return;
+          }
+
+          const tr = document.createElement('tr');
+          tr.className = 'hover:bg-gray-800/50 transition-colors';
+          tr.innerHTML = `
+            <td class="p-4 text-xs font-bold text-brand-turquoise">${category}</td>
+            <td class="p-4 text-xs font-semibold text-white">${item.name}</td>
+            <td class="p-4 text-xs text-brand-orange font-bold">${item.price}</td>
+            <td class="p-4 text-xs text-gray-300 max-w-xs truncate">${item.desc}</td>
+            <td class="p-4 text-right whitespace-nowrap">
+              <button onclick="editMenuItem('${category}', ${index})" class="px-3 py-1.5 rounded-lg bg-brand-turquoise/20 text-brand-turquoise hover:bg-brand-turquoise/30 text-xs font-bold mr-1.5 transition-colors">Edit</button>
+              <button onclick="deleteMenuItem('${category}', ${index})" class="px-3 py-1.5 rounded-lg bg-rose-500/20 text-rose-300 hover:bg-rose-500/30 text-xs font-bold transition-colors">Delete</button>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+      }
+      if (countBadge) countBadge.textContent = totalCount;
+    }
+
+    function filterMenuTable() {
+      const val = document.getElementById('menuSearchInput').value;
+      renderMenuTable(val);
+    }
+
+    function handleMenuSubmit(e) {
+      e.preventDefault();
+      const category = document.getElementById('menuFormCategory').value;
+      const name = document.getElementById('menuFormName').value.trim();
+      const price = document.getElementById('menuFormPrice').value.trim();
+      const desc = document.getElementById('menuFormDesc').value.trim();
+
+      const origCat = document.getElementById('editMenuOriginalCategory').value;
+      const origName = document.getElementById('editMenuOriginalName').value;
+
+      if (!menuData[category]) menuData[category] = [];
+
+      if (origCat && origName !== "") {
+        menuData[origCat] = menuData[origCat].filter(i => i.name !== origName);
+      }
+
+      menuData[category].push({ name, desc, price });
+      saveMenu();
+      resetMenuForm();
+    }
+
+    function editMenuItem(category, index) {
+      const item = menuData[category][index];
+      document.getElementById('menuFormCategory').value = category;
+      document.getElementById('menuFormName').value = item.name;
+      document.getElementById('menuFormPrice').value = item.price;
+      document.getElementById('menuFormDesc').value = item.desc;
+
+      document.getElementById('editMenuOriginalCategory').value = category;
+      document.getElementById('editMenuOriginalName').value = item.name;
+
+      document.getElementById('menuFormTitle').textContent = '✏️ Edit Menu Item';
+      document.getElementById('menuSubmitBtn').textContent = 'Update Menu Item';
+      document.getElementById('menuCancelEditBtn').classList.remove('hidden');
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function deleteMenuItem(category, index) {
+      if (confirm(`Are you sure you want to delete "${menuData[category][index].name}"?`)) {
+        menuData[category].splice(index, 1);
+        saveMenu();
+      }
+    }
+
+    function resetMenuForm() {
+      document.getElementById('menuForm').reset();
+      document.getElementById('editMenuOriginalCategory').value = '';
+      document.getElementById('editMenuOriginalName').value = '';
+      document.getElementById('menuFormTitle').textContent = '➕ Add New Menu Item';
+      document.getElementById('menuSubmitBtn').textContent = 'Save Menu Item';
+      document.getElementById('menuCancelEditBtn').classList.add('hidden');
+    }
+
+    // --- EVENTS CRUD LOGIC ---
+    let uploadedImageBase64 = '';
+
+    function handleImageUpload(e) {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(evt) {
+          uploadedImageBase64 = evt.target.result;
+          document.getElementById('eventFormImage').value = uploadedImageBase64;
+          
+          const thumb = document.getElementById('imagePreviewThumb');
+          thumb.src = uploadedImageBase64;
+          document.getElementById('imagePreviewContainer').classList.remove('hidden');
+          document.getElementById('imagePreviewContainer').classList.add('flex');
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    function renderEventsTable() {
+      const tbody = document.getElementById('eventsTableBody');
+      const countBadge = document.getElementById('eventCountBadge');
+      if (!tbody) return;
+
+      tbody.innerHTML = '';
+      if (countBadge) countBadge.textContent = eventsData.length;
+
+      if (eventsData.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" class="p-6 text-center text-gray-500 text-xs">No scheduled events found.</td></tr>';
+        return;
+      }
+
+      eventsData.forEach((ev, index) => {
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-gray-800/50 transition-colors';
+        tr.innerHTML = `
+          <td class="p-4">
+            <img src="${ev.image}" alt="" class="w-10 h-10 rounded-lg object-cover bg-gray-800 border border-gray-700" onerror="this.src='https://res.cloudinary.com/tfk63bnl/image/upload/f_auto,q_auto/hmc_logo'">
+          </td>
+          <td class="p-4 text-xs font-semibold text-white">${ev.title}</td>
+          <td class="p-4 text-xs text-brand-orange font-bold">${ev.date}</td>
+          <td class="p-4 text-xs text-gray-300 max-w-xs truncate">${ev.description}</td>
+          <td class="p-4 text-right whitespace-nowrap">
+            <button onclick="editEventItem(${index})" class="px-3 py-1.5 rounded-lg bg-brand-turquoise/20 text-brand-turquoise hover:bg-brand-turquoise/30 text-xs font-bold mr-1.5 transition-colors">Edit</button>
+            <button onclick="deleteEventItem(${index})" class="px-3 py-1.5 rounded-lg bg-rose-500/20 text-rose-300 hover:bg-rose-500/30 text-xs font-bold transition-colors">Delete</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function handleEventSubmit(e) {
+      e.preventDefault();
+      const title = document.getElementById('eventFormTitle').value.trim();
+      const date = document.getElementById('eventFormDate').value.trim();
+      let image = document.getElementById('eventFormImage').value.trim();
+      const description = document.getElementById('eventFormDesc').value.trim();
+      const editIndex = document.getElementById('editEventIndex').value;
+
+      if (!image && uploadedImageBase64) {
+        image = uploadedImageBase64;
+      }
+      if (!image) {
+        image = 'https://res.cloudinary.com/tfk63bnl/image/upload/f_auto,q_auto/hmc_banner';
+      }
+
+      if (editIndex !== "") {
+        eventsData[parseInt(editIndex)] = { title, date, image, description };
+      } else {
+        eventsData.push({ title, date, image, description });
+      }
+
+      saveEvents();
+      resetEventForm();
+    }
+
+    function editEventItem(index) {
+      const ev = eventsData[index];
+      document.getElementById('eventFormTitle').value = ev.title;
+      document.getElementById('eventFormDate').value = ev.date;
+      document.getElementById('eventFormImage').value = ev.image;
+      document.getElementById('eventFormDesc').value = ev.description;
+      document.getElementById('editEventIndex').value = index;
+
+      if (ev.image) {
+        const thumb = document.getElementById('imagePreviewThumb');
+        thumb.src = ev.image;
+        document.getElementById('imagePreviewContainer').classList.remove('hidden');
+        document.getElementById('imagePreviewContainer').classList.add('flex');
+      }
+
+      document.getElementById('eventFormTitleText').textContent = '✏️ Edit Event';
+      document.getElementById('eventSubmitBtn').textContent = 'Update Event';
+      document.getElementById('eventCancelEditBtn').classList.remove('hidden');
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function deleteEventItem(index) {
+      if (confirm(`Are you sure you want to delete event "${eventsData[index].title}"?`)) {
+        eventsData.splice(index, 1);
+        saveEvents();
+      }
+    }
+
+    function resetEventForm() {
+      document.getElementById('eventForm').reset();
+      document.getElementById('editEventIndex').value = '';
+      uploadedImageBase64 = '';
+      document.getElementById('imagePreviewContainer').classList.add('hidden');
+      document.getElementById('imagePreviewContainer').classList.remove('flex');
+      document.getElementById('eventFormTitleText').textContent = '➕ Add New Event';
+      document.getElementById('eventSubmitBtn').textContent = 'Save Event';
+      document.getElementById('eventCancelEditBtn').classList.add('hidden');
+    }
+
+    // Initial load
+    renderMenuTable();
+    renderEventsTable();
+  </script>
+</body>
+</html>

@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hello Meow Cafe Cabanatuan</title>
+  <link rel="icon" type="image/png" href="https://res.cloudinary.com/tfk63bnl/image/upload/f_auto,q_auto/hmc_logo">
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              DEFAULT: '#006B88',
+              dark: '#004255',
+              turquoise: '#00A896',
+              'turquoise-hover': '#008577',
+              'turquoise-light': '#E6F7F5',
+              orange: '#FF6B35',
+              'orange-hover': '#E05522',
+              'orange-light': '#FFF0EB',
+              cream: '#F8F9FA',
+              muted: '#4B5563'
+            }
+          },
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            heading: ['"Outfit"', 'sans-serif'],
+          },
+          boxShadow: {
+            'soft': '0 10px 30px -5px rgba(0, 107, 136, 0.08)',
+            'card': '0 20px 40px -15px rgba(0, 0, 0, 0.05)',
+            'elevated': '0 25px 50px -12px rgba(0, 66, 85, 0.25)',
+          }
+        }
+      }
+    }
+  </script>
+  
+  <style>
+    .hero-gradient {
+      background: linear-gradient(135deg, rgba(0, 90, 95, 0.75), rgba(0, 168, 150, 0.55));
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #F8F9FA;
+      border-radius: 8px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #CBD5E1;
+      border-radius: 8px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #94A3B8;
+    }
+  </style>
+
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="min-h-screen flex flex-col antialiased selection:bg-brand-turquoise selection:text-white">
+
+  <!-- Header -->
+  <header id="mainHeader" class="fixed top-0 left-0 w-full z-50 transition-all duration-300 bg-transparent py-4 px-6 md:px-12 flex items-center justify-between">
+    <a href="#home" class="flex items-center gap-3 group">
+      <img src="https://res.cloudinary.com/tfk63bnl/image/upload/f_auto,q_auto/hmc_logo" alt="Hello Meow Cafe Logo" class="w-12 h-12 rounded-full object-cover border-2 border-brand-turquoise shadow-md group-hover:scale-105 transition-transform">
+      <div class="flex flex-col">
+        <span class="font-heading font-extrabold text-xl tracking-tight text-white drop-shadow-sm">Hello Meow</span>
+        <span class="text-xs font-semibold tracking-widest text-brand-turquoise-light uppercase drop-shadow-sm">Cafe &middot; Cabanatuan</span>
+      </div>
+    </a>
+
+    <div class="flex items-center gap-4">
+      <div id="statusBadge" class="hidden sm:inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-bold tracking-wide uppercase transition-colors shadow-sm bg-black/30 backdrop-blur-md text-white border border-white/20">
+        <span id="statusDot" class="w-2.5 h-2.5 rounded-full bg-gray-400 animate-pulse"></span>
+        <span id="statusText">CHECKING...</span>
+      </div>
+
+      <nav class="hidden lg:flex items-center gap-8 font-semibold text-sm text-gray-200">
+        <a href="#home" class="hover:text-brand-turquoise-light transition-colors drop-shadow-sm">Home</a>
+        <a href="#about" class="hover:text-brand-turquoise-light transition-colors drop-shadow-sm">About</a>
+        <a href="#cat-lounge" class="hover:text-brand-turquoise-light transition-colors drop-shadow-sm">Cat Lounge</a>
+        <a href="#menu" class="hover:text-brand-turquoise-light transition-colors drop-shadow-sm">Menu</a>
+        <a href="#events" class="hover:text-brand-turquoise-light transition-colors drop-shadow-sm">Events</a>
+      </nav>
+
+      <a href="#cat-lounge" class="hidden sm:inline-flex items-center justify-center px-5 py-2.5 rounded-xl font-heading font-bold text-xs uppercase tracking-wider bg-brand-orange text-white shadow-lg shadow-brand-orange/25 hover:bg-brand-orange-hover hover:scale-[1.02] active:scale-[0.98] transition-all">
+        Reserve Visit
+      </a>
+
+      <button id="mobileMenuToggle" aria-label="Toggle Menu" class="lg:hidden p-2.5 rounded-xl bg-black/30 backdrop-blur-md text-white hover:bg-black/50 transition-colors">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- Mobile Nav Overlay -->
+  <div id="mobileMenuOverlay" class="fixed inset-0 bg-black/50 z-50 opacity-0 pointer-events-none transition-opacity duration-300 lg:hidden">
+    <div id="mobileMenuDrawer" class="absolute top-0 right-0 w-4/5 max-w-sm h-full bg-white shadow-2xl p-6 flex flex-col justify-between transform translate-x-full transition-transform duration-300">
+      <div>
+        <div class="flex items-center justify-between pb-6 border-b border-gray-100">
+          <div class="flex items-center gap-3">
+            <img src="https://res.cloudinary.com/tfk63bnl/image/upload/f_auto,q_auto/hmc_logo" alt="Logo" class="w-10 h-10 rounded-full object-cover">
+            <span class="font-heading font-bold text-lg text-brand-dark">Hello Meow Cafe</span>
+          </div>
+          <button id="mobileMenuClose" class="p-2 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-700">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <div class="mt-6 p-4 rounded-xl bg-brand-turquoise-light/60 flex items-center justify-between">
+          <span class="text-xs font-bold text-brand-dark">TODAY'S STATUS</span>
+          <div id="mobileStatusBadge" class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold uppercase bg-gray-200 text-gray-700">
+            <span id="mobileStatusDot" class="w-2 h-2 rounded-full bg-gray-400"></span>
+            <span id="mobileStatusText">CHECKING...</span>
+          </div>
+        </div>
+
+        <nav class="mt-6 flex flex-col gap-4 font-heading font-semibold text-brand-dark text-lg">
+          <a href="#home" class="mobile-nav-link hover:text-brand-turquoise transition-colors py-2">Home</a>
+          <a href="#about" class="mobile-nav-link hover:text-brand-turquoise transition-colors py-2">About Us</a>
+          <a href="#cat-lounge" class="mobile-nav-link hover:text-brand-turquoise transition-colors py-2">Cat Lounge</a>
+          <a href="#menu" class="mobile-nav-link hover:text-brand-turquoise transition-colors py-2">Cafe Menu</a>
+          <a href="#events" class="mobile-nav-link hover:text-brand-turquoise transition-colors py-2">Events Gallery</a>
+        </nav>
+      </div>
+
+      <div class="pt-6 border-t border-gray-100 flex flex-col gap-3">
+        <a href="#cat-lounge" id="mobileReserveBtn" class="w-full py-3 rounded-xl bg-brand-orange text-white font-heading font-bold uppercase text-sm tracking-wider text-center shadow-md block">
+          Reserve Lounge Visit
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hero Section -->
+  <section id="home" class="relative min-h-[92vh] flex items-center justify-center pt-28 pb-16 px-6 overflow-hidden">
+    <div class="absolute inset-0 z-0">
+      <img src="https://res.cloudinary.com/tfk63bnl/image/upload/f_auto,q_auto/hmc_banner" alt="Hello Meow Cafe Banner" class="w-full h-full object-cover object-center transform scale-105">
+      <div class="absolute inset-0 hero-gradient"></div>
+    </div>
+
+    <div class="relative z-10 max-w-4xl mx-auto text-center text-white">
+      <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-brand-orange text-white font-heading font-bold text-xs uppercase tracking-widest mb-6 shadow-lg shadow-brand-orange/30">
+        <span>🐾 Nueva Ecija's 1st Community Cat Cafe</span>
+      </div>
+      <h1 class="font-heading font-extrabold text-4xl sm:text-6xl lg:text-7xl tracking-tight leading-tight mb-6">
+        Coffee, Cats, &amp; <span class="text-brand-turquoise-light underline decoration-brand-orange decoration-4">Cozy Vibes</span>
+      </h1>
+      <p class="text-lg sm:text-xl text-gray-200 max-w-2xl mx-auto font-normal leading-relaxed mb-10">
+        A welcoming community sanctuary in Cabanatuan creating wonderful connections between friendly rescue felines and coffee lovers.
+      </p>
+      
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+        <button onclick="openModal('visit')" class="w-full sm:w-auto px-8 py-4 rounded-xl font-heading font-bold text-sm tracking-wider uppercase bg-brand-orange text-white shadow-xl shadow-brand-orange/30 hover:bg-brand-orange-hover hover:scale-105 active:scale-95 transition-all">
+          Reserve Lounge Visit
+        </button>
+        <a href="#menu" class="w-full sm:w-auto px-8 py-4 rounded-xl font-heading font-bold text-sm tracking-wider uppercase bg-white/10 hover:bg-white/25 backdrop-blur-md text-white border border-white/25 hover:scale-105 active:scale-95 transition-all text-center">
+          Explore Menu
+        </a>
+      </div>
+
+      <div class="mt-16 grid grid-cols-2 md:grid-cols-2 gap-6 max-w-2xl mx-auto border-t border-white/15 pt-8 text-left">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-brand-turquoise/40 flex items-center justify-center text-xl">☕</div>
+          <div>
+            <h4 class="font-heading font-bold text-sm">Specialty Coffee</h4>
+            <p class="text-xs text-gray-300">Fresh artisanal brews &amp; meals</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-brand-orange/40 flex items-center justify-center text-xl">🐱</div>
+          <div>
+            <h4 class="font-heading font-bold text-sm">Free-Roaming Cats</h4>
+            <p class="text-xs text-gray-300">Cozy sanctuary environment</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- About Section -->
+  <section id="about" class="py-24 px-6 md:px-12 max-w-6xl mx-auto">
+    <div class="bg-white rounded-3xl p-8 sm:p-14 shadow-soft border border-gray-100 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+      <div>
+        <span class="text-brand-turquoise font-heading font-bold text-xs uppercase tracking-widest block mb-3">Est. August 8, 2022</span>
+        <h2 class="font-heading font-extrabold text-3xl sm:text-4xl text-brand-dark tracking-tight mb-6">
+          A Sanctuary Built on Compassion &amp; Community
+        </h2>
+        <p class="text-brand-muted leading-relaxed mb-6">
+          Established as Nueva Ecija's first community cat cafe, Hello Meow Cafe is more than just a cozy spot for coffee and pastries. Our core mission is deeply rooted in animal welfare, providing proper nourishment, medical care, and safe social spaces for rescue felines.
+        </p>
+        <p class="text-brand-muted leading-relaxed mb-8">
+          We advocate for responsible pet care and animal well-being while matching visitors with a heartwarming, therapeutic environment to relax and unwind alongside our feline residents.
+        </p>
+        <div class="flex items-center gap-6">
+          <div class="flex flex-col">
+            <span class="font-heading font-extrabold text-3xl text-brand-turquoise">1st</span>
+            <span class="text-xs font-semibold text-brand-muted uppercase">Cat Cafe in Nueva Ecija</span>
+          </div>
+          <div class="w-px h-12 bg-gray-200"></div>
+          <div class="flex flex-col">
+            <span class="font-heading font-extrabold text-3xl text-brand-orange">100%</span>
+            <span class="text-xs font-semibold text-brand-muted uppercase">Rescue &amp; Vetted</span>
+          </div>
+        </div>
+      </div>
+      
+      <div class="relative">
+        <div class="absolute -inset-4 bg-brand-turquoise-light rounded-3xl transform -rotate-2 -z-10"></div>
+        <div class="rounded-2xl overflow-hidden shadow-elevated bg-white p-2">
+          <img src="https://res.cloudinary.com/tfk63bnl/image/upload/f_auto,q_auto/hmc_banner" alt="Cat Sanctuary" class="w-full h-80 object-cover rounded-xl">
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Cat Lounge Section -->
+  <section id="cat-lounge" class="py-20 px-6 md:px-12 bg-gradient-to-b from-brand-cream to-white border-y border-gray-100">
+    <div class="max-w-5xl mx-auto">
+      <div class="text-center max-w-2xl mx-auto mb-16">
+        <span class="text-brand-turquoise font-heading font-bold text-xs uppercase tracking-widest block mb-2">Sanctuary Experience</span>
+        <h2 class="font-heading font-extrabold text-3xl sm:text-4xl text-brand-dark tracking-tight">
+          The Cat Lounge
+        </h2>
+        <p class="text-brand-muted mt-3">Unwind in our cozy, safe haven designed for both human relaxation and feline comfort. Interact with friendly rescues, read a book, or enjoy your coffee surrounded by purrs.</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch">
+        <!-- Card 1: Lounge Guidelines -->
+        <div class="bg-white rounded-3xl p-8 shadow-card border border-gray-100 flex flex-col justify-between">
+          <div>
+            <div class="w-12 h-12 rounded-2xl bg-brand-orange-light text-brand-orange flex items-center justify-center text-2xl mb-6">📜</div>
+            <h3 class="font-heading font-bold text-2xl text-brand-dark mb-3">Sanctuary Rules</h3>
+            <p class="text-brand-muted text-sm mb-6">We prioritize the health, safety, and peace of our rescue cats.</p>
+            <ul class="space-y-3.5 text-sm text-brand-muted mb-8">
+              <li class="flex items-start gap-2.5">
+                <span class="text-brand-orange font-bold">✓</span> Sanitize hands before entering the lounge area.
+              </li>
+              <li class="flex items-start gap-2.5">
+                <span class="text-brand-orange font-bold">✓</span> Do not wake sleeping cats or pull tails/paws.
+              </li>
+              <li class="flex items-start gap-2.5">
+                <span class="text-brand-orange font-bold">✓</span> Take photos without flash to protect sensitive eyes.
+              </li>
+              <li class="flex items-start gap-2.5">
+                <span class="text-brand-orange font-bold">✓</span> Only feed cats approved treats provided by staff.
+              </li>
+            </ul>
+          </div>
+          <div class="p-3.5 rounded-xl bg-brand-cream text-center text-xs font-semibold text-brand-dark">
+            Respect our feline hosts &amp; have fun! 🐾
+          </div>
+        </div>
+
+        <!-- Card 2: Atmosphere / Feature Highlight -->
+        <div class="bg-brand-dark text-white rounded-3xl p-8 shadow-elevated flex flex-col justify-between relative overflow-hidden">
+          <div class="absolute -right-10 -bottom-10 text-9xl opacity-10 select-none">🐱</div>
+          <div class="relative z-10">
+            <div class="w-12 h-12 rounded-2xl bg-white/10 text-brand-turquoise-light flex items-center justify-center text-2xl mb-6">✨</div>
+            <h3 class="font-heading font-bold text-2xl text-white mb-3">The Purrfect Escape</h3>
+            <p class="text-gray-300 text-sm leading-relaxed mb-6">
+              Whether you are looking to de-stress after a long day, study in a peaceful atmosphere, or simply spend time with wonderful feline friends, our cat lounge provides a therapeutic and heartwarming environment.
+            </p>
+            <div class="space-y-2 text-xs text-gray-300 mb-8">
+              <p>🕒 Open Daily: 9:00 AM – 9:00 PM</p>
+              <p>📍 Cabanatuan City, Nueva Ecija</p>
+            </div>
+          </div>
+          <button onclick="openModal('visit')" class="relative z-10 w-full py-3.5 rounded-xl bg-brand-orange text-white font-heading font-bold text-xs uppercase tracking-wider text-center hover:bg-brand-orange-hover transition-all shadow-md shadow-brand-orange/30 block">
+            Reserve Lounge Visit
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Cafe Menu Section -->
+  <section id="menu" class="py-24 px-6 md:px-12 max-w-5xl mx-auto">
+    <div class="text-center max-w-2xl mx-auto mb-12">
+      <span class="text-brand-turquoise font-heading font-bold text-xs uppercase tracking-widest block mb-2">Delicious Offerings</span>
+      <h2 class="font-heading font-extrabold text-3xl sm:text-4xl text-brand-dark tracking-tight">
+        Cafe &amp; Kitchen Menu
+      </h2>
+      <p class="text-brand-muted mt-3">Click any category bubble below to expand and view items.</p>
+    </div>
+
+    <!-- Category Bubbles Grid -->
+    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-4" id="menuCategories">
+      <button onclick="selectCategory('Must Try!')" class="menu-bubble group p-5 rounded-2xl bg-white text-brand-dark shadow-card hover:shadow-soft hover:border-brand-turquoise transition-all text-center flex flex-col items-center justify-center gap-2 border border-gray-100">
+        <span class="text-2xl">⭐</span>
+        <span class="font-heading font-bold text-xs uppercase tracking-wider">Must Try!</span>
+      </button>
+      <button onclick="selectCategory('Dessert')" class="menu-bubble group p-5 rounded-2xl bg-white text-brand-dark shadow-card hover:shadow-soft hover:border-brand-turquoise transition-all text-center flex flex-col items-center justify-center gap-2 border border-gray-100">
+        <span class="text-2xl">🍰</span>
+        <span class="font-heading font-bold text-xs uppercase tracking-wider">Dessert</span>
+      </button>
+      <button onclick="selectCategory('Coffee')" class="menu-bubble group p-5 rounded-2xl bg-white text-brand-dark shadow-card hover:shadow-soft hover:border-brand-turquoise transition-all text-center flex flex-col items-center justify-center gap-2 border border-gray-100">
+        <span class="text-2xl">☕</span>
+        <span class="font-heading font-bold text-xs uppercase tracking-wider">Coffee</span>
+      </button>
+      <button onclick="selectCategory('Non-Coffee')" class="menu-bubble group p-5 rounded-2xl bg-white text-brand-dark shadow-card hover:shadow-soft hover:border-brand-turquoise transition-all text-center flex flex-col items-center justify-center gap-2 border border-gray-100">
+        <span class="text-2xl">🧋</span>
+        <span class="font-heading font-bold text-xs uppercase tracking-wider">Non-Coffee</span>
+      </button>
+      <button onclick="selectCategory('Refreshment')" class="menu-bubble group p-5 rounded-2xl bg-white text-brand-dark shadow-card hover:shadow-soft hover:border-brand-turquoise transition-all text-center flex flex-col items-center justify-center gap-2 border border-gray-100">
+        <span class="text-2xl">🍹</span>
+        <span class="font-heading font-bold text-xs uppercase tracking-wider">Refreshment</span>
+      </button>
+      <button onclick="selectCategory('Appetizers')" class="menu-bubble group p-5 rounded-2xl bg-white text-brand-dark shadow-card hover:shadow-soft hover:border-brand-turquoise transition-all text-center flex flex-col items-center justify-center gap-2 border border-gray-100">
+        <span class="text-2xl">🍟</span>
+        <span class="font-heading font-bold text-xs uppercase tracking-wider">Appetizers</span>
+      </button>
+      <button onclick="selectCategory('Pasta')" class="menu-bubble group p-5 rounded-2xl bg-white text-brand-dark shadow-card hover:shadow-soft hover:border-brand-turquoise transition-all text-center flex flex-col items-center justify-center gap-2 border border-gray-100">
+        <span class="text-2xl">🍝</span>
+        <span class="font-heading font-bold text-xs uppercase tracking-wider">Pasta</span>
+      </button>
+      <button onclick="selectCategory('Sandwich')" class="menu-bubble group p-5 rounded-2xl bg-white text-brand-dark shadow-card hover:shadow-soft hover:border-brand-turquoise transition-all text-center flex flex-col items-center justify-center gap-2 border border-gray-100">
+        <span class="text-2xl">🥪</span>
+        <span class="font-heading font-bold text-xs uppercase tracking-wider">Sandwich</span>
+      </button>
+      <button onclick="selectCategory('Rice Meal')" class="menu-bubble group p-5 rounded-2xl bg-white text-brand-dark shadow-card hover:shadow-soft hover:border-brand-turquoise transition-all text-center flex flex-col items-center justify-center gap-2 border border-gray-100">
+        <span class="text-2xl">🍛</span>
+        <span class="font-heading font-bold text-xs uppercase tracking-wider">Rice Meal</span>
+      </button>
+      <button onclick="selectCategory('Salad')" class="menu-bubble group p-5 rounded-2xl bg-white text-brand-dark shadow-card hover:shadow-soft hover:border-brand-turquoise transition-all text-center flex flex-col items-center justify-center gap-2 border border-gray-100">
+        <span class="text-2xl">🥗</span>
+        <span class="font-heading font-bold text-xs uppercase tracking-wider">Salad</span>
+      </button>
+      <button onclick="selectCategory('Waffle')" class="menu-bubble group p-5 rounded-2xl bg-white text-brand-dark shadow-card hover:shadow-soft hover:border-brand-turquoise transition-all text-center flex flex-col items-center justify-center gap-2 border border-gray-100">
+        <span class="text-2xl">🧇</span>
+        <span class="font-heading font-bold text-xs uppercase tracking-wider">Waffle</span>
+      </button>
+      <button onclick="selectCategory('Ramen')" class="menu-bubble group p-5 rounded-2xl bg-white text-brand-dark shadow-card hover:shadow-soft hover:border-brand-turquoise transition-all text-center flex flex-col items-center justify-center gap-2 border border-gray-100">
+        <span class="text-2xl">🍜</span>
+        <span class="font-heading font-bold text-xs uppercase tracking-wider">Ramen</span>
+      </button>
+      <button onclick="selectCategory('Cocktails')" class="menu-bubble group p-5 rounded-2xl bg-white text-brand-dark shadow-card hover:shadow-soft hover:border-brand-turquoise transition-all text-center flex flex-col items-center justify-center gap-2 border border-gray-100">
+        <span class="text-2xl">🍸</span>
+        <span class="font-heading font-bold text-xs uppercase tracking-wider">Cocktails</span>
+      </button>
+    </div>
+
+    <!-- Collapsible Menu Display Drawer with Uniform Fixed Height -->
+    <div id="menuDrawerContainer" class="mt-8 transition-all duration-300 overflow-hidden max-h-0 opacity-0">
+      <div class="bg-white rounded-3xl p-6 sm:p-8 shadow-card border border-gray-100">
+        <div class="flex items-center justify-between pb-6 border-b border-gray-100 mb-6">
+          <div class="flex items-center gap-3">
+            <span id="drawerCategoryIcon" class="text-3xl">🍽️</span>
+            <div>
+              <h3 id="drawerCategoryTitle" class="font-heading font-bold text-xl text-brand-dark">Category Name</h3>
+              <p class="text-xs text-brand-muted">Showing available menu choices</p>
+            </div>
+          </div>
+          <button onclick="closeMenuDrawer()" aria-label="Close menu drawer" class="p-2 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-500 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        
+        <div class="h-[420px] overflow-y-auto pr-2 custom-scrollbar">
+          <div id="drawerItemsGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <!-- Populated dynamically via script -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Events Gallery Section -->
+  <section id="events" class="py-24 px-6 md:px-12 bg-gradient-to-b from-white to-brand-cream border-y border-gray-100">
+    <div class="max-w-6xl mx-auto">
+      <div class="flex flex-col md:flex-row justify-between items-center mb-12 gap-6 text-center md:text-left">
+        <div>
+          <span class="text-brand-orange font-heading font-bold text-xs uppercase tracking-widest block mb-2">Community &amp; Gatherings</span>
+          <h2 class="font-heading font-extrabold text-3xl sm:text-4xl text-brand-dark tracking-tight">
+            Hello Meow Events Gallery
+          </h2>
+          <p class="text-brand-muted mt-2 text-sm max-w-lg">Relive our cutest adoption drives, community meetups, and special celebrations with our rescue cats!</p>
+        </div>
+        <div>
+          <span id="eventCountBadge" class="text-xs font-bold bg-brand-turquoise-light text-brand px-4 py-2 rounded-full shadow-sm">Loading events...</span>
+        </div>
+      </div>
+
+      <!-- Events Grid Container -->
+      <div id="eventsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <!-- Populated dynamically via script -->
+      </div>
+    </div>
+  </section>
+
+  <!-- Testimonial Section -->
+  <section class="py-20 px-6 md:px-12 bg-brand-cream border-y border-gray-100">
+    <div class="max-w-4xl mx-auto text-center">
+      <span class="text-brand-turquoise font-heading font-bold text-xs uppercase tracking-widest block mb-2">Guest Experiences</span>
+      <h2 class="font-heading font-extrabold text-3xl sm:text-4xl text-brand-dark tracking-tight mb-12">
+        What Our Visitors Are Saying
+      </h2>
+
+      <div class="bg-white rounded-3xl p-8 sm:p-12 shadow-soft relative border-l-8 border-brand-orange text-left">
+        <div class="absolute top-6 right-8 text-6xl text-brand-orange/20 font-serif">“</div>
+        <p class="font-heading italic text-lg sm:text-xl text-brand-dark leading-relaxed mb-6 relative z-10">
+          "Hello Meow Cafe is simply purr-fect! With its charming atmosphere, delightful feline friends, and amazing staff, it's an experience unlike any other in Cabanatuan."
+        </p>
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 rounded-full bg-brand-turquoise text-white font-heading font-bold flex items-center justify-center text-lg">
+            CM
+          </div>
+          <div>
+            <h4 class="font-heading font-bold text-brand-dark">Cabanatuan Local Visitor</h4>
+            <p class="text-xs text-brand-muted">Verified Cat Lounge Guest</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="bg-brand-dark text-gray-300 py-16 px-6 md:px-12 mt-auto">
+    <div class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-10 mb-12">
+      <div class="md:col-span-2">
+        <div class="flex items-center gap-3 mb-4">
+          <img src="https://res.cloudinary.com/tfk63bnl/image/upload/f_auto,q_auto/hmc_logo" alt="Logo" class="w-10 h-10 rounded-full object-cover">
+          <span class="font-heading font-bold text-xl text-white">Hello Meow Cafe</span>
+        </div>
+        <p class="text-sm text-gray-400 max-w-sm leading-relaxed mb-6">
+          Nueva Ecija's premier community cat cafe. Creating heartwarming connections between humans and rescue felines in Cabanatuan City.
+        </p>
+        <div class="flex items-center gap-3 text-sm font-semibold">
+          <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-turquoise/20 text-brand-turquoise">
+            🕒 Open Daily: 9:00 AM – 9:00 PM
+          </span>
+        </div>
+      </div>
+
+      <div>
+        <h4 class="font-heading font-bold text-white text-sm uppercase tracking-wider mb-4">Quick Links</h4>
+        <ul class="space-y-2.5 text-sm">
+          <li><a href="#home" class="hover:text-brand-turquoise transition-colors">Home</a></li>
+          <li><a href="#about" class="hover:text-brand-turquoise transition-colors">About Us</a></li>
+          <li><a href="#cat-lounge" class="hover:text-brand-turquoise transition-colors">Cat Lounge</a></li>
+          <li><a href="#menu" class="hover:text-brand-turquoise transition-colors">Cafe Menu</a></li>
+          <li><a href="#events" class="hover:text-brand-turquoise transition-colors">Events Gallery</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h4 class="font-heading font-bold text-white text-sm uppercase tracking-wider mb-4">Visit &amp; Contact</h4>
+        <p class="text-sm text-gray-400 mb-2">Cabanatuan City, Nueva Ecija, Philippines</p>
+        <p class="text-sm text-gray-400 mb-4">hellomeowcafe.com.ph</p>
+        <div class="flex gap-3">
+          <button onclick="openModal('visit')" class="px-4 py-2 rounded-lg bg-brand-orange text-white text-xs font-heading font-bold uppercase tracking-wider hover:bg-brand-orange-hover transition-colors">
+            Book Visit
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="max-w-6xl mx-auto pt-8 border-t border-gray-800 text-center text-xs text-gray-500">
+      <p>&copy; 2026 Hello Meow Cafe Cabanatuan. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <!-- General Action Modal -->
+  <div id="actionModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-300">
+    <div id="modalContentWrapper" class="bg-white w-full max-w-lg rounded-3xl shadow-2xl p-8 relative transform scale-95 transition-transform duration-300 max-h-[90vh] overflow-y-auto">
+      <button onclick="closeModal()" aria-label="Close modal" class="absolute top-6 right-6 w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-500 flex items-center justify-center transition-colors">
+        ✕
+      </button>
+      <div id="modalBody"></div>
+    </div>
+  </div>
+
+  <script>
+    // Menu Database
+    const menuData = {
+      'Must Try!': [
+        { name: 'Chicken Con Carne & Fries', desc: 'Savory chicken con carne served over crispy golden fries', price: '₱249.00' },
+        { name: 'Ube Latte', desc: 'Sweet and creamy signature ube flavored iced latte', price: '₱175.00' },
+        { name: 'KITTY TREAT TRIO', desc: 'Assorted delightful treats combo with special drink', price: '₱299.00' },
+        { name: 'Seasalt Latte', desc: 'Smooth signature coffee topped with sweet and salty cream', price: '₱175.00' },
+        { name: 'MEOW PLATTER', desc: 'Grand platter of delicious finger foods and fries', price: '₱349.00' },
+        { name: 'Meow Chicken Tender Bread and Fries', desc: 'Crispy chicken tenders served with bread and golden fries', price: '₱225.00' },
+        { name: 'Meow Special Latte', desc: 'Our specialty house blend creamy iced latte', price: '₱195.00' },
+        { name: 'Crispy Kare Kare Rice Meal', desc: 'Crispy savory dish served with traditional kare-kare sauce and rice', price: '₱275.00' },
+        { name: 'Nacho Supreme', desc: 'Loaded tortilla chips with melted cheese, beef, and sauces', price: '₱199.00' },
+        { name: 'Red Mojito Breeze', desc: 'Refreshing fruity red mint and lime cooler', price: '₱185.00' },
+        { name: 'Biscoff Lotus Latte', desc: 'Rich espresso blended with sweet Biscoff cookie butter flavor', price: '₱185.00' },
+        { name: 'Tres Leches', desc: 'Decadent, ultra-moist three-milk dessert cake', price: '₱185.00' },
+        { name: 'Chicken Alfredo', desc: 'Creamy alfredo pasta served with tender chicken and side waffles', price: '₱250.00' },
+        { name: 'Tuna Pesto', desc: 'Herby pesto pasta tossed with flavorful tuna and side waffles', price: '₱250.00' },
+        { name: 'Spaghetti Bolognese', desc: 'Classic meaty Italian tomato sauce spaghetti with side waffles', price: '₱250.00' },
+        { name: 'Taco Spaghetti', desc: 'Fusing savory taco flavors with classic spaghetti noodles and side waffles', price: '₱225.00' },
+        { name: 'Meow Clubhouse', desc: 'Classic multi-layered club sandwich served with fries', price: '₱225.00' },
+        { name: 'All Day: Bacon, Egg & Fries Sandwich', desc: 'Hearty sandwich filled with savory bacon and egg, served with side fries', price: '₱199.00' },
+        { name: 'All Day: Spam, Egg & Fries Sandwich', desc: 'Classic comfort sandwich with savory spam and egg, served with fries', price: '₱199.00' },
+        { name: 'All Day: Hungarian, Egg & Fries Sandwich', desc: 'Flavorful Hungarian sausage sandwich with egg and side fries', price: '₱199.00' },
+        { name: 'Bibimbap', desc: 'Korean mixed rice bowl with seasoned meat, fresh vegetables, egg, and gochujang', price: '₱250.00' },
+        { name: 'Shawarma Rice', desc: 'Spiced savory meat served over flavorful yellow shawarma rice with veggies and sauces', price: '₱250.00' },
+        { name: 'Crispy Pork Sisig Rice Meal', desc: 'Sizzling crispy chopped pork sisig served with rice and garnish', price: '₱250.00' },
+        { name: 'Tuna Korean Salad', desc: 'Fresh crisp salad mix topped with seasoned tuna, fresh veggies, croutons, and Korean dressing', price: '₱225.00' },
+        { name: 'Biscoff Waffle', desc: 'Crispy golden waffle topped with rich Biscoff spread, whipped cream, sprinkles, and a cherry', price: '₱199.00' },
+        { name: 'Laksa', desc: 'Rich and savory spiced laksa noodle soup topped with sliced chicken, halved soft-boiled egg, fish balls, and fresh herbs', price: '₱299.00' }
+      ],
+      'Dessert': [
+        { name: 'Hello Meow Crepe', desc: 'Delicate sweet crepe served with drizzle and toppings', price: '₱150.00' }
+      ],
+      'Coffee': [
+        { name: 'Ube Latte', desc: 'Sweet and creamy signature ube flavored iced latte', price: '₱175.00' },
+        { name: 'Seasalt Latte', desc: 'Smooth signature coffee topped with sweet and salty cream', price: '₱175.00' },
+        { name: 'Meow Special Latte', desc: 'Our specialty house blend creamy iced latte', price: '₱195.00' },
+        { name: 'Biscoff Lotus Latte', desc: 'Rich espresso blended with sweet Biscoff cookie butter flavor', price: '₱185.00' },
+        { name: 'Tres Leches', desc: 'Decadent, ultra-moist three-milk coffee beverage', price: '₱185.00' },
+        { name: 'Spanish Latte', desc: 'Rich espresso with sweetened condensed milk and fresh milk', price: '₱185.00' },
+        { name: 'Chocolate Chip Cookie', desc: 'Signature coffee blended with sweet chocolate chip cookie flavor', price: '₱185.00' },
+        { name: 'Cafe Americano', desc: 'Classic bold espresso shot diluted with cold water', price: '₱150.00' },
+        { name: 'Butter Cookie Latte', desc: 'Smooth espresso infused with rich butter cookie flavor', price: '₱185.00' },
+        { name: 'Mocha Forest Cookie', desc: 'Delightful blend of rich mocha and forest cookie sweetness', price: '₱185.00' },
+        { name: 'Caramel Macchiato', desc: 'Espresso combined with vanilla, fresh milk, and caramel drizzle', price: '₱185.00' },
+        { name: 'White Chocolate Almond Coffee', desc: 'Creamy coffee flavored with white chocolate and almond notes', price: '₱185.00' },
+        { name: 'Mocha Hazelnut', desc: 'Espresso blended with rich chocolate and nutty hazelnut syrup', price: '₱185.00' },
+        { name: 'Mocha', desc: 'Classic balance of espresso, chocolate, and steamed or fresh milk', price: '₱185.00' },
+        { name: 'Cappuccino', desc: 'Equal parts espresso, steamed milk, and rich microfoam', price: '₱175.00' },
+        { name: 'Cafe Latte', desc: 'Smooth espresso combined with plenty of velvety fresh milk', price: '₱175.00' }
+      ],
+      'Non-Coffee': [
+        { name: 'Blueberry Matcha', desc: 'Delicious fusion of vibrant matcha green tea and sweet blueberry flavor', price: '₱185.00' },
+        { name: 'Strawberry Matcha', desc: 'Sweet strawberry puree combined with smooth earthy matcha', price: '₱185.00' },
+        { name: 'Mango Cooler', desc: 'Refreshing and fruity blended mango beverage topped with fresh mango bits', price: '₱185.00' },
+        { name: 'Matcha Choco', desc: 'Rich chocolate blended with earthy and creamy matcha green tea', price: '₱185.00' },
+        { name: 'Matcha Yogurt', desc: 'Tangy yogurt blended smoothly with premium matcha green tea', price: '₱185.00' },
+        { name: 'Blueberry Yogurt', desc: 'Sweet blueberry flavor blended with creamy, tangy yogurt', price: '₱185.00' },
+        { name: 'Matcha Cookie Pot', desc: 'Creamy matcha beverage topped with whipped cream and cookie bits', price: '₱195.00' },
+        { name: 'Ube Quezo', desc: 'Rich purple ube and cheese flavored creamy blended beverage', price: '₱195.00' },
+        { name: 'Tri Choco', desc: 'Decadent triple chocolate blended treat topped with whipped cream', price: '₱195.00' },
+        { name: 'Creamy Butterfly Rose', desc: 'Delicate and creamy rose flavored floral specialty drink', price: '₱195.00' },
+        { name: 'Strawberry Smooth', desc: 'Smooth, creamy, and sweet strawberry blended drink with toppings', price: '₱195.00' },
+        { name: 'Almond Cookie Mocha', desc: 'Non-coffee mocha beverage infused with rich almond and cookie notes', price: '₱195.00' },
+        { name: 'Red Velvet', desc: 'Rich and creamy blended beverage capturing classic red velvet cake flavor', price: '₱195.00' },
+        { name: 'Honey Dew', desc: 'Sweet, refreshing, and smooth honeydew melon blended drink', price: '₱195.00' },
+        { name: 'Raspberry Tart', desc: 'Sweet and tangy raspberry flavored creamy blended beverage', price: '₱195.00' },
+        { name: 'Taro Cheesecake', desc: 'Rich taro root blended with smooth cheesecake flavor and whipped cream', price: '₱195.00' }
+      ],
+      'Refreshment': [
+        { name: 'Berry Swirl', desc: 'Refreshing fruity berry swirl cooler beverage', price: '₱150.00' },
+        { name: 'Blue Hawaiian Delight', desc: 'Tropical blue Hawaiian flavored refreshing drink', price: '₱150.00' },
+        { name: 'Red Mojito Breeze', desc: 'Refreshing fruity red mint and lime cooler', price: '₱185.00' },
+        { name: 'Lychee Rose Matcha', desc: 'Refreshing lychee and rose infused beverage', price: '₱150.00' },
+        { name: 'Pink Splash', desc: 'Sweet, fruity, and refreshing pink citrus cooler', price: '₱150.00' },
+        { name: 'Red Rose Mint', desc: 'Refreshing red rose cooler with a cool hint of mint', price: '₱150.00' },
+        { name: 'Watermelon Mojito', desc: 'Refreshing watermelon flavored mojito cooler', price: '₱155.00' },
+        { name: 'Blueberry Pine', desc: 'Refreshing blend of sweet blueberry and pineapple notes', price: '₱155.00' },
+        { name: 'Green Apple Mojito', desc: 'Crisp green apple mojito flavored refreshment', price: '₱155.00' },
+        { name: 'Sunshine Carrot Juice', desc: 'Vibrant and refreshing fresh carrot juice blend', price: '₱155.00' },
+        { name: 'Cucumber Cooler', desc: 'Crisp and refreshing cucumber infused beverage', price: '₱155.00' },
+        { name: 'Meow Chocolate', desc: 'Classic rich and sweet chocolate drink', price: '₱125.00' },
+        { name: 'Meow Orange', desc: 'Refreshing sweet citrus orange juice beverage', price: '₱125.00' },
+        { name: 'Strawberry Latte', desc: 'Refreshing milk drink infused with sweet strawberry flavor', price: '₱155.00' }
+      ],
+      'Appetizers': [
+        { name: 'Chicken Con Carne & Fries', desc: 'Savory chicken con carne served over crispy golden fries', price: '₱249.00' },
+        { name: 'MEOW PLATTER', desc: 'Grand platter of delicious finger foods and fries', price: '₱349.00' },
+        { name: 'Meow Chicken Tender Bread and Fries', desc: 'Crispy chicken tenders served with bread and golden fries', price: '₱225.00' },
+        { name: 'Nacho Supreme', desc: 'Loaded tortilla chips with melted cheese, beef, and sauces', price: '₱199.00' },
+        { name: 'Beef Nachos', desc: 'Crunchy tortilla chips topped with savory seasoned ground beef and cheese', price: '₱225.00' },
+        { name: 'Cheese Sticks', desc: 'Crispy fried golden cheese sticks served with a tasty dip', price: '₱175.00' },
+        { name: 'Crincut Fries', desc: 'Crispy crinkle-cut golden seasoned potato fries', price: '₱150.00' },
+        { name: 'Chicken Nuggets', desc: 'Bite-sized crispy breaded chicken nuggets', price: '₱150.00' },
+        { name: 'Hashbrown', desc: 'Crispy and golden shredded potato hashbrown patty', price: '₱125.00' },
+        { name: 'Onion Rings', desc: 'Crispy battered and deep-fried golden onion rings', price: '₱125.00' },
+        { name: 'Fries with Dip', desc: 'Classic golden fries served with a signature dipping sauce', price: '₱125.00' }
+      ],
+      'Pasta': [
+        { name: 'Chicken Alfredo', desc: 'Creamy alfredo pasta served with tender chicken and side waffles', price: '₱250.00' },
+        { name: 'Tuna Pesto', desc: 'Herby pesto pasta tossed with flavorful tuna and side waffles', price: '₱250.00' },
+        { name: 'Spaghetti Bolognese', desc: 'Classic meaty Italian tomato sauce spaghetti with side waffles', price: '₱250.00' },
+        { name: 'Taco Spaghetti', desc: 'Fusing savory taco flavors with classic spaghetti noodles and side waffles', price: '₱225.00' }
+      ],
+      'Sandwich': [
+        { name: 'Kitty Corned Beef, Egg & Cheese Sandwich', desc: 'Comforting toasted sandwich with savory corned beef, egg, and cheese', price: '₱130.00' },
+        { name: 'All Day: Bulgogi, Egg & Fries Sandwich', desc: 'Savory bulgogi beef sandwich with egg and side fries', price: '₱199.00' },
+        { name: 'All Day: Corned Beef, Egg & Fries Sandwich', desc: 'Hearty corned beef and egg sandwich served with side fries', price: '₱199.00' },
+        { name: 'Meow Clubhouse', desc: 'Classic multi-layered club sandwich served with fries', price: '₱225.00' },
+        { name: 'Kitty Spam, Egg & Cheese Sandwich', desc: 'Savory spam slice, egg, and cheese in a warm toasted sandwich', price: '₱130.00' },
+        { name: 'All Day: Bacon, Egg & Fries Sandwich', desc: 'Hearty sandwich filled with savory bacon and egg, served with side fries', price: '₱199.00' },
+        { name: 'All Day: Spam, Egg & Fries Sandwich', desc: 'Classic comfort sandwich with savory spam and egg, served with fries', price: '₱199.00' },
+        { name: 'All Day: Hungarian, Egg & Fries Sandwich', desc: 'Flavorful Hungarian sausage sandwich with egg and side fries', price: '₱199.00' },
+        { name: 'Kitty Sausage, Egg & Cheese Sandwich', desc: 'Breakfast sausage patty with egg and cheese in a toasted sandwich', price: '₱130.00' },
+        { name: 'Kitty Ham, Egg & Cheese Sandwich', desc: 'Savory ham, egg, and cheese in a classic toasted sandwich', price: '₱130.00' },
+        { name: 'Kitty Bacon, Egg & Cheese Sandwich', desc: 'Crispy bacon, egg, and cheese in a warm toasted sandwich', price: '₱130.00' }
+      ],
+      'Rice Meal': [
+        { name: 'Meow Pork Mix Rice', desc: 'Savory mixed pork dish served with seasoned rice and cucumber slices', price: '₱225.00' },
+        { name: 'Chicken Francene Rice Meal', desc: 'Tender chicken in savory lemon butter sauce served with rice and veggies', price: '₱225.00' },
+        { name: 'Bacon & Egg Rice Meal', desc: 'Classic breakfast meal with savory bacon, sunny-side up egg, and rice', price: '₱150.00' },
+        { name: 'Corned Beef & Egg Rice Meal', desc: 'Flavorful corned beef with fried egg, seasoned rice, and nori', price: '₱175.00' },
+        { name: 'Spam & Egg Rice Meal', desc: 'Classic sliced spam, sunny-side up egg, tomatoes, cucumber, and rice', price: '₱150.00' },
+        { name: 'Crispy Kare Kare Rice Meal', desc: 'Crispy savory dish served with traditional rich kare-kare sauce, veggies, and rice', price: '₱275.00' },
+        { name: 'Bibimbap', desc: 'Korean mixed rice bowl with seasoned meat, fresh vegetables, egg, and gochujang', price: '₱250.00' },
+        { name: 'Shawarma Rice', desc: 'Spiced savory meat served over flavorful yellow shawarma rice with veggies and sauces', price: '₱250.00' },
+        { name: 'Korean Tonkatsu Rice Meal', desc: 'Crispy breaded pork cutlet with savory Korean glaze, rice, and mixed vegetables', price: '₱250.00' },
+        { name: 'Spicy Garlic Longganisa & Egg Rice Meal', desc: 'Flavorful and spicy garlic local sausage served with egg, rice, and nori', price: '₱225.00' },
+        { name: 'Mexican Cheesy Chicken Rice Meal', desc: 'Savory cheesy Mexican-style chicken served with rice and fresh sides', price: '₱250.00' },
+        { name: 'Crispy Pork Binagoongan Rice Meal', desc: 'Crispy pork slices served with savory shrimp paste (binagoongan) sauce, fried eggplant, and rice', price: '₱250.00' },
+        { name: 'Crispy Pork Sisig Rice Meal', desc: 'Sizzling crispy chopped pork sisig served with rice, lime, and chili', price: '₱250.00' },
+        { name: 'Lemon Karaage Rice Meal', desc: 'Crispy Japanese chicken karaage drizzled with bright lemon sauce, served with rice and cucumber', price: '₱225.00' },
+        { name: 'Bicol Express Rice Meal', desc: 'Spicy coconut milk braised pork dish served with rice and long beans', price: '₱225.00' },
+        { name: 'Hungarian & Egg Rice Meal', desc: 'Sliced savory Hungarian sausage with sunny-side up egg and rice', price: '₱199.00' },
+        { name: 'Dumpling & Egg Rice Meal', desc: 'Crispy fried dumplings served with egg, dipping sauce, and rice', price: '₱199.00' },
+        { name: 'Chicken Nugget & Egg Rice Meal', desc: 'Crispy chicken nuggets served with a sunny-side up egg, seasoned rice, and nori', price: '₱199.00' }
+      ],
+      'Salad': [
+        { name: 'Tuna Korean Salad', desc: 'Fresh crisp salad mix topped with seasoned tuna, fresh veggies, croutons, and Korean dressing', price: '₱225.00' },
+        { name: 'Kani Salad', desc: 'Refreshing Japanese-style salad with shredded kani (crab sticks), crisp cucumber, mango bits, lettuce, and Japanese mayo', price: '₱225.00' },
+        { name: 'Chinese Salad', desc: 'Crisp fresh greens topped with savory sliced chicken, mandarin oranges, black olives, and Asian sesame dressing', price: '₱225.00' }
+      ],
+      'Waffle': [
+        { name: 'Biscoff Waffle', desc: 'Crispy golden waffle topped with rich Biscoff spread, whipped cream, sprinkles, and a cherry', price: '₱199.00' },
+        { name: 'Blueberry Waffle', desc: 'Delicious golden waffle topped with sweet blueberry compote, whipped cream, sprinkles, and a cherry', price: '₱150.00' },
+        { name: 'Strawberry Waffle', desc: 'Sweet golden waffle topped with strawberry glaze, whipped cream, colorful sprinkles, and a cherry', price: '₱150.00' },
+        { name: 'Nutella Waffle', desc: 'Decadent golden waffle topped with smooth Nutella spread, whipped cream, sprinkles, and a cherry', price: '₱150.00' }
+      ],
+      'Ramen': [
+        { name: 'Laksa', desc: 'Rich and savory spiced laksa noodle soup topped with sliced chicken, halved soft-boiled egg, fish balls, and fresh herbs', price: '₱299.00' }
+      ],
+      'Cocktails': [
+        { name: 'Red Lagoon', desc: 'Refreshing and vibrant red cocktail blend with citrus and sweet notes', price: '₱150.00' },
+        { name: 'Shirley Temple', desc: 'Classic sweet mocktail/cocktail with ginger ale, lemon-lime, and grenadine', price: '₱175.00' },
+        { name: 'Mojito', desc: 'Classic refreshing cocktail featuring white rum, fresh mint, lime juice, and soda water', price: '₱175.00' },
+        { name: 'Blue Lagoon', desc: 'Striking blue tropical cocktail made with vodka, blue curaçao, and lemonade', price: '₱150.00' },
+        { name: 'Watermelon Tequila', desc: 'Fruity and refreshing tequila cocktail infused with sweet watermelon flavor', price: '₱175.00' },
+        { name: 'Frozen Margarita', desc: 'Blended icy classic cocktail with tequila, triple sec, and fresh lime', price: '₱175.00' }
+      ]
+    };
+
+    // Events Gallery Display (Read-Only)
+    const defaultEvents = [
+      {
+        title: "Paws & Coffee Meetup",
+        date: "September 20, 2026",
+        image: "https://res.cloudinary.com/tfk63bnl/image/upload/f_auto,q_auto/hmc_banner",
+        description: "A wonderful afternoon gathering with local cat parents, sharing tips on feline wellness and enjoying fresh artisanal brews."
+      },
+      {
+        title: "Rescue Cat Adoption Sunday",
+        date: "October 4, 2026",
+        image: "https://res.cloudinary.com/tfk63bnl/image/upload/f_auto,q_auto/hmc_logo",
+        description: "Finding forever homes for our rescue cats! Three of our lovely feline residents were successfully matched with loving families."
+      }
+    ];
+
+    function renderEvents() {
+      const grid = document.getElementById('eventsGrid');
+      const badge = document.getElementById('eventCountBadge');
+
+      if (badge) badge.textContent = `${defaultEvents.length} Events Displayed`;
+      if (!grid) return;
+
+      grid.innerHTML = '';
+      defaultEvents.forEach((ev) => {
+        const card = document.createElement('div');
+        card.className = 'bg-white rounded-3xl overflow-hidden shadow-card border border-gray-100 flex flex-col justify-between group hover:shadow-soft transition-all';
+        card.innerHTML = `
+          <div>
+            <div class="relative h-56 overflow-hidden bg-gray-100">
+              <img src="${ev.image}" alt="${ev.title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" onerror="this.src='https://res.cloudinary.com/tfk63bnl/image/upload/f_auto,q_auto/hmc_banner'">
+              <span class="absolute top-4 left-4 px-3 py-1 rounded-full bg-black/60 backdrop-blur-md text-white text-xs font-semibold">${ev.date}</span>
+            </div>
+            <div class="p-6">
+              <h3 class="font-heading font-bold text-xl text-brand-dark mb-2">${ev.title}</h3>
+              <p class="text-xs text-brand-muted leading-relaxed">${ev.description}</p>
+            </div>
+          </div>
+          <div class="px-6 pb-6 pt-2 flex justify-between items-center border-t border-gray-50">
+            <span class="text-[11px] font-bold text-brand-turquoise uppercase">Hello Meow Community</span>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    // Initialize events on load
+    renderEvents();
+
+    // Mobile Navigation & Header Scroll Behavior
+    const mobileToggle = document.getElementById('mobileMenuToggle');
+    const mobileOverlay = document.getElementById('mobileMenuOverlay');
+    const mobileDrawer = document.getElementById('mobileMenuDrawer');
+    const mobileClose = document.getElementById('mobileMenuClose');
+    const mainHeader = document.getElementById('mainHeader');
+
+    function toggleMobileMenu(open) {
+      if (open) {
+        mobileOverlay.classList.remove('opacity-0', 'pointer-events-none');
+        mobileDrawer.classList.remove('translate-x-full');
+      } else {
+        mobileOverlay.classList.add('opacity-0', 'pointer-events-none');
+        mobileDrawer.classList.add('translate-x-full');
+      }
+    }
+
+    if(mobileToggle) mobileToggle.addEventListener('click', () => toggleMobileMenu(true));
+    if(mobileClose) mobileClose.addEventListener('click', () => toggleMobileMenu(false));
+    if(mobileOverlay) mobileOverlay.addEventListener('click', (e) => {
+      if (e.target === mobileOverlay) toggleMobileMenu(false);
+    });
+
+    document.querySelectorAll('.mobile-nav-link, #mobileReserveBtn').forEach(link => {
+      link.addEventListener('click', () => toggleMobileMenu(false));
+    });
+
+    window.addEventListener('scroll', () => {
+      const logoTitle = mainHeader.querySelector('span.font-heading');
+      const logoSub = mainHeader.querySelector('span.tracking-widest');
+      const navLinks = mainHeader.querySelectorAll('nav a');
+
+      if (window.scrollY > 50) {
+        mainHeader.classList.add('bg-white/95', 'shadow-md', 'py-3', 'backdrop-blur-md');
+        mainHeader.classList.remove('bg-transparent', 'py-4');
+        
+        if(logoTitle) logoTitle.className = 'font-heading font-extrabold text-xl tracking-tight text-brand-dark';
+        if(logoSub) logoSub.className = 'text-xs font-semibold tracking-widest text-brand-turquoise uppercase';
+        navLinks.forEach(link => {
+          link.className = 'hover:text-brand-turquoise transition-colors font-semibold text-sm text-brand-dark';
+        });
+      } else {
+        mainHeader.classList.remove('bg-white/95', 'shadow-md', 'py-3', 'backdrop-blur-md');
+        mainHeader.classList.add('bg-transparent', 'py-4');
+
+        if(logoTitle) logoTitle.className = 'font-heading font-extrabold text-xl tracking-tight text-white drop-shadow-sm';
+        if(logoSub) logoSub.className = 'text-xs font-semibold tracking-widest text-brand-turquoise-light uppercase drop-shadow-sm';
+        navLinks.forEach(link => {
+          link.className = 'hover:text-brand-turquoise-light transition-colors drop-shadow-sm font-semibold text-sm text-gray-200';
+        });
+      }
+    });
+
+    // Operating Hours Status
+    function updateOperatingStatus() {
+      const now = new Date();
+      const hour = now.getHours();
+      const isOpen = hour >= 9 && hour < 21;
+
+      const dotClass = isOpen ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500';
+      const textVal = isOpen ? 'Open Now • Closes 9 PM' : 'Closed • Opens 9 AM';
+
+      const sDot = document.getElementById('statusDot');
+      const sText = document.getElementById('statusText');
+      const mDot = document.getElementById('mobileStatusDot');
+      const mText = document.getElementById('mobileStatusText');
+      const mBadge = document.getElementById('mobileStatusBadge');
+
+      if(sDot && sText) {
+        sDot.className = `w-2.5 h-2.5 rounded-full ${dotClass}`;
+        sText.textContent = textVal;
+      }
+      if(mDot && mText && mBadge) {
+        mDot.className = `w-2 h-2 rounded-full ${isOpen ? 'bg-emerald-500' : 'bg-rose-500'}`;
+        mText.textContent = isOpen ? 'Open Now' : 'Closed';
+        mBadge.className = `inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold uppercase ${isOpen ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'}`;
+      }
+    }
+    updateOperatingStatus();
+
+    // Menu Drawer Category Selection
+    let activeCategory = null;
+    function selectCategory(categoryName) {
+      const bubbles = document.querySelectorAll('.menu-bubble');
+      const drawerContainer = document.getElementById('menuDrawerContainer');
+      const drawerTitle = document.getElementById('drawerCategoryTitle');
+      const drawerIcon = document.getElementById('drawerCategoryIcon');
+      const drawerGrid = document.getElementById('drawerItemsGrid');
+
+      if (activeCategory === categoryName) {
+        closeMenuDrawer();
+        return;
+      }
+
+      activeCategory = categoryName;
+
+      bubbles.forEach(bubble => {
+        const titleText = bubble.querySelector('span:last-child').textContent;
+        if(titleText === categoryName) {
+          bubble.className = 'menu-bubble group p-5 rounded-2xl bg-brand text-white shadow-md hover:shadow-lg transition-all text-center flex flex-col items-center justify-center gap-2 border border-transparent';
+        } else {
+          bubble.className = 'menu-bubble group p-5 rounded-2xl bg-white text-brand-dark shadow-card hover:shadow-soft hover:border-brand-turquoise transition-all text-center flex flex-col items-center justify-center gap-2 border border-gray-100';
+        }
+      });
+
+      const items = menuData[categoryName] || [];
+      let currentEmoji = '🍽️';
+      bubbles.forEach(b => {
+        if(b.querySelector('span:last-child').textContent === categoryName) {
+          currentEmoji = b.querySelector('span:first-child').textContent;
+        }
+      });
+
+      drawerTitle.textContent = categoryName;
+      drawerIcon.textContent = currentEmoji;
+
+      drawerGrid.innerHTML = '';
+      if(items.length === 0) {
+        drawerGrid.innerHTML = '<p class="text-brand-muted text-sm col-span-2 py-4 text-center">No items listed in this category yet.</p>';
+      } else {
+        items.forEach(item => {
+          const card = document.createElement('div');
+          card.className = 'p-4 rounded-2xl bg-brand-cream/60 border border-gray-100 flex flex-col justify-between';
+          card.innerHTML = `
+            <div>
+              <div class="flex justify-between items-start gap-2 mb-1">
+                <h4 class="font-heading font-bold text-sm text-brand-dark">${item.name}</h4>
+                <span class="font-heading font-extrabold text-xs text-brand-orange bg-brand-orange-light px-2.5 py-1 rounded-full whitespace-nowrap">${item.price}</span>
+              </div>
+              <p class="text-xs text-brand-muted leading-relaxed">${item.desc}</p>
+            </div>
+          `;
+          drawerGrid.appendChild(card);
+        });
+      }
+
+      drawerContainer.classList.remove('max-h-0', 'opacity-0');
+      drawerContainer.classList.add('max-h-[800px]', 'opacity-100');
+
+      setTimeout(() => {
+        drawerContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }, 150);
+    }
+
+    function closeMenuDrawer() {
+      const drawerContainer = document.getElementById('menuDrawerContainer');
+      const bubbles = document.querySelectorAll('.menu-bubble');
+
+      drawerContainer.classList.remove('max-h-[800px]', 'opacity-100');
+      drawerContainer.classList.add('max-h-0', 'opacity-0');
+      activeCategory = null;
+
+      bubbles.forEach(bubble => {
+        bubble.className = 'menu-bubble group p-5 rounded-2xl bg-white text-brand-dark shadow-card hover:shadow-soft hover:border-brand-turquoise transition-all text-center flex flex-col items-center justify-center gap-2 border border-gray-100';
+      });
+    }
+
+    // General Modal Controls
+    const modal = document.getElementById('actionModal');
+    const modalContentWrapper = document.getElementById('modalContentWrapper');
+    const modalBody = document.getElementById('modalBody');
+
+    function openModal(type) {
+      let content = '';
+      if(type === 'visit') {
+        content = `
+          <h2 class="font-heading font-extrabold text-2xl text-brand-dark mb-3">Cat Lounge Reservation</h2>
+          <p class="text-sm text-brand-muted mb-6">Come relax with our friendly rescue cats! Walk-ins are welcome, but reservations guarantee your slot.</p>
+          <div class="space-y-4 text-left bg-brand-cream p-4 rounded-2xl mb-6">
+            <div class="flex justify-between text-sm"><span class="font-bold text-brand-dark">Status:</span> <span class="text-brand-turquoise font-semibold">Walk-ins &amp; Reservations Welcome</span></div>
+            <div class="flex justify-between text-sm"><span class="font-bold text-brand-dark">Hours:</span> <span class="text-brand-muted">9:00 AM – 9:00 PM Daily</span></div>
+          </div>
+          <a href="https://m.me/HelloMeowCafeCabanatuan" target="_blank" class="w-full py-3.5 rounded-xl bg-brand-orange text-white font-heading font-bold uppercase text-sm tracking-wider block shadow-lg shadow-brand-orange/30 hover:bg-brand-orange-hover transition-all text-center">
+            Book via Facebook Messenger
+          </a>
+        `;
+      }
+      modalBody.innerHTML = content;
+      modal.classList.remove('opacity-0', 'pointer-events-none');
+      modalContentWrapper.classList.remove('scale-95');
+    }
+
+    function closeModal() {
+      modal.classList.add('opacity-0', 'pointer-events-none');
+      modalContentWrapper.classList.add('scale-95');
+    }
+
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) closeModal();
+    });
+  </script>
+</body>
+</html>
