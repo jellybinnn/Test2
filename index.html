@@ -478,8 +478,8 @@
   </footer>
 
   <!-- Welcome Greetings Modal -->
-  <div id="welcomePopup" class="fixed inset-0 bg-black/70 backdrop-blur-md z-[100] flex items-center justify-center p-4 transition-opacity duration-500 opacity-0 pointer-events-none">
-    <div id="popupCard" class="relative max-w-md w-full transform scale-90 transition-all duration-500 flex flex-col items-center">
+  <div id="welcomePopup" class="fixed inset-0 bg-black/70 backdrop-blur-md z-[100] flex items-center justify-center p-4 transition-all duration-300 opacity-0 pointer-events-none">
+    <div id="popupCard" class="relative max-w-md w-full transform scale-90 transition-all duration-300 flex flex-col items-center">
       
       <!-- Rounded Box with Background Color #26A5BA containing Text, Paw, and Action Buttons -->
       <div class="w-full bg-[#26A5BA] rounded-[2.5rem] shadow-2xl flex flex-col items-center justify-center px-6 py-8 text-center relative z-10 overflow-hidden">
@@ -514,7 +514,7 @@
           <a href="https://hellomeowcafe.storehub.me/collections/all?page=1" target="_blank" onclick="closeWelcomePopup()" class="py-2.5 px-3 rounded-xl bg-white text-brand-dark font-heading font-bold text-xs uppercase tracking-wider hover:bg-brand-turquoise-light transition-all shadow-md text-center flex items-center justify-center gap-1.5">
             <span>🛒</span> Order Now
           </a>
-          <button type="button" onclick="closeWelcomePopup(); setTimeout(() => { document.getElementById('about').scrollIntoView({ behavior: 'smooth' }); }, 150);" class="py-2.5 px-3 rounded-xl bg-white/20 hover:bg-white/30 backdrop-blur-md text-white border border-white/30 font-heading font-bold text-xs uppercase tracking-wider transition-all shadow-sm text-center flex items-center justify-center gap-1.5 cursor-pointer">
+          <button type="button" onclick="closeWelcomePopup(); window.scrollTo({ top: 0, behavior: 'smooth' });" class="py-2.5 px-3 rounded-xl bg-white/20 hover:bg-white/30 backdrop-blur-md text-white border border-white/30 font-heading font-bold text-xs uppercase tracking-wider transition-all shadow-sm text-center flex items-center justify-center gap-1.5 cursor-pointer">
             <span>ℹ️</span> About Us
           </button>
           <a href="https://www.facebook.com/hellomeowcafe" target="_blank" onclick="closeWelcomePopup()" class="py-2.5 px-3 rounded-xl bg-white/20 hover:bg-white/30 backdrop-blur-md text-white border border-white/30 font-heading font-bold text-xs uppercase tracking-wider transition-all shadow-sm text-center flex items-center justify-center gap-1.5">
@@ -543,45 +543,29 @@
   <script>
     const gifUrl = "https://res.cloudinary.com/tfk63bnl/image/upload/f_auto,q_auto/272839fb-b58c-4280-a193-f0672c3fd721_1.gif";
 
-    // Show welcome pop-up automatically on load (once per session) and control GIF playback
+    // Show welcome popup smoothly when DOM loads
     window.addEventListener('DOMContentLoaded', () => {
-      const hasSeenPopup = sessionStorage.getItem('hmc_welcomed');
-      const heroGif = document.getElementById('heroGif');
-
-      if (!hasSeenPopup) {
-        if (heroGif) heroGif.src = "";
-
-        setTimeout(() => {
-          const popup = document.getElementById('welcomePopup');
-          const card = document.getElementById('popupCard');
-          if (popup && card) {
-            popup.classList.remove('opacity-0', 'pointer-events-none');
-            card.classList.remove('scale-90');
-            card.classList.add('scale-100');
-          }
-        }, 1000);
-      } else {
-        if (heroGif) heroGif.src = gifUrl;
-      }
+      const popup = document.getElementById('welcomePopup');
+      const card = document.getElementById('popupCard');
+      setTimeout(() => {
+        if (popup && card) {
+          popup.classList.remove('opacity-0', 'pointer-events-none');
+          popup.classList.add('opacity-100');
+          card.classList.remove('scale-90');
+          card.classList.add('scale-100');
+        }
+      }, 300);
     });
 
     function closeWelcomePopup() {
       const popup = document.getElementById('welcomePopup');
       const card = document.getElementById('popupCard');
-      const heroGif = document.getElementById('heroGif');
 
       if (popup && card) {
+        popup.classList.remove('opacity-100');
         popup.classList.add('opacity-0', 'pointer-events-none');
         card.classList.remove('scale-100');
         card.classList.add('scale-90');
-        sessionStorage.setItem('hmc_welcomed', 'true');
-      }
-
-      if (heroGif) {
-        heroGif.src = "";
-        setTimeout(() => {
-          heroGif.src = gifUrl;
-        }, 50);
       }
     }
 
