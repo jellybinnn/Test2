@@ -45,17 +45,6 @@
       }
     }
   </script>
-  
-  <style>
-    .hero-gradient {
-      background: #26A5BA;
-    }
-    /* High-Definition Sharpening for GIF Background */
-    #heroGif {
-      image-rendering: -webkit-optimize-contrast;
-      image-rendering: crisp-edges;
-    }
-  </style>
 
   <link rel="stylesheet" href="style.css">
 </head>
@@ -138,10 +127,12 @@
     </div>
   </div>
 
-  <!-- Hero Section with Crystal Clear Animated GIF Background -->
+  <!-- Hero Section with Crisp, High-Definition Video Background -->
   <section id="home" class="relative min-h-[92vh] flex items-center justify-center pt-28 pb-16 px-6 overflow-hidden">
     <div class="absolute inset-0 z-0">
-      <img id="heroGif" src="https://res.cloudinary.com/tfk63bnl/image/upload/f_auto,q_auto/272839fb-b58c-4280-a193-f0672c3fd721_1.gif" alt="Hello Meow Cafe Animated Banner" class="w-full h-full object-cover object-center">
+      <video id="heroGif" autoplay muted loop playsinline preload="auto" class="w-full h-full object-cover object-center">
+        <source src="https://res.cloudinary.com/tfk63bnl/video/upload/v1792751333/video-project-5_lbdNNrMW_processed.mp4" type="video/mp4">
+      </video>
       <div class="absolute inset-0 hero-gradient opacity-45"></div>
     </div>
 
@@ -158,7 +149,7 @@
       </p>
 
       <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
-        <button onclick="openModal('visit')" class="w-full sm:w-auto px-8 py-4 rounded-xl font-heading font-bold text-sm tracking-wider uppercase bg-brand-orange text-white shadow-xl shadow-brand-orange/30 hover:bg-brand-orange-hover hover:scale-105 active:scale-95 transition-all">
+        <button id="reserveBtn" class="w-full sm:w-auto px-8 py-4 rounded-xl font-heading font-bold text-sm tracking-wider uppercase bg-brand-orange text-white shadow-xl shadow-brand-orange/30 hover:bg-brand-orange-hover hover:scale-105 active:scale-95 transition-all">
           Reserve Lounge Visit
         </button>
         <a href="#menu" class="w-full sm:w-auto px-8 py-4 rounded-xl font-heading font-bold text-sm tracking-wider uppercase bg-white/15 hover:bg-white/30 backdrop-blur-md text-white border border-white/30 hover:scale-105 active:scale-95 transition-all text-center shadow-md">
@@ -263,7 +254,7 @@
               <p>📍 Cabanatuan City, Nueva Ecija</p>
             </div>
           </div>
-          <button onclick="openModal('visit')" class="relative z-10 w-full py-3.5 rounded-xl bg-brand-orange text-white font-heading font-bold text-xs uppercase tracking-wider text-center hover:bg-brand-orange-hover transition-all shadow-md shadow-brand-orange/30 block">
+          <button id="loungeReserveBtn" class="relative z-10 w-full py-3.5 rounded-xl bg-brand-orange text-white font-heading font-bold text-xs uppercase tracking-wider text-center hover:bg-brand-orange-hover transition-all shadow-md shadow-brand-orange/30 block">
             Reserve Lounge Visit
           </button>
         </div>
@@ -283,55 +274,55 @@
 
     <!-- Category Bubbles Grid -->
     <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-4" id="menuCategories">
-      <button onclick="selectCategory('Must Try!')" class="menu-bubble group p-5 rounded-2xl bg-white text-brand-dark shadow-card hover:shadow-soft hover:border-brand-turquoise transition-all text-center flex flex-col items-center justify-center gap-2 border border-gray-100">
+      <button data-category="Must Try!" class="menu-bubble group p-5 rounded-2xl bg-white text-brand-dark shadow-card hover:shadow-soft hover:border-brand-turquoise transition-all text-center flex flex-col items-center justify-center gap-2 border border-gray-100">
         <span class="text-2xl">⭐</span>
         <span class="font-heading font-bold text-xs uppercase tracking-wider">Must Try!</span>
       </button>
-      <button onclick="selectCategory('Dessert')" class="menu-bubble group p-5 rounded-2xl bg-white text-brand-dark shadow-card hover:shadow-soft hover:border-brand-turquoise transition-all text-center flex flex-col items-center justify-center gap-2 border border-gray-100">
+      <button data-category="Dessert" class="menu-bubble group p-5 rounded-2xl bg-white text-brand-dark shadow-card hover:shadow-soft hover:border-brand-turquoise transition-all text-center flex flex-col items-center justify-center gap-2 border border-gray-100">
         <span class="text-2xl">🍰</span>
         <span class="font-heading font-bold text-xs uppercase tracking-wider">Dessert</span>
       </button>
-      <button onclick="selectCategory('Coffee')" class="menu-bubble group p-5 rounded-2xl bg-white text-brand-dark shadow-card hover:shadow-soft hover:border-brand-turquoise transition-all text-center flex flex-col items-center justify-center gap-2 border border-gray-100">
+      <button data-category="Coffee" class="menu-bubble group p-5 rounded-2xl bg-white text-brand-dark shadow-card hover:shadow-soft hover:border-brand-turquoise transition-all text-center flex flex-col items-center justify-center gap-2 border border-gray-100">
         <span class="text-2xl">☕</span>
         <span class="font-heading font-bold text-xs uppercase tracking-wider">Coffee</span>
       </button>
-      <button onclick="selectCategory('Non-Coffee')" class="menu-bubble group p-5 rounded-2xl bg-white text-brand-dark shadow-card hover:shadow-soft hover:border-brand-turquoise transition-all text-center flex flex-col items-center justify-center gap-2 border border-gray-100">
+      <button data-category="Non-Coffee" class="menu-bubble group p-5 rounded-2xl bg-white text-brand-dark shadow-card hover:shadow-soft hover:border-brand-turquoise transition-all text-center flex flex-col items-center justify-center gap-2 border border-gray-100">
         <span class="text-2xl">🧋</span>
         <span class="font-heading font-bold text-xs uppercase tracking-wider">Non-Coffee</span>
       </button>
-      <button onclick="selectCategory('Refreshment')" class="menu-bubble group p-5 rounded-2xl bg-white text-brand-dark shadow-card hover:shadow-soft hover:border-brand-turquoise transition-all text-center flex flex-col items-center justify-center gap-2 border border-gray-100">
+      <button data-category="Refreshment" class="menu-bubble group p-5 rounded-2xl bg-white text-brand-dark shadow-card hover:shadow-soft hover:border-brand-turquoise transition-all text-center flex flex-col items-center justify-center gap-2 border border-gray-100">
         <span class="text-2xl">🍹</span>
         <span class="font-heading font-bold text-xs uppercase tracking-wider">Refreshment</span>
       </button>
-      <button onclick="selectCategory('Appetizers')" class="menu-bubble group p-5 rounded-2xl bg-white text-brand-dark shadow-card hover:shadow-soft hover:border-brand-turquoise transition-all text-center flex flex-col items-center justify-center gap-2 border border-gray-100">
+      <button data-category="Appetizers" class="menu-bubble group p-5 rounded-2xl bg-white text-brand-dark shadow-card hover:shadow-soft hover:border-brand-turquoise transition-all text-center flex flex-col items-center justify-center gap-2 border border-gray-100">
         <span class="text-2xl">🍟</span>
         <span class="font-heading font-bold text-xs uppercase tracking-wider">Appetizers</span>
       </button>
-      <button onclick="selectCategory('Pasta')" class="menu-bubble group p-5 rounded-2xl bg-white text-brand-dark shadow-card hover:shadow-soft hover:border-brand-turquoise transition-all text-center flex flex-col items-center justify-center gap-2 border border-gray-100">
+      <button data-category="Pasta" class="menu-bubble group p-5 rounded-2xl bg-white text-brand-dark shadow-card hover:shadow-soft hover:border-brand-turquoise transition-all text-center flex flex-col items-center justify-center gap-2 border border-gray-100">
         <span class="text-2xl">🍝</span>
         <span class="font-heading font-bold text-xs uppercase tracking-wider">Pasta</span>
       </button>
-      <button onclick="selectCategory('Sandwich')" class="menu-bubble group p-5 rounded-2xl bg-white text-brand-dark shadow-card hover:shadow-soft hover:border-brand-turquoise transition-all text-center flex flex-col items-center justify-center gap-2 border border-gray-100">
+      <button data-category="Sandwich" class="menu-bubble group p-5 rounded-2xl bg-white text-brand-dark shadow-card hover:shadow-soft hover:border-brand-turquoise transition-all text-center flex flex-col items-center justify-center gap-2 border border-gray-100">
         <span class="text-2xl">🥪</span>
         <span class="font-heading font-bold text-xs uppercase tracking-wider">Sandwich</span>
       </button>
-      <button onclick="selectCategory('Rice Meal')" class="menu-bubble group p-5 rounded-2xl bg-white text-brand-dark shadow-card hover:shadow-soft hover:border-brand-turquoise transition-all text-center flex flex-col items-center justify-center gap-2 border border-gray-100">
+      <button data-category="Rice Meal" class="menu-bubble group p-5 rounded-2xl bg-white text-brand-dark shadow-card hover:shadow-soft hover:border-brand-turquoise transition-all text-center flex flex-col items-center justify-center gap-2 border border-gray-100">
         <span class="text-2xl">🍛</span>
         <span class="font-heading font-bold text-xs uppercase tracking-wider">Rice Meal</span>
       </button>
-      <button onclick="selectCategory('Salad')" class="menu-bubble group p-5 rounded-2xl bg-white text-brand-dark shadow-card hover:shadow-soft hover:border-brand-turquoise transition-all text-center flex flex-col items-center justify-center gap-2 border border-gray-100">
+      <button data-category="Salad" class="menu-bubble group p-5 rounded-2xl bg-white text-brand-dark shadow-card hover:shadow-soft hover:border-brand-turquoise transition-all text-center flex flex-col items-center justify-center gap-2 border border-gray-100">
         <span class="text-2xl">🥗</span>
         <span class="font-heading font-bold text-xs uppercase tracking-wider">Salad</span>
       </button>
-      <button onclick="selectCategory('Waffle')" class="menu-bubble group p-5 rounded-2xl bg-white text-brand-dark shadow-card hover:shadow-soft hover:border-brand-turquoise transition-all text-center flex flex-col items-center justify-center gap-2 border border-gray-100">
+      <button data-category="Waffle" class="menu-bubble group p-5 rounded-2xl bg-white text-brand-dark shadow-card hover:shadow-soft hover:border-brand-turquoise transition-all text-center flex flex-col items-center justify-center gap-2 border border-gray-100">
         <span class="text-2xl">🧇</span>
         <span class="font-heading font-bold text-xs uppercase tracking-wider">Waffle</span>
       </button>
-      <button onclick="selectCategory('Ramen')" class="menu-bubble group p-5 rounded-2xl bg-white text-brand-dark shadow-card hover:shadow-soft hover:border-brand-turquoise transition-all text-center flex flex-col items-center justify-center gap-2 border border-gray-100">
+      <button data-category="Ramen" class="menu-bubble group p-5 rounded-2xl bg-white text-brand-dark shadow-card hover:shadow-soft hover:border-brand-turquoise transition-all text-center flex flex-col items-center justify-center gap-2 border border-gray-100">
         <span class="text-2xl">🍜</span>
         <span class="font-heading font-bold text-xs uppercase tracking-wider">Ramen</span>
       </button>
-      <button onclick="selectCategory('Cocktails')" class="menu-bubble group p-5 rounded-2xl bg-white text-brand-dark shadow-card hover:shadow-soft hover:border-brand-turquoise transition-all text-center flex flex-col items-center justify-center gap-2 border border-gray-100">
+      <button data-category="Cocktails" class="menu-bubble group p-5 rounded-2xl bg-white text-brand-dark shadow-card hover:shadow-soft hover:border-brand-turquoise transition-all text-center flex flex-col items-center justify-center gap-2 border border-gray-100">
         <span class="text-2xl">🍸</span>
         <span class="font-heading font-bold text-xs uppercase tracking-wider">Cocktails</span>
       </button>
@@ -356,13 +347,13 @@
             </a>
 
             <!-- Price Sorting Dropdown -->
-            <select id="priceSortSelect" onchange="renderCategoryItems()" class="px-3.5 py-2 rounded-xl bg-brand-cream border border-gray-200 text-brand-dark font-heading font-bold text-xs uppercase tracking-wider focus:outline-none focus:border-brand-turquoise cursor-pointer">
+            <select id="priceSortSelect" class="px-3.5 py-2 rounded-xl bg-brand-cream border border-gray-200 text-brand-dark font-heading font-bold text-xs uppercase tracking-wider focus:outline-none focus:border-brand-turquoise cursor-pointer">
               <option value="default">Default Order</option>
               <option value="low-high">Price: Low to High ⬆️</option>
               <option value="high-low">Price: High to Low ⬇️</option>
             </select>
 
-            <button onclick="closeMenuDrawer()" aria-label="Close menu drawer" class="p-2 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-500 transition-colors">
+            <button id="closeDrawerBtn" aria-label="Close menu drawer" class="p-2 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-500 transition-colors">
               <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
               </svg>
@@ -461,7 +452,7 @@
         <p class="text-sm text-gray-400 mb-2">Cabanatuan City, Nueva Ecija, Philippines</p>
         <p class="text-sm text-gray-400 mb-4">hellomeowcafe.com.ph</p>
         <div class="flex gap-3">
-          <button onclick="openModal('visit')" class="px-4 py-2 rounded-lg bg-brand-orange text-white text-xs font-heading font-bold uppercase tracking-wider hover:bg-brand-orange-hover transition-colors">
+          <button id="footerBookBtn" class="px-4 py-2 rounded-lg bg-brand-orange text-white text-xs font-heading font-bold uppercase tracking-wider hover:bg-brand-orange-hover transition-colors">
             Book Visit
           </button>
         </div>
@@ -496,16 +487,16 @@
         </p>
 
         <div class="grid grid-cols-2 gap-2.5 w-full z-10">
-          <a href="https://hellomeowcafe.storehub.me/collections/all?page=1" target="_blank" onclick="closeWelcomePopup()" class="py-2.5 px-3 rounded-xl bg-white text-brand-dark font-heading font-bold text-xs uppercase tracking-wider hover:bg-brand-turquoise-light transition-all shadow-md text-center flex items-center justify-center gap-1.5">
+          <a href="https://hellomeowcafe.storehub.me/collections/all?page=1" target="_blank" class="popup-link py-2.5 px-3 rounded-xl bg-white text-brand-dark font-heading font-bold text-xs uppercase tracking-wider hover:bg-brand-turquoise-light transition-all shadow-md text-center flex items-center justify-center gap-1.5">
             <span>🛒</span> Order Now
           </a>
-          <button type="button" onclick="closeWelcomePopup(); window.scrollTo({ top: 0, behavior: 'smooth' });" class="py-2.5 px-3 rounded-xl bg-white/20 hover:bg-white/30 backdrop-blur-md text-white border border-white/30 font-heading font-bold text-xs uppercase tracking-wider transition-all shadow-sm text-center flex items-center justify-center gap-1.5 cursor-pointer">
+          <button type="button" id="popupAboutBtn" class="py-2.5 px-3 rounded-xl bg-white/20 hover:bg-white/30 backdrop-blur-md text-white border border-white/30 font-heading font-bold text-xs uppercase tracking-wider transition-all shadow-sm text-center flex items-center justify-center gap-1.5 cursor-pointer">
             <span>ℹ️</span> About Us
           </button>
-          <a href="https://www.facebook.com/hellomeowcafe" target="_blank" onclick="closeWelcomePopup()" class="py-2.5 px-3 rounded-xl bg-white/20 hover:bg-white/30 backdrop-blur-md text-white border border-white/30 font-heading font-bold text-xs uppercase tracking-wider transition-all shadow-sm text-center flex items-center justify-center gap-1.5">
+          <a href="https://www.facebook.com/hellomeowcafe" target="_blank" class="popup-link py-2.5 px-3 rounded-xl bg-white/20 hover:bg-white/30 backdrop-blur-md text-white border border-white/30 font-heading font-bold text-xs uppercase tracking-wider transition-all shadow-sm text-center flex items-center justify-center gap-1.5">
             <span>🤝</span> Franchise Now
           </a>
-          <a href="https://www.facebook.com/hellomeowcafe" target="_blank" onclick="closeWelcomePopup()" class="py-2.5 px-3 rounded-xl bg-brand-orange hover:bg-brand-orange-hover text-white font-heading font-bold text-xs uppercase tracking-wider transition-all shadow-md text-center flex items-center justify-center gap-1.5">
+          <a href="https://www.facebook.com/hellomeowcafe" target="_blank" class="popup-link py-2.5 px-3 rounded-xl bg-brand-orange hover:bg-brand-orange-hover text-white font-heading font-bold text-xs uppercase tracking-wider transition-all shadow-md text-center flex items-center justify-center gap-1.5">
             <span>🐾</span> Book A Visit
           </a>
         </div>
@@ -516,318 +507,13 @@
   <!-- General Action Modal -->
   <div id="actionModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-300">
     <div id="modalContentWrapper" class="bg-white w-full max-w-lg rounded-3xl shadow-2xl p-8 relative transform scale-95 transition-transform duration-300 max-h-[90vh] overflow-y-auto">
-      <button onclick="closeModal()" aria-label="Close modal" class="absolute top-6 right-6 w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-500 flex items-center justify-center transition-colors">
+      <button id="closeModalBtn" aria-label="Close modal" class="absolute top-6 right-6 w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-500 flex items-center justify-center transition-colors">
         ✕
       </button>
       <div id="modalBody"></div>
     </div>
   </div>
 
-  <script>
-    window.addEventListener('DOMContentLoaded', () => {
-      const popup = document.getElementById('welcomePopup');
-      const card = document.getElementById('popupCard');
-      setTimeout(() => {
-        if (popup && card) {
-          popup.classList.remove('opacity-0', 'pointer-events-none');
-          popup.classList.add('opacity-100');
-          card.classList.remove('scale-90');
-          card.classList.add('scale-100');
-        }
-      }, 300);
-    });
-
-    function closeWelcomePopup() {
-      const popup = document.getElementById('welcomePopup');
-      const card = document.getElementById('popupCard');
-      if (popup && card) {
-        popup.classList.remove('opacity-100');
-        popup.classList.add('opacity-0', 'pointer-events-none');
-        card.classList.remove('scale-100');
-        card.classList.add('scale-90');
-      }
-    }
-
-    document.getElementById('welcomePopup')?.addEventListener('click', (e) => {
-      if (e.target.id === 'welcomePopup') {
-        closeWelcomePopup();
-      }
-    });
-
-    const menuData = {
-      'Must Try!': [
-        { name: 'Chicken Con Carne & Fries', desc: 'Savory chicken con carne served over crispy golden fries', price: '₱249.00' },
-        { name: 'Ube Latte', desc: 'Sweet and creamy signature ube flavored iced latte', price: '₱175.00' },
-        { name: 'KITTY TREAT TRIO', desc: 'Assorted delightful treats combo with special drink', price: '₱299.00' },
-        { name: 'Seasalt Latte', desc: 'Smooth signature coffee topped with sweet and salty cream', price: '₱175.00' }
-      ],
-      'Dessert': [
-        { name: 'Hello Meow Crepe', desc: 'Delicate sweet crepe served with drizzle and toppings', price: '₱150.00' }
-      ],
-      'Coffee': [
-        { name: 'Ube Latte', desc: 'Sweet and creamy signature ube flavored iced latte', price: '₱175.00' },
-        { name: 'Seasalt Latte', desc: 'Smooth signature coffee topped with sweet and salty cream', price: '₱175.00' }
-      ],
-      'Non-Coffee': [
-        { name: 'Blueberry Matcha', desc: 'Delicious fusion of vibrant matcha green tea and sweet blueberry flavor', price: '₱185.00' }
-      ],
-      'Refreshment': [
-        { name: 'Berry Swirl', desc: 'Refreshing fruity berry swirl cooler beverage', price: '₱150.00' }
-      ],
-      'Appetizers': [
-        { name: 'Cheese Sticks', desc: 'Crispy fried golden cheese sticks served with a tasty dip', price: '₱175.00' }
-      ],
-      'Pasta': [
-        { name: 'Chicken Alfredo', desc: 'Creamy alfredo pasta served with tender chicken and side waffles', price: '₱250.00' }
-      ],
-      'Sandwich': [
-        { name: 'Meow Clubhouse', desc: 'Classic multi-layered club sandwich served with fries', price: '₱225.00' }
-      ],
-      'Rice Meal': [
-        { name: 'Bibimbap', desc: 'Korean mixed rice bowl with seasoned meat, fresh vegetables, egg, and gochujang', price: '₱250.00' }
-      ],
-      'Salad': [
-        { name: 'Tuna Korean Salad', desc: 'Fresh crisp salad mix topped with seasoned tuna, fresh veggies, croutons, and Korean dressing', price: '₱225.00' }
-      ],
-      'Waffle': [
-        { name: 'Biscoff Waffle', desc: 'Crispy golden waffle topped with rich Biscoff spread, whipped cream, sprinkles, and a cherry', price: '₱199.00' }
-      ],
-      'Ramen': [
-        { name: 'Laksa', desc: 'Rich and savory spiced laksa noodle soup topped with sliced chicken, halved soft-boiled egg, fish balls, and fresh herbs', price: '₱299.00' }
-      ],
-      'Cocktails': [
-        { name: 'Mojito', desc: 'Classic refreshing cocktail featuring white rum, fresh mint, lime juice, and soda water', price: '₱175.00' }
-      ]
-    };
-
-    const defaultEvents = [
-      {
-        title: "Paws & Coffee Meetup",
-        date: "September 20, 2026",
-        image: "https://res.cloudinary.com/tfk63bnl/image/upload/f_auto,q_auto/hmc_banner",
-        description: "A wonderful afternoon gathering with local cat parents, sharing tips on feline wellness and enjoying fresh artisanal brews."
-      }
-    ];
-
-    function renderEvents() {
-      const grid = document.getElementById('eventsGrid');
-      const badge = document.getElementById('eventCountBadge');
-      if (badge) badge.textContent = `${defaultEvents.length} Events Displayed`;
-      if (!grid) return;
-
-      grid.innerHTML = '';
-      defaultEvents.forEach((ev) => {
-        const card = document.createElement('div');
-        card.className = 'bg-white rounded-3xl overflow-hidden shadow-card border border-gray-100 flex flex-col justify-between group hover:shadow-soft transition-all';
-        card.innerHTML = `
-          <div>
-            <div class="relative h-56 overflow-hidden bg-gray-100">
-              <img src="${ev.image}" alt="${ev.title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
-              <span class="absolute top-4 left-4 px-3 py-1 rounded-full bg-black/60 backdrop-blur-md text-white text-xs font-semibold">${ev.date}</span>
-            </div>
-            <div class="p-6">
-              <h3 class="font-heading font-bold text-xl text-brand-dark mb-2">${ev.title}</h3>
-              <p class="text-xs text-brand-muted leading-relaxed">${ev.description}</p>
-            </div>
-          </div>
-          <div class="px-6 pb-6 pt-2 flex justify-between items-center border-t border-gray-50">
-            <span class="text-[11px] font-bold text-brand-turquoise uppercase">Hello Meow Community</span>
-          </div>
-        `;
-        grid.appendChild(card);
-      });
-    }
-    renderEvents();
-
-    const mobileToggle = document.getElementById('mobileMenuToggle');
-    const mobileOverlay = document.getElementById('mobileMenuOverlay');
-    const mobileDrawer = document.getElementById('mobileMenuDrawer');
-    const mobileClose = document.getElementById('mobileMenuClose');
-    const mainHeader = document.getElementById('mainHeader');
-
-    function toggleMobileMenu(open) {
-      if (open) {
-        mobileOverlay.classList.remove('opacity-0', 'pointer-events-none');
-        mobileDrawer.classList.remove('translate-x-full');
-      } else {
-        mobileOverlay.classList.add('opacity-0', 'pointer-events-none');
-        mobileDrawer.classList.add('translate-x-full');
-      }
-    }
-
-    if(mobileToggle) mobileToggle.addEventListener('click', () => toggleMobileMenu(true));
-    if(mobileClose) mobileClose.addEventListener('click', () => toggleMobileMenu(false));
-    if(mobileOverlay) mobileOverlay.addEventListener('click', (e) => {
-      if (e.target === mobileOverlay) toggleMobileMenu(false);
-    });
-
-    window.addEventListener('scroll', () => {
-      const logoTitle = mainHeader.querySelector('.logo-title');
-      const logoSub = mainHeader.querySelector('.logo-subtitle');
-      const navLinks = mainHeader.querySelectorAll('nav a');
-
-      if (window.scrollY > 50) {
-        mainHeader.classList.add('bg-white/95', 'shadow-md', 'py-3', 'backdrop-blur-md');
-        mainHeader.classList.remove('bg-transparent', 'py-4');
-        if(logoTitle) logoTitle.className = 'logo-title text-brand-dark';
-        if(logoSub) logoSub.className = 'logo-subtitle text-brand-turquoise';
-        navLinks.forEach(link => {
-          link.className = 'hover:text-brand-turquoise transition-colors font-semibold text-sm text-brand-dark';
-        });
-      } else {
-        mainHeader.classList.remove('bg-white/95', 'shadow-md', 'py-3', 'backdrop-blur-md');
-        mainHeader.classList.add('bg-transparent', 'py-4');
-        if(logoTitle) logoTitle.className = 'logo-title text-white drop-shadow-sm';
-        if(logoSub) logoSub.className = 'logo-subtitle text-brand-turquoise-light drop-shadow-sm';
-        navLinks.forEach(link => {
-          link.className = 'hover:text-brand-turquoise-light transition-colors drop-shadow-sm font-semibold text-sm text-gray-200';
-        });
-      }
-    });
-
-    function updateOperatingStatus() {
-      const now = new Date();
-      const hour = now.getHours();
-      const isOpen = hour >= 9 && hour < 21;
-      const dotClass = isOpen ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500';
-      const textVal = isOpen ? 'Open Now • Closes 9 PM' : 'Closed • Opens 9 AM';
-
-      const sDot = document.getElementById('statusDot');
-      const sText = document.getElementById('statusText');
-      if(sDot && sText) {
-        sDot.className = `status-dot w-2.5 h-2.5 rounded-full ${dotClass}`;
-        sText.textContent = textVal;
-      }
-    }
-    updateOperatingStatus();
-
-    function parsePrice(priceStr) {
-      return parseFloat(priceStr.replace(/[^0-9.-]+/g, "")) || 0;
-    }
-
-    let activeCategory = null;
-
-    function renderCategoryItems() {
-      if (!activeCategory) return;
-      const drawerGrid = document.getElementById('drawerItemsGrid');
-      const sortValue = document.getElementById('priceSortSelect')?.value || 'default';
-      let items = [...(menuData[activeCategory] || [])];
-
-      if (sortValue === 'low-high') {
-        items.sort((a, b) => parsePrice(a.price) - parsePrice(b.price));
-      } else if (sortValue === 'high-low') {
-        items.sort((a, b) => parsePrice(b.price) - parsePrice(a.price));
-      }
-
-      drawerGrid.innerHTML = '';
-      if (items.length === 0) {
-        drawerGrid.innerHTML = '<p class="text-brand-muted text-sm col-span-2 py-4 text-center">No items listed in this category yet.</p>';
-      } else {
-        items.forEach(item => {
-          const card = document.createElement('div');
-          card.className = 'p-4 rounded-2xl bg-brand-cream/60 border border-gray-100 flex flex-col justify-between';
-          card.innerHTML = `
-            <div>
-              <div class="flex justify-between items-start gap-2 mb-1">
-                <h4 class="font-heading font-bold text-sm text-brand-dark">${item.name}</h4>
-                <span class="font-heading font-extrabold text-xs text-brand-orange bg-brand-orange-light px-2.5 py-1 rounded-full whitespace-nowrap">${item.price}</span>
-              </div>
-              <p class="text-xs text-brand-muted leading-relaxed">${item.desc}</p>
-            </div>
-          `;
-          drawerGrid.appendChild(card);
-        });
-      }
-    }
-
-    function selectCategory(categoryName) {
-      const bubbles = document.querySelectorAll('.menu-bubble');
-      const drawerContainer = document.getElementById('menuDrawerContainer');
-      const drawerTitle = document.getElementById('drawerCategoryTitle');
-      const drawerIcon = document.getElementById('drawerCategoryIcon');
-      const sortSelect = document.getElementById('priceSortSelect');
-
-      if (activeCategory === categoryName) {
-        closeMenuDrawer();
-        return;
-      }
-
-      activeCategory = categoryName;
-      if (sortSelect) sortSelect.value = 'default';
-
-      bubbles.forEach(bubble => {
-        const titleText = bubble.querySelector('span:last-child').textContent;
-        if(titleText === categoryName) {
-          bubble.className = 'menu-bubble group p-5 rounded-2xl bg-brand text-white shadow-md hover:shadow-lg transition-all text-center flex flex-col items-center justify-center gap-2 border border-transparent';
-        } else {
-          bubble.className = 'menu-bubble group p-5 rounded-2xl bg-white text-brand-dark shadow-card hover:shadow-soft hover:border-brand-turquoise transition-all text-center flex flex-col items-center justify-center gap-2 border border-gray-100';
-        }
-      });
-
-      let currentEmoji = '🍽️';
-      bubbles.forEach(b => {
-        if(b.querySelector('span:last-child').textContent === categoryName) {
-          currentEmoji = b.querySelector('span:first-child').textContent;
-        }
-      });
-
-      drawerTitle.textContent = categoryName;
-      drawerIcon.textContent = currentEmoji;
-
-      renderCategoryItems();
-
-      drawerContainer.classList.remove('max-h-0', 'opacity-0');
-      drawerContainer.classList.add('max-h-[800px]', 'opacity-100');
-
-      setTimeout(() => {
-        drawerContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-      }, 150);
-    }
-
-    function closeMenuDrawer() {
-      const drawerContainer = document.getElementById('menuDrawerContainer');
-      const bubbles = document.querySelectorAll('.menu-bubble');
-      drawerContainer.classList.remove('max-h-[800px]', 'opacity-100');
-      drawerContainer.classList.add('max-h-0', 'opacity-0');
-      activeCategory = null;
-
-      bubbles.forEach(bubble => {
-        bubble.className = 'menu-bubble group p-5 rounded-2xl bg-white text-brand-dark shadow-card hover:shadow-soft hover:border-brand-turquoise transition-all text-center flex flex-col items-center justify-center gap-2 border border-gray-100';
-      });
-    }
-
-    const modal = document.getElementById('actionModal');
-    const modalContentWrapper = document.getElementById('modalContentWrapper');
-    const modalBody = document.getElementById('modalBody');
-
-    function openModal(type) {
-      let content = '';
-      if(type === 'visit') {
-        content = `
-          <h2 class="font-heading font-extrabold text-2xl text-brand-dark mb-3">Cat Lounge Reservation</h2>
-          <p class="text-sm text-brand-muted mb-6">Come relax with our friendly rescue cats! Walk-ins are welcome, but reservations guarantee your slot.</p>
-          <div class="space-y-4 text-left bg-brand-cream p-4 rounded-2xl mb-6">
-            <div class="flex justify-between text-sm"><span class="font-bold text-brand-dark">Status:</span> <span class="text-brand-turquoise font-semibold">Walk-ins &amp; Reservations Welcome</span></div>
-            <div class="flex justify-between text-sm"><span class="font-bold text-brand-dark">Hours:</span> <span class="text-brand-muted">9:00 AM – 9:00 PM Daily</span></div>
-          </div>
-          <a href="https://www.facebook.com/hellomeowcafe" target="_blank" class="w-full py-3.5 rounded-xl bg-brand-orange text-white font-heading font-bold uppercase text-sm tracking-wider block shadow-lg shadow-brand-orange/30 hover:bg-brand-orange-hover transition-all text-center">
-            Visit Facebook Page
-          </a>
-        `;
-      }
-      modalBody.innerHTML = content;
-      modal.classList.remove('opacity-0', 'pointer-events-none');
-      modalContentWrapper.classList.remove('scale-95');
-    }
-
-    function closeModal() {
-      modal.classList.add('opacity-0', 'pointer-events-none');
-      modalContentWrapper.classList.add('scale-95');
-    }
-
-    modal.addEventListener('click', (e) => {
-      if (e.target === modal) closeModal();
-    });
-  </script>
+  <script src="script.js"></script>
 </body>
 </html>
