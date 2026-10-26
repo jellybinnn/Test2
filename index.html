@@ -88,8 +88,8 @@
 
   <!-- Mobile Nav Overlay -->
   <div id="mobileMenuOverlay" class="fixed inset-0 bg-black/50 z-50 opacity-0 pointer-events-none transition-opacity duration-300 lg:hidden">
-    <div id="mobileMenuDrawer" class="absolute top-0 right-0 w-4/5 max-w-sm h-full bg-white shadow-2xl p-6 flex flex-col justify-between transform translate-x-full transition-transform duration-300 text-left items-start">
-      <div class="w-full">
+    <div id="mobileMenuDrawer" class="absolute top-0 right-0 w-4/5 max-w-sm h-full bg-white shadow-2xl p-6 flex flex-col justify-between transform translate-x-full transition-transform duration-300 !text-left !items-start" style="text-align: left !important;">
+      <div class="w-full" style="text-align: left !important;">
         <div class="flex items-center justify-between pb-6 border-b border-gray-100 w-full">
           <div class="flex items-center gap-3">
             <img src="https://res.cloudinary.com/tfk63bnl/image/upload/f_auto,q_auto/hmc_logo" alt="Logo" class="w-10 h-10 rounded-full object-cover">
@@ -111,12 +111,12 @@
         </div>
 
         <!-- Left Aligned Navigation Links -->
-        <nav class="mt-6 flex flex-col items-start w-full gap-2 font-heading font-semibold text-brand-dark text-lg">
-          <a href="#home" class="mobile-nav-link hover:text-brand-turquoise transition-colors py-2 px-3 rounded-lg hover:bg-brand-cream w-full text-left block">Home</a>
-          <a href="#about" class="mobile-nav-link hover:text-brand-turquoise transition-colors py-2 px-3 rounded-lg hover:bg-brand-cream w-full text-left block">About Us</a>
-          <a href="#cat-lounge" class="mobile-nav-link hover:text-brand-turquoise transition-colors py-2 px-3 rounded-lg hover:bg-brand-cream w-full text-left block">Cat Lounge</a>
-          <a href="#menu" class="mobile-nav-link hover:text-brand-turquoise transition-colors py-2 px-3 rounded-lg hover:bg-brand-cream w-full text-left block">Cafe Menu</a>
-          <a href="#events" class="mobile-nav-link hover:text-brand-turquoise transition-colors py-2 px-3 rounded-lg hover:bg-brand-cream w-full text-left block">Events Gallery</a>
+        <nav class="mt-6 flex flex-col !items-start !text-left w-full gap-2 font-heading font-semibold text-brand-dark text-lg" style="text-align: left !important; align-items: flex-start !important;">
+          <a href="#home" class="mobile-nav-link hover:text-brand-turquoise transition-colors py-2 px-3 rounded-lg hover:bg-brand-cream w-full !text-left block" style="text-align: left !important;">Home</a>
+          <a href="#about" class="mobile-nav-link hover:text-brand-turquoise transition-colors py-2 px-3 rounded-lg hover:bg-brand-cream w-full !text-left block" style="text-align: left !important;">About Us</a>
+          <a href="#cat-lounge" class="mobile-nav-link hover:text-brand-turquoise transition-colors py-2 px-3 rounded-lg hover:bg-brand-cream w-full !text-left block" style="text-align: left !important;">Cat Lounge</a>
+          <a href="#menu" class="mobile-nav-link hover:text-brand-turquoise transition-colors py-2 px-3 rounded-lg hover:bg-brand-cream w-full !text-left block" style="text-align: left !important;">Cafe Menu</a>
+          <a href="#events" class="mobile-nav-link hover:text-brand-turquoise transition-colors py-2 px-3 rounded-lg hover:bg-brand-cream w-full !text-left block" style="text-align: left !important;">Events Gallery</a>
         </nav>
       </div>
 
