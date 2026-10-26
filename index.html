@@ -88,9 +88,9 @@
 
   <!-- Mobile Nav Overlay -->
   <div id="mobileMenuOverlay" class="fixed inset-0 bg-black/50 z-50 opacity-0 pointer-events-none transition-opacity duration-300 lg:hidden">
-    <div id="mobileMenuDrawer" class="absolute top-0 right-0 w-4/5 max-w-sm h-full bg-white shadow-2xl p-6 flex flex-col justify-between transform translate-x-full transition-transform duration-300 text-left">
-      <div>
-        <div class="flex items-center justify-between pb-6 border-b border-gray-100">
+    <div id="mobileMenuDrawer" class="absolute top-0 right-0 w-4/5 max-w-sm h-full bg-white shadow-2xl p-6 flex flex-col justify-between transform translate-x-full transition-transform duration-300 text-left items-start">
+      <div class="w-full">
+        <div class="flex items-center justify-between pb-6 border-b border-gray-100 w-full">
           <div class="flex items-center gap-3">
             <img src="https://res.cloudinary.com/tfk63bnl/image/upload/f_auto,q_auto/hmc_logo" alt="Logo" class="w-10 h-10 rounded-full object-cover">
             <span class="font-heading font-bold text-lg text-brand-dark">Hello Meow Cafe</span>
@@ -102,7 +102,7 @@
           </button>
         </div>
 
-        <div class="mt-6 p-4 rounded-xl bg-brand-turquoise-light/60 flex items-center justify-between">
+        <div class="mt-6 p-4 rounded-xl bg-brand-turquoise-light/60 flex items-center justify-between w-full">
           <span class="text-xs font-bold text-brand-dark">TODAY'S STATUS</span>
           <div id="mobileStatusBadge" class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold uppercase bg-gray-200 text-gray-700">
             <span id="mobileStatusDot" class="w-2 h-2 rounded-full bg-gray-400"></span>
@@ -111,16 +111,16 @@
         </div>
 
         <!-- Left Aligned Navigation Links -->
-        <nav class="mt-6 flex flex-col gap-4 font-heading font-semibold text-brand-dark text-lg text-left">
-          <a href="#home" class="mobile-nav-link hover:text-brand-turquoise transition-colors py-2 text-left">Home</a>
-          <a href="#about" class="mobile-nav-link hover:text-brand-turquoise transition-colors py-2 text-left">About Us</a>
-          <a href="#cat-lounge" class="mobile-nav-link hover:text-brand-turquoise transition-colors py-2 text-left">Cat Lounge</a>
-          <a href="#menu" class="mobile-nav-link hover:text-brand-turquoise transition-colors py-2 text-left">Cafe Menu</a>
-          <a href="#events" class="mobile-nav-link hover:text-brand-turquoise transition-colors py-2 text-left">Events Gallery</a>
+        <nav class="mt-6 flex flex-col items-start w-full gap-2 font-heading font-semibold text-brand-dark text-lg">
+          <a href="#home" class="mobile-nav-link hover:text-brand-turquoise transition-colors py-2 px-3 rounded-lg hover:bg-brand-cream w-full text-left block">Home</a>
+          <a href="#about" class="mobile-nav-link hover:text-brand-turquoise transition-colors py-2 px-3 rounded-lg hover:bg-brand-cream w-full text-left block">About Us</a>
+          <a href="#cat-lounge" class="mobile-nav-link hover:text-brand-turquoise transition-colors py-2 px-3 rounded-lg hover:bg-brand-cream w-full text-left block">Cat Lounge</a>
+          <a href="#menu" class="mobile-nav-link hover:text-brand-turquoise transition-colors py-2 px-3 rounded-lg hover:bg-brand-cream w-full text-left block">Cafe Menu</a>
+          <a href="#events" class="mobile-nav-link hover:text-brand-turquoise transition-colors py-2 px-3 rounded-lg hover:bg-brand-cream w-full text-left block">Events Gallery</a>
         </nav>
       </div>
 
-      <div class="pt-6 border-t border-gray-100 flex flex-col gap-3">
+      <div class="pt-6 border-t border-gray-100 flex flex-col gap-3 w-full">
         <a href="#cat-lounge" id="mobileReserveBtn" class="w-full py-3 rounded-xl bg-brand-orange text-white font-heading font-bold uppercase text-sm tracking-wider text-center shadow-md block">
           Reserve Lounge Visit
         </a>
