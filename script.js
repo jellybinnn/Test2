@@ -111,7 +111,6 @@ document.addEventListener('DOMContentLoaded', () => {
   };
   let activeCategory = null;
 
-  // Load from LocalStorage first for instant rendering
   const cachedMenu = localStorage.getItem('hmc_menu_cache');
   if (cachedMenu) {
     try {
@@ -141,9 +140,7 @@ document.addEventListener('DOMContentLoaded', () => {
           }
         });
         
-        // Save fresh data to localStorage
         localStorage.setItem('hmc_menu_cache', JSON.stringify(menuData));
-
         if (activeCategory) renderCategoryItems();
       }
     } catch (err) {
@@ -258,7 +255,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('closeDrawerBtn')?.addEventListener('click', closeMenuDrawer);
   document.getElementById('priceSortSelect')?.addEventListener('change', renderCategoryItems);
 
-  // --- 4. Events Gallery with Clickable Photo Albums ---
+  // --- 4. Events Gallery (Synced with Admin via LocalStorage) ---
   try {
     const defaultEvents = [
       {
@@ -274,13 +271,17 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     ];
 
+    let eventsData = JSON.parse(localStorage.getItem('hmc_events_complete_v3')) || defaultEvents;
+
     const grid = document.getElementById('eventsGrid');
     const badge = document.getElementById('eventCountBadge');
-    if (badge) badge.textContent = `${defaultEvents.length} Events Displayed`;
+    if (badge) badge.textContent = `${eventsData.length} Events Displayed`;
 
     if (grid) {
       grid.innerHTML = '';
-      defaultEvents.forEach((ev) => {
+      eventsData.forEach((ev) => {
+        const photos = ev.photos || [ev.image, "https://res.cloudinary.com/tfk63bnl/image/upload/f_auto,q_auto/hmc_logo", ev.image];
+        
         const card = document.createElement('div');
         card.className = 'bg-white rounded-3xl overflow-hidden shadow-card border border-gray-100 flex flex-col justify-between group hover:shadow-soft transition-all cursor-pointer';
         card.innerHTML = `
@@ -289,7 +290,7 @@ document.addEventListener('DOMContentLoaded', () => {
               <img src="${ev.image}" loading="lazy" alt="${ev.title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
               <span class="absolute top-4 left-4 px-3 py-1 rounded-full bg-black/60 backdrop-blur-md text-white text-xs font-semibold">${ev.date}</span>
               <span class="absolute bottom-4 right-4 px-3 py-1 rounded-full bg-brand/80 backdrop-blur-md text-white text-xs font-semibold flex items-center gap-1">
-                <span>📸</span> View Album (${ev.photos.length})
+                <span>📸</span> View Album (${photos.length})
               </span>
             </div>
             <div class="p-6">
@@ -303,7 +304,7 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
 
         card.addEventListener('click', () => {
-          openEventAlbumModal(ev);
+          openEventAlbumModal({...ev, photos});
         });
 
         grid.appendChild(card);
