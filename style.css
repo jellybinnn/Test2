@@ -1,3 +1,5 @@
+@import url('https://db.onlinewebfonts.com/c/81ab6cb1c7e0838dcd5000f594f21b1a?family=Lucidity+Condensed');
+
 :root {
   --primary: #008080;
   --primary-dark: #004d4d;
@@ -19,6 +21,17 @@
   margin: 0;
   padding: 0;
   font-family: 'Plus Jakarta Sans', sans-serif;
+  /* Crisp & Clean Font Rendering */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* Force Lucidity Condensed on Header Title & Main Elements with Sharper Rendering */
+.logo-title {
+  font-family: "Lucidity Condensed", sans-serif !important;
+  -webkit-font-smoothing: subpixel-antialiased;
+  text-rendering: geometricPrecision;
 }
 
 body {
@@ -88,10 +101,10 @@ header.scrolled {
 }
 
 .logo-title {
-  font-family: 'Outfit', sans-serif;
-  font-size: 1.25rem;
+  font-family: "Lucidity Condensed", sans-serif !important;
+  font-size: 1.5rem;
   font-weight: 700;
-  letter-spacing: -0.3px;
+  letter-spacing: 0.5px;
   line-height: 1.2;
 }
 
