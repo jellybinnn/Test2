@@ -12,6 +12,38 @@ try {
 
 let supabaseMenuData = [];
 
+// --- INTERNAL LOGIN GATEKEEPER ---
+const ADMIN_SECRET_KEY = "hellomeow2026"; // You can change your password here
+
+document.addEventListener("DOMContentLoaded", () => {
+  const loginOverlay = document.getElementById("adminLoginOverlay");
+  if (localStorage.getItem("hmc_admin_auth") !== "true") {
+    loginOverlay?.classList.remove("hidden");
+  }
+});
+
+function handleInternalLogin(e) {
+  e.preventDefault();
+  const pass = document.getElementById("internalPassword").value;
+  const errorDiv = document.getElementById("internalErrorMsg");
+  const loginOverlay = document.getElementById("adminLoginOverlay");
+
+  if (pass === ADMIN_SECRET_KEY) {
+    localStorage.setItem("hmc_admin_auth", "true");
+    loginOverlay?.classList.add("hidden");
+    document.getElementById("internalPassword").value = "";
+    errorDiv.classList.add("hidden");
+  } else {
+    errorDiv.classList.remove("hidden");
+    document.getElementById("internalPassword").value = "";
+  }
+}
+
+function adminLogout() {
+  localStorage.removeItem("hmc_admin_auth");
+  location.reload(); // Reloads page and brings up the login prompt again
+}
+
 // Tab Switcher
 function switchTab(tab) {
   const menuSec = document.getElementById('menuSection');
@@ -214,7 +246,7 @@ function handleEventSubmit(e) {
   }
 
   saveEvents();
-  resetEventForm();
+    resetEventForm();
 }
 
 function editEventItem(index) {
