@@ -1,446 +1,224 @@
-const SUPABASE_URL = 'https://uchlotinokpqhwpouczl.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable_8iF-UjYhlzFovpA7Ay1K5g_V5vyaRjg';
+@import url('https://db.onlinewebfonts.com/c/81ab6cb1c7e0838dcd5000f594f21b1a?family=Lucidity+Condensed');
 
-let supabaseClient = null;
-try {
-  if (window.supabase && SUPABASE_URL) {
-    supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-  }
-} catch (e) {
-  console.error("Supabase init error:", e);
+:root {
+  --primary: #008080;
+  --primary-dark: #004d4d;
+  --turquoise: #00a896;
+  --turquoise-hover: #008577;
+  --turquoise-light: #e6f7f5;
+  --orange: #ff6b35;
+  --orange-hover: #e05522;
+  --orange-light: #fff3ef;
+  --bg-light: #f8fafc;
+  --text-dark: #1e293b;
+  --text-muted: #64748b;
+  --border-color: #e2e8f0;
+  --white: #ffffff;
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  // --- 1. Operating Status ---
-  try {
-    const now = new Date();
-    const hour = now.getHours();
-    const isOpen = hour >= 9 && hour < 21;
-    const dotClass = isOpen ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500';
-    const textVal = isOpen ? 'Open Now • Closes 9 PM' : 'Closed • Opens 9 AM';
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  /* Crisp & Clean Font Rendering */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
 
-    const sDot = document.getElementById('statusDot');
-    const sText = document.getElementById('statusText');
-    if (sDot && sText) {
-      sDot.className = `status-dot w-2.5 h-2.5 rounded-full ${dotClass}`;
-      sText.textContent = textVal;
-    }
+/* Force Lucidity Condensed on Header Title & Main Elements with Sharper Rendering */
+.logo-title {
+  font-family: "Lucidity Condensed", sans-serif !important;
+  -webkit-font-smoothing: subpixel-antialiased;
+  text-rendering: geometricPrecision;
+}
 
-    const mDot = document.getElementById('mobileStatusDot');
-    const mText = document.getElementById('mobileStatusText');
-    const mBadge = document.getElementById('mobileStatusBadge');
-    if (mDot && mText) {
-      mDot.className = `w-2 h-2 rounded-full ${isOpen ? 'bg-emerald-500' : 'bg-rose-500'}`;
-      mText.textContent = isOpen ? 'Open Now' : 'Closed';
-      if (mBadge) {
-        mBadge.className = `inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold uppercase ${isOpen ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}`;
-      }
-    }
-  } catch (e) {
-    console.error("Status error:", e);
+body {
+  background-color: var(--bg-light);
+  color: var(--text-dark);
+  line-height: 1.7;
+  overflow-x: hidden;
+  padding-top: 0;
+}
+
+.hero-gradient {
+  background: #26A5BA;
+}
+
+/* GPU-Accelerated Smooth Video Background */
+#heroGif {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  will-change: transform;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  padding: 1.2rem 5%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 100;
+  background-color: transparent;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+header.scrolled {
+  background-color: rgba(255, 255, 255, 0.95);
+  padding: 0.9rem 5%;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+}
+
+.logo-container {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  text-decoration: none;
+}
+
+.logo-img {
+  height: 52px;
+  width: 52px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--turquoise);
+  box-shadow: 0 2px 8px rgba(0, 168, 150, 0.2);
+}
+
+.logo-text-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.logo-title {
+  font-family: "Lucidity Condensed", sans-serif !important;
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  line-height: 1.2;
+}
+
+.logo-subtitle {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.9rem;
+  background-color: var(--white);
+  border: 1px solid var(--border-color);
+  border-radius: 50px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-dark);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--turquoise);
+}
+
+.status-dot.open {
+  background-color: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+}
+
+.status-dot.closed {
+  background-color: #ef4444;
+}
+
+nav {
+  display: flex;
+  gap: 2rem;
+  align-items: center;
+}
+
+nav a {
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.95rem;
+  transition: color 0.2s ease;
+}
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.7rem 1.5rem;
+  background-color: var(--orange);
+  color: var(--white);
+  font-family: 'Outfit', sans-serif;
+  font-weight: 700;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-radius: 12px;
+  text-decoration: none;
+  box-shadow: 0 4px 14px rgba(255, 107, 53, 0.3);
+  transition: all 0.2s ease;
+  border: none;
+  cursor: pointer;
+}
+
+.btn-primary:hover {
+  background-color: var(--orange-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(255, 107, 53, 0.4);
+}
+
+.mobile-menu-btn {
+  display: none;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: var(--primary-dark);
+  cursor: pointer;
+}
+
+@media (max-width: 968px) {
+  nav, .header-right .status-badge, .header-right .btn-primary {
+    display: none;
   }
-
-  // --- 2. Welcome Popup Controls ---
-  try {
-    const popup = document.getElementById('welcomePopup');
-    const card = document.getElementById('popupCard');
-    const popupAboutBtn = document.getElementById('popupAboutBtn');
-    const popupLinks = document.querySelectorAll('.popup-link');
-
-    if (popup && card) {
-      setTimeout(() => {
-        popup.classList.remove('opacity-0', 'pointer-events-none');
-        popup.classList.add('opacity-100');
-        card.classList.remove('scale-90');
-        card.classList.add('scale-100');
-      }, 300);
-    }
-
-    function closeWelcomePopup() {
-      if (popup && card) {
-        popup.classList.remove('opacity-100');
-        popup.classList.add('opacity-0', 'pointer-events-none');
-        card.classList.remove('scale-100');
-        card.classList.add('scale-90');
-      }
-      const heroVideo = document.getElementById('heroGif');
-      if (heroVideo) {
-        heroVideo.load();
-        heroVideo.play().catch(() => {});
-      }
-    }
-
-    popup?.addEventListener('click', (e) => {
-      if (e.target.id === 'welcomePopup') closeWelcomePopup();
-    });
-
-    popupAboutBtn?.addEventListener('click', () => {
-      closeWelcomePopup();
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    });
-
-    popupLinks.forEach(link => {
-      link.addEventListener('click', closeWelcomePopup);
-    });
-
-    document.addEventListener('click', () => {
-      const heroVideo = document.getElementById('heroGif');
-      if (heroVideo && heroVideo.paused) {
-        heroVideo.play().catch(() => {});
-      }
-    }, { once: true });
-  } catch (e) {
-    console.error("Popup error:", e);
+  .mobile-menu-btn {
+    display: block;
   }
+}
 
-  // --- 3. Menu Data, Caching & Supabase Fetching ---
-  let menuData = {
-    'Must Try!': [],
-    'Dessert': [],
-    'Coffee': [],
-    'Non-Coffee': [],
-    'Refreshment': [],
-    'Appetizers': [],
-    'Pasta': [],
-    'Sandwich': [],
-    'Rice Meal': [],
-    'Salad': [],
-    'Waffle': [],
-    'Ramen': [],
-    'Cocktails': []
-  };
-  let activeCategory = null;
-
-  const cachedMenu = localStorage.getItem('hmc_menu_cache');
-  if (cachedMenu) {
-    try {
-      menuData = JSON.parse(cachedMenu);
-    } catch (e) {
-      console.error("Cache parse error", e);
-    }
-  }
-
-  async function fetchMenuItemsFromSupabase() {
-    if (!supabaseClient) return;
-    try {
-      const { data, error } = await supabaseClient.from('menu_items').select('*');
-      if (error) {
-        console.error('Supabase fetch error:', error);
-        return;
-      }
-      if (data && data.length > 0) {
-        Object.keys(menuData).forEach(cat => { menuData[cat] = []; });
-        data.forEach(item => {
-          if (menuData[item.category]) {
-            menuData[item.category].push({
-              name: item.name,
-              price: item.price,
-              desc: item.description || ''
-            });
-          }
-        });
-        
-        localStorage.setItem('hmc_menu_cache', JSON.stringify(menuData));
-        if (activeCategory) renderCategoryItems();
-      }
-    } catch (err) {
-      console.error('Fetch connection error:', err);
-    }
-  }
-  fetchMenuItemsFromSupabase();
-
-  function parsePrice(priceStr) {
-    return parseFloat(priceStr.replace(/[^0-9.-]+/g, "")) || 0;
-  }
-
-  function renderCategoryItems() {
-    if (!activeCategory) return;
-    const drawerGrid = document.getElementById('drawerItemsGrid');
-    const sortValue = document.getElementById('priceSortSelect')?.value || 'default';
-    let items = [...(menuData[activeCategory] || [])];
-
-    if (sortValue === 'low-high') {
-      items.sort((a, b) => parsePrice(a.price) - parsePrice(b.price));
-    } else if (sortValue === 'high-low') {
-      items.sort((a, b) => parsePrice(b.price) - parsePrice(a.price));
-    }
-
-    if (!drawerGrid) return;
-    drawerGrid.innerHTML = '';
-    
-    if (items.length === 0) {
-      drawerGrid.innerHTML = '<p class="text-brand-muted text-sm col-span-2 py-4 text-center">No items listed in this category yet.</p>';
-    } else {
-      items.forEach(item => {
-        const card = document.createElement('div');
-        card.className = 'p-4 rounded-2xl bg-brand-cream/60 border border-gray-100 flex flex-col justify-between';
-        card.innerHTML = `
-          <div>
-            <div class="flex justify-between items-start gap-2 mb-1">
-              <h4 class="font-heading font-bold text-sm text-brand-dark">${item.name}</h4>
-              <span class="font-heading font-extrabold text-xs text-brand-orange bg-brand-orange-light px-2.5 py-1 rounded-full whitespace-nowrap">${item.price}</span>
-            </div>
-            <p class="text-xs text-brand-muted leading-relaxed">${item.desc}</p>
-          </div>
-        `;
-        drawerGrid.appendChild(card);
-      });
-    }
-  }
-
-  function selectCategory(categoryName) {
-    const bubbles = document.querySelectorAll('.menu-bubble');
-    const drawerContainer = document.getElementById('menuDrawerContainer');
-    const drawerTitle = document.getElementById('drawerCategoryTitle');
-    const drawerIcon = document.getElementById('drawerCategoryIcon');
-    const sortSelect = document.getElementById('priceSortSelect');
-
-    if (activeCategory === categoryName) {
-      closeMenuDrawer();
-      return;
-    }
-
-    activeCategory = categoryName;
-    if (sortSelect) sortSelect.value = 'default';
-
-    bubbles.forEach(bubble => {
-      const catVal = bubble.getAttribute('data-category');
-      if (catVal === categoryName) {
-        bubble.className = 'menu-bubble group p-5 rounded-2xl bg-brand text-white shadow-md hover:shadow-lg transition-all text-center flex flex-col items-center justify-center gap-2 border border-transparent';
-      } else {
-        bubble.className = 'menu-bubble group p-5 rounded-2xl bg-white text-brand-dark shadow-card hover:shadow-soft hover:border-brand-turquoise transition-all text-center flex flex-col items-center justify-center gap-2 border border-gray-100';
-      }
-    });
-
-    let currentEmoji = '🍽️';
-    bubbles.forEach(b => {
-      if (b.getAttribute('data-category') === categoryName) {
-        currentEmoji = b.querySelector('span:first-child').textContent;
-      }
-    });
-
-    if (drawerTitle) drawerTitle.textContent = categoryName;
-    if (drawerIcon) drawerIcon.textContent = currentEmoji;
-
-    renderCategoryItems();
-
-    if (drawerContainer) {
-      drawerContainer.classList.remove('max-h-0', 'opacity-0');
-      drawerContainer.classList.add('max-h-[800px]', 'opacity-100');
-      setTimeout(() => {
-        drawerContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-      }, 150);
-    }
-  }
-
-  function closeMenuDrawer() {
-    const drawerContainer = document.getElementById('menuDrawerContainer');
-    const bubbles = document.querySelectorAll('.menu-bubble');
-    if (drawerContainer) {
-      drawerContainer.classList.remove('max-h-[800px]', 'opacity-100');
-      drawerContainer.classList.add('max-h-0', 'opacity-0');
-    }
-    activeCategory = null;
-    bubbles.forEach(bubble => {
-      bubble.className = 'menu-bubble group p-5 rounded-2xl bg-white text-brand-dark shadow-card hover:shadow-soft hover:border-brand-turquoise transition-all text-center flex flex-col items-center justify-center gap-2 border border-gray-100';
-    });
-  }
-
-  document.querySelectorAll('.menu-bubble').forEach(button => {
-    button.addEventListener('click', () => {
-      selectCategory(button.getAttribute('data-category'));
-    });
-  });
-
-  document.getElementById('closeDrawerBtn')?.addEventListener('click', closeMenuDrawer);
-  document.getElementById('priceSortSelect')?.addEventListener('change', renderCategoryItems);
-
-  // --- 4. Events Gallery (Synced with Admin via LocalStorage) ---
-  try {
-    const defaultEvents = [
-      {
-        title: "Paws & Coffee Meetup",
-        date: "September 20, 2026",
-        image: "https://res.cloudinary.com/tfk63bnl/image/upload/f_auto,q_auto/hmc_banner",
-        description: "A wonderful afternoon gathering with local cat parents, sharing tips on feline wellness and enjoying fresh artisanal brews.",
-        photos: [
-          "https://res.cloudinary.com/tfk63bnl/image/upload/f_auto,q_auto/hmc_banner",
-          "https://res.cloudinary.com/tfk63bnl/image/upload/f_auto,q_auto/hmc_logo",
-          "https://res.cloudinary.com/tfk63bnl/image/upload/f_auto,q_auto/hmc_banner"
-        ]
-      }
-    ];
-
-    let eventsData = JSON.parse(localStorage.getItem('hmc_events_complete_v3')) || defaultEvents;
-
-    const grid = document.getElementById('eventsGrid');
-    const badge = document.getElementById('eventCountBadge');
-    if (badge) badge.textContent = `${eventsData.length} Events Displayed`;
-
-    if (grid) {
-      grid.innerHTML = '';
-      eventsData.forEach((ev) => {
-        const photos = ev.photos || [ev.image, "https://res.cloudinary.com/tfk63bnl/image/upload/f_auto,q_auto/hmc_logo", ev.image];
-        
-        const card = document.createElement('div');
-        card.className = 'bg-white rounded-3xl overflow-hidden shadow-card border border-gray-100 flex flex-col justify-between group hover:shadow-soft transition-all cursor-pointer';
-        card.innerHTML = `
-          <div>
-            <div class="relative h-56 overflow-hidden bg-gray-100">
-              <img src="${ev.image}" loading="lazy" alt="${ev.title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
-              <span class="absolute top-4 left-4 px-3 py-1 rounded-full bg-black/60 backdrop-blur-md text-white text-xs font-semibold">${ev.date}</span>
-              <span class="absolute bottom-4 right-4 px-3 py-1 rounded-full bg-brand/80 backdrop-blur-md text-white text-xs font-semibold flex items-center gap-1">
-                <span>📸</span> View Album (${photos.length})
-              </span>
-            </div>
-            <div class="p-6">
-              <h3 class="font-heading font-bold text-xl text-brand-dark mb-2">${ev.title}</h3>
-              <p class="text-xs text-brand-muted leading-relaxed">${ev.description}</p>
-            </div>
-          </div>
-          <div class="px-6 pb-6 pt-2 flex justify-between items-center border-t border-gray-50">
-            <span class="text-[11px] font-bold text-brand-turquoise uppercase">Click to open photo album</span>
-          </div>
-        `;
-
-        card.addEventListener('click', () => {
-          openEventAlbumModal({...ev, photos});
-        });
-
-        grid.appendChild(card);
-      });
-    }
-
-    function openEventAlbumModal(ev) {
-      const modal = document.getElementById('actionModal');
-      const modalContentWrapper = document.getElementById('modalContentWrapper');
-      const modalBody = document.getElementById('modalBody');
-      if (!modal || !modalBody || !modalContentWrapper) return;
-
-      let photoGridHTML = ev.photos.map(photo => `
-        <div class="rounded-2xl overflow-hidden shadow-sm h-48 bg-gray-100 group">
-          <img src="${photo}" loading="lazy" alt="Album photo" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
-        </div>
-      `).join('');
-
-      modalBody.innerHTML = `
-        <div class="mb-4">
-          <span class="text-xs font-bold px-3 py-1 rounded-full bg-brand-turquoise-light text-brand">${ev.date}</span>
-          <h2 class="font-heading font-extrabold text-2xl text-brand-dark mt-2 mb-2">${ev.title}</h2>
-          <p class="text-sm text-brand-muted mb-6">${ev.description}</p>
-        </div>
-        <h4 class="font-heading font-bold text-sm text-brand-dark mb-3 uppercase tracking-wider">Event Photo Album (${ev.photos.length} Photos)</h4>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[50vh] overflow-y-auto pr-1 custom-scrollbar">
-          ${photoGridHTML}
-        </div>
-      `;
-
-      modal.classList.remove('opacity-0', 'pointer-events-none');
-      modalContentWrapper.classList.remove('scale-95');
-    }
-  } catch (e) {
-    console.error("Events error:", e);
-  }
-
-  // --- 5. Mobile Nav & Header Scroll ---
-  try {
-    const mobileToggle = document.getElementById('mobileMenuToggle');
-    const mobileOverlay = document.getElementById('mobileMenuOverlay');
-    const mobileDrawer = document.getElementById('mobileMenuDrawer');
-    const mobileClose = document.getElementById('mobileMenuClose');
-    const mainHeader = document.getElementById('mainHeader');
-
-    function toggleMobileMenu(open) {
-      if (open) {
-        mobileOverlay?.classList.remove('opacity-0', 'pointer-events-none');
-        mobileDrawer?.classList.remove('translate-x-full');
-      } else {
-        mobileOverlay?.classList.add('opacity-0', 'pointer-events-none');
-        mobileDrawer?.classList.add('translate-x-full');
-      }
-    }
-
-    mobileToggle?.addEventListener('click', () => toggleMobileMenu(true));
-    mobileClose?.addEventListener('click', () => toggleMobileMenu(false));
-    mobileOverlay?.addEventListener('click', (e) => {
-      if (e.target === mobileOverlay) toggleMobileMenu(false);
-    });
-
-    document.querySelectorAll('.mobile-nav-link, #mobileReserveBtn').forEach(link => {
-      link.addEventListener('click', () => toggleMobileMenu(false));
-    });
-
-    window.addEventListener('scroll', () => {
-      if (!mainHeader) return;
-      const logoTitle = mainHeader.querySelector('.logo-title');
-      const logoSub = mainHeader.querySelector('.logo-subtitle');
-      const navLinks = mainHeader.querySelectorAll('nav a');
-
-      if (window.scrollY > 50) {
-        mainHeader.classList.add('bg-white/95', 'shadow-md', 'py-3', 'backdrop-blur-md');
-        mainHeader.classList.remove('bg-transparent', 'py-4');
-        if (logoTitle) logoTitle.className = 'logo-title text-brand-dark';
-        if (logoSub) logoSub.className = 'logo-subtitle text-brand-turquoise';
-        navLinks.forEach(link => {
-          link.className = 'hover:text-brand-turquoise transition-colors font-semibold text-sm text-brand-dark';
-        });
-      } else {
-        mainHeader.classList.remove('bg-white/95', 'shadow-md', 'py-3', 'backdrop-blur-md');
-        mainHeader.classList.add('bg-transparent', 'py-4');
-        if (logoTitle) logoTitle.className = 'logo-title text-white drop-shadow-sm';
-        if (logoSub) logoSub.className = 'logo-subtitle text-brand-turquoise-light drop-shadow-sm';
-        navLinks.forEach(link => {
-          link.className = 'hover:text-brand-turquoise-light transition-colors drop-shadow-sm font-semibold text-sm text-gray-200';
-        });
-      }
-    });
-  } catch (e) {
-    console.error("Navigation error:", e);
-  }
-
-  // --- 6. Action Modal Controls ---
-  try {
-    const modal = document.getElementById('actionModal');
-    const modalContentWrapper = document.getElementById('modalContentWrapper');
-    const modalBody = document.getElementById('modalBody');
-    const closeModalBtn = document.getElementById('closeModalBtn');
-
-    function openModal(type) {
-      if (!modal || !modalBody || !modalContentWrapper) return;
-      let content = '';
-      if (type === 'visit') {
-        content = `
-          <h2 class="font-heading font-extrabold text-2xl text-brand-dark mb-3">Cat Lounge Reservation</h2>
-          <p class="text-sm text-brand-muted mb-6">Come relax with our friendly rescue cats! Walk-ins are welcome, but reservations guarantee your slot.</p>
-          <div class="space-y-4 text-left bg-brand-cream p-4 rounded-2xl mb-6">
-            <div class="flex justify-between text-sm"><span class="font-bold text-brand-dark">Status:</span> <span class="text-brand-turquoise font-semibold">Walk-ins &amp; Reservations Welcome</span></div>
-            <div class="flex justify-between text-sm"><span class="font-bold text-brand-dark">Hours:</span> <span class="text-brand-muted">9:00 AM – 9:00 PM Daily</span></div>
-          </div>
-          <a href="https://www.facebook.com/hellomeowcafe" target="_blank" class="w-full py-3.5 rounded-xl bg-brand-orange text-white font-heading font-bold uppercase text-sm tracking-wider block shadow-lg shadow-brand-orange/30 hover:bg-brand-orange-hover transition-all text-center">
-            Visit Facebook Page
-          </a>
-        `;
-      }
-      modalBody.innerHTML = content;
-      modal.classList.remove('opacity-0', 'pointer-events-none');
-      modalContentWrapper.classList.remove('scale-95');
-    }
-
-    function closeModal() {
-      if (!modal || !modalContentWrapper) return;
-      modal.classList.add('opacity-0', 'pointer-events-none');
-      modalContentWrapper.classList.add('scale-95');
-    }
-
-    document.getElementById('reserveBtn')?.addEventListener('click', () => openModal('visit'));
-    document.getElementById('loungeReserveBtn')?.addEventListener('click', () => openModal('visit'));
-    document.getElementById('footerBookBtn')?.addEventListener('click', () => openModal('visit'));
-
-    closeModalBtn?.addEventListener('click', closeModal);
-    modal?.addEventListener('click', (e) => {
-      if (e.target === modal) closeModal();
-    });
-  } catch (e) {
-    console.error("Modal error:", e);
-  }
-});
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #F8F9FA;
+  border-radius: 8px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+  border-radius: 8px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #94A3B8;
+}
