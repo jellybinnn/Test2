@@ -65,6 +65,7 @@
       <div id="statusBadge" class="status-badge hidden sm:inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-semibold tracking-normal shadow-sm bg-black/30 backdrop-blur-md text-white border border-white/20">
         <span id="statusDot" class="status-dot w-2.5 h-2.5 rounded-full bg-gray-400 animate-pulse"></span>
         <span id="statusText">Checking...</span>
+        <span id="cafeStatus" class="hidden"></span>
       </div>
 
       <nav class="hidden lg:flex items-center gap-8 font-medium text-sm text-gray-200">
@@ -256,7 +257,7 @@
               <p>📍 Purok 1 Maharlika Highway Brgy Magsaysay Sur Cabanatuan City Nueva Ecija</p>
             </div>
           </div>
-          <button id="loungeReserveBtn" class="relative z-10 w-full py-3.5 rounded-xl bg-brand-orange text-white font-heading font-bold text-xs tracking-wide text-center hover:bg-brand-orange-hover transition-all shadow-md shadow-brand-orange/30 block">
+          <button id="loungeReserveBtn" class="relative z-10 w-full py-3.5 rounded-xl bg-brand-orange text-white font-heading font-bold text-xs tracking-wide text-center hover:bg-brand-orange-hover transition-all shadow-md shadow-brand-orange/30 block cursor-pointer">
             Reserve a Lounge Visit
           </button>
         </div>
@@ -264,11 +265,44 @@
     </div>
   </section>
 
-  <!-- Cat Roster Section Placeholder (Add your code here later) -->
-  <section id="catRosterSection" class="py-20 px-6 md:px-12 bg-white border-b border-gray-100">
-    <div class="max-w-6xl mx-auto text-center">
-      <!-- Your cat roster content/inputs can be placed inside this section -->
-      <h2 class="font-heading font-bold text-2xl text-gray-400 uppercase tracking-wider">Cat Roster Placeholder</h2>
+  <!-- Cat Roster Section -->
+  <section id="catRosterSection" class="py-24 px-6 md:px-12 bg-white border-b border-gray-100">
+    <div class="max-w-6xl mx-auto">
+      <div class="text-center max-w-2xl mx-auto mb-16">
+        <span class="text-brand-turquoise font-heading font-bold text-xs uppercase tracking-widest block mb-2">Our Resident Rescues</span>
+        <h2 class="font-heading font-extrabold text-3xl sm:text-4xl text-gray-900 tracking-tight uppercase">
+          Meet Our Cat Roster
+        </h2>
+        <p class="text-brand-muted mt-3">Some of the lovely feline residents currently lounging and making themselves at home in our cafe.</p>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+        <div class="bg-brand-cream/60 rounded-3xl overflow-hidden shadow-card border border-gray-100 hover:shadow-soft transition-all p-3 flex flex-col items-center">
+          <div class="w-full h-64 rounded-2xl overflow-hidden mb-3">
+            <img src="https://res.cloudinary.com/tfk63bnl/image/upload/v1793592032/249f565e-cc19-43a3-a5e4-ad53a2120c3d.jpg" alt="Cat Resident" class="w-full h-full object-cover hover:scale-105 transition-transform duration-500">
+          </div>
+        </div>
+        <div class="bg-brand-cream/60 rounded-3xl overflow-hidden shadow-card border border-gray-100 hover:shadow-soft transition-all p-3 flex flex-col items-center">
+          <div class="w-full h-64 rounded-2xl overflow-hidden mb-3">
+            <img src="https://res.cloudinary.com/tfk63bnl/image/upload/v1793592034/bfeac933-1818-4d47-8e72-7742a854b9b2.jpg" alt="Cat Resident" class="w-full h-full object-cover hover:scale-105 transition-transform duration-500">
+          </div>
+        </div>
+        <div class="bg-brand-cream/60 rounded-3xl overflow-hidden shadow-card border border-gray-100 hover:shadow-soft transition-all p-3 flex flex-col items-center">
+          <div class="w-full h-64 rounded-2xl overflow-hidden mb-3">
+            <img src="https://res.cloudinary.com/tfk63bnl/image/upload/v1793592034/f3fbc4c7-696d-4a38-8a9a-151f34a4cf58.jpg" alt="Cat Resident" class="w-full h-full object-cover hover:scale-105 transition-transform duration-500">
+          </div>
+        </div>
+        <div class="bg-brand-cream/60 rounded-3xl overflow-hidden shadow-card border border-gray-100 hover:shadow-soft transition-all p-3 flex flex-col items-center">
+          <div class="w-full h-64 rounded-2xl overflow-hidden mb-3">
+            <img src="https://res.cloudinary.com/tfk63bnl/image/upload/v1793592034/0492febb-c419-4433-bfb9-2f42b15d43c4.jpg" alt="Cat Resident" class="w-full h-full object-cover hover:scale-105 transition-transform duration-500">
+          </div>
+        </div>
+        <div class="bg-brand-cream/60 rounded-3xl overflow-hidden shadow-card border border-gray-100 hover:shadow-soft transition-all p-3 flex flex-col items-center sm:col-span-2 md:col-span-1 lg:col-span-1">
+          <div class="w-full h-64 rounded-2xl overflow-hidden mb-3">
+            <img src="https://res.cloudinary.com/tfk63bnl/image/upload/v1793592034/e7778ee3-cef2-4eb6-804d-8b85f4d3bcc1.jpg" alt="Cat Resident" class="w-full h-full object-cover hover:scale-105 transition-transform duration-500">
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -284,55 +318,55 @@
 
     <!-- Category Bubbles Grid -->
     <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-4" id="menuCategories">
-      <button data-category="Must Try!" class="menu-bubble group p-5 rounded-2xl bg-white text-brand-dark shadow-card hover:shadow-soft hover:border-brand-turquoise transition-all text-center flex flex-col items-center justify-center gap-2 border border-gray-100">
+      <button data-category="Must Try!" class="menu-bubble group p-5 rounded-2xl bg-white text-brand-dark shadow-card hover:shadow-soft hover:border-brand-turquoise transition-all text-center flex flex-col items-center justify-center gap-2 border border-gray-100 cursor-pointer">
         <span class="text-2xl">⭐</span>
         <span class="font-heading font-bold text-xs uppercase tracking-wider">Must Try!</span>
       </button>
-      <button data-category="Dessert" class="menu-bubble group p-5 rounded-2xl bg-white text-brand-dark shadow-card hover:shadow-soft hover:border-brand-turquoise transition-all text-center flex flex-col items-center justify-center gap-2 border border-gray-100">
+      <button data-category="Dessert" class="menu-bubble group p-5 rounded-2xl bg-white text-brand-dark shadow-card hover:shadow-soft hover:border-brand-turquoise transition-all text-center flex flex-col items-center justify-center gap-2 border border-gray-100 cursor-pointer">
         <span class="text-2xl">🍰</span>
         <span class="font-heading font-bold text-xs uppercase tracking-wider">Dessert</span>
       </button>
-      <button data-category="Coffee" class="menu-bubble group p-5 rounded-2xl bg-white text-brand-dark shadow-card hover:shadow-soft hover:border-brand-turquoise transition-all text-center flex flex-col items-center justify-center gap-2 border border-gray-100">
+      <button data-category="Coffee" class="menu-bubble group p-5 rounded-2xl bg-white text-brand-dark shadow-card hover:shadow-soft hover:border-brand-turquoise transition-all text-center flex flex-col items-center justify-center gap-2 border border-gray-100 cursor-pointer">
         <span class="text-2xl">☕</span>
         <span class="font-heading font-bold text-xs uppercase tracking-wider">Coffee</span>
       </button>
-      <button data-category="Non-Coffee" class="menu-bubble group p-5 rounded-2xl bg-white text-brand-dark shadow-card hover:shadow-soft hover:border-brand-turquoise transition-all text-center flex flex-col items-center justify-center gap-2 border border-gray-100">
+      <button data-category="Non-Coffee" class="menu-bubble group p-5 rounded-2xl bg-white text-brand-dark shadow-card hover:shadow-soft hover:border-brand-turquoise transition-all text-center flex flex-col items-center justify-center gap-2 border border-gray-100 cursor-pointer">
         <span class="text-2xl">🧋</span>
         <span class="font-heading font-bold text-xs uppercase tracking-wider">Non-Coffee</span>
       </button>
-      <button data-category="Refreshment" class="menu-bubble group p-5 rounded-2xl bg-white text-brand-dark shadow-card hover:shadow-soft hover:border-brand-turquoise transition-all text-center flex flex-col items-center justify-center gap-2 border border-gray-100">
+      <button data-category="Refreshment" class="menu-bubble group p-5 rounded-2xl bg-white text-brand-dark shadow-card hover:shadow-soft hover:border-brand-turquoise transition-all text-center flex flex-col items-center justify-center gap-2 border border-gray-100 cursor-pointer">
         <span class="text-2xl">🍹</span>
         <span class="font-heading font-bold text-xs uppercase tracking-wider">Refreshment</span>
       </button>
-      <button data-category="Appetizers" class="menu-bubble group p-5 rounded-2xl bg-white text-brand-dark shadow-card hover:shadow-soft hover:border-brand-turquoise transition-all text-center flex flex-col items-center justify-center gap-2 border border-gray-100">
+      <button data-category="Appetizers" class="menu-bubble group p-5 rounded-2xl bg-white text-brand-dark shadow-card hover:shadow-soft hover:border-brand-turquoise transition-all text-center flex flex-col items-center justify-center gap-2 border border-gray-100 cursor-pointer">
         <span class="text-2xl">🍟</span>
         <span class="font-heading font-bold text-xs uppercase tracking-wider">Appetizers</span>
       </button>
-      <button data-category="Pasta" class="menu-bubble group p-5 rounded-2xl bg-white text-brand-dark shadow-card hover:shadow-soft hover:border-brand-turquoise transition-all text-center flex flex-col items-center justify-center gap-2 border border-gray-100">
+      <button data-category="Pasta" class="menu-bubble group p-5 rounded-2xl bg-white text-brand-dark shadow-card hover:shadow-soft hover:border-brand-turquoise transition-all text-center flex flex-col items-center justify-center gap-2 border border-gray-100 cursor-pointer">
         <span class="text-2xl">🍝</span>
         <span class="font-heading font-bold text-xs uppercase tracking-wider">Pasta</span>
       </button>
-      <button data-category="Sandwich" class="menu-bubble group p-5 rounded-2xl bg-white text-brand-dark shadow-card hover:shadow-soft hover:border-brand-turquoise transition-all text-center flex flex-col items-center justify-center gap-2 border border-gray-100">
+      <button data-category="Sandwich" class="menu-bubble group p-5 rounded-2xl bg-white text-brand-dark shadow-card hover:shadow-soft hover:border-brand-turquoise transition-all text-center flex flex-col items-center justify-center gap-2 border border-gray-100 cursor-pointer">
         <span class="text-2xl">🥪</span>
         <span class="font-heading font-bold text-xs uppercase tracking-wider">Sandwich</span>
       </button>
-      <button data-category="Rice Meal" class="menu-bubble group p-5 rounded-2xl bg-white text-brand-dark shadow-card hover:shadow-soft hover:border-brand-turquoise transition-all text-center flex flex-col items-center justify-center gap-2 border border-gray-100">
+      <button data-category="Rice Meal" class="menu-bubble group p-5 rounded-2xl bg-white text-brand-dark shadow-card hover:shadow-soft hover:border-brand-turquoise transition-all text-center flex flex-col items-center justify-center gap-2 border border-gray-100 cursor-pointer">
         <span class="text-2xl">🍛</span>
         <span class="font-heading font-bold text-xs uppercase tracking-wider">Rice Meal</span>
       </button>
-      <button data-category="Salad" class="menu-bubble group p-5 rounded-2xl bg-white text-brand-dark shadow-card hover:shadow-soft hover:border-brand-turquoise transition-all text-center flex flex-col items-center justify-center gap-2 border border-gray-100">
+      <button data-category="Salad" class="menu-bubble group p-5 rounded-2xl bg-white text-brand-dark shadow-card hover:shadow-soft hover:border-brand-turquoise transition-all text-center flex flex-col items-center justify-center gap-2 border border-gray-100 cursor-pointer">
         <span class="text-2xl">🥗</span>
         <span class="font-heading font-bold text-xs uppercase tracking-wider">Salad</span>
       </button>
-      <button data-category="Waffle" class="menu-bubble group p-5 rounded-2xl bg-white text-brand-dark shadow-card hover:shadow-soft hover:border-brand-turquoise transition-all text-center flex flex-col items-center justify-center gap-2 border border-gray-100">
+      <button data-category="Waffle" class="menu-bubble group p-5 rounded-2xl bg-white text-brand-dark shadow-card hover:shadow-soft hover:border-brand-turquoise transition-all text-center flex flex-col items-center justify-center gap-2 border border-gray-100 cursor-pointer">
         <span class="text-2xl">🧇</span>
         <span class="font-heading font-bold text-xs uppercase tracking-wider">Waffle</span>
       </button>
-      <button data-category="Ramen" class="menu-bubble group p-5 rounded-2xl bg-white text-brand-dark shadow-card hover:shadow-soft hover:border-brand-turquoise transition-all text-center flex flex-col items-center justify-center gap-2 border border-gray-100">
+      <button data-category="Ramen" class="menu-bubble group p-5 rounded-2xl bg-white text-brand-dark shadow-card hover:shadow-soft hover:border-brand-turquoise transition-all text-center flex flex-col items-center justify-center gap-2 border border-gray-100 cursor-pointer">
         <span class="text-2xl">🍜</span>
         <span class="font-heading font-bold text-xs uppercase tracking-wider">Ramen</span>
       </button>
-      <button data-category="Cocktails" class="menu-bubble group p-5 rounded-2xl bg-white text-brand-dark shadow-card hover:shadow-soft hover:border-brand-turquoise transition-all text-center flex flex-col items-center justify-center gap-2 border border-gray-100">
+      <button data-category="Cocktails" class="menu-bubble group p-5 rounded-2xl bg-white text-brand-dark shadow-card hover:shadow-soft hover:border-brand-turquoise transition-all text-center flex flex-col items-center justify-center gap-2 border border-gray-100 cursor-pointer">
         <span class="text-2xl">🍸</span>
         <span class="font-heading font-bold text-xs uppercase tracking-wider">Cocktails</span>
       </button>
@@ -363,7 +397,7 @@
               <option value="high-low">Price: High to Low ⬇️</option>
             </select>
 
-            <button id="closeDrawerBtn" aria-label="Close menu drawer" class="p-2 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-500 transition-colors">
+            <button id="closeDrawerBtn" aria-label="Close menu drawer" class="p-2 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-500 transition-colors cursor-pointer">
               <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
               </svg>
@@ -389,7 +423,7 @@
           <h2 class="font-heading font-extrabold text-3xl sm:text-4xl text-gray-900 tracking-tight uppercase">
             Hello Meow Events Gallery
           </h2>
-          <p class="text-brand-muted mt-2 text-sm max-w-lg">Relive our cutest adoption drives, community meetups, and special celebrations with our rescue cats!</p>
+          <p class="text-brand-muted mt-2 text-sm max-w-lg">Relive our cutest adoption drives, community meetups, and special celebrations with our rescue cats! Click any event to view the photo gallery.</p>
         </div>
         <div>
           <span id="eventCountBadge" class="text-xs font-bold bg-brand-turquoise-light text-brand px-4 py-2 rounded-full shadow-sm">Loading events...</span>
@@ -462,7 +496,7 @@
         <p class="text-sm text-white/90 mb-2">Purok 1 Maharlika Highway Brgy Magsaysay Sur Cabanatuan City Nueva Ecija</p>
         <p class="text-sm text-white/90 mb-4">hellomeowcafe.com.ph</p>
         <div class="flex gap-3">
-          <button id="footerBookBtn" class="px-4 py-2 rounded-lg bg-brand-orange text-white text-xs font-heading font-bold tracking-wide hover:bg-brand-orange-hover transition-colors shadow-md">
+          <button id="footerBookBtn" class="px-4 py-2 rounded-lg bg-brand-orange text-white text-xs font-heading font-bold tracking-wide hover:bg-brand-orange-hover transition-colors shadow-md cursor-pointer">
             Book a Visit
           </button>
         </div>
@@ -482,10 +516,9 @@
           Hello Meow!
         </h2>
         
-        <!-- Video Element replacing the static SVG paw -->
-        <div class="w-28 h-28 my-3 z-10 rounded-2xl overflow-hidden shadow-lg border-2 border-white/30">
-          <video autoplay muted loop playsinline class="w-full h-full object-cover">
-            <source src="https://res.cloudinary.com/tfk63bnl/video/upload/v1793167204/Enhancer-Ultra_HD-AQM-vmNT0ZMuihRrngkxRer_E6P473b7XxXxdkkHeLufFDwvLpWfJk7UUqokUo9OfemtqtVfZlD_JwgGxYmtmsrAWACjzpGGoxWobfVzSA_processed.mp4" type="video/mp4">
+        <div class="w-32 h-32 my-1 z-10 overflow-hidden flex items-center justify-center">
+          <video autoplay muted loop playsinline class="w-full h-full object-cover mix-blend-screen scale-125">
+            <source src="https://res.cloudinary.com/tfk63bnl/video/upload/v1793692925/Enhancer-Ultra_HD-AQM-vmNT0ZMuihRrngkxRer_E6P473b7XxXxdkkHeLufFDwvLpWfJk7UUqokUo9OfemtqtVfZlD_JwgGxYmtmsrAWACjzpGGoxWobfVzSA_processed.webm" type="video/webm">
           </video>
         </div>
 
@@ -493,7 +526,6 @@
           Welcome to Nueva Ecija's 1st Community Cat Cafe! 🐾
         </p>
 
-        <!-- Buttons Grid with About Us First -->
         <div class="grid grid-cols-2 gap-2.5 w-full z-10">
           <button type="button" id="popupAboutBtn" class="py-2.5 px-3 rounded-xl bg-white text-brand-dark font-heading font-semibold text-xs tracking-wide hover:bg-brand-turquoise-light transition-all shadow-md text-center flex items-center justify-center gap-1.5 cursor-pointer">
             <span>ℹ️</span> About Us
@@ -512,10 +544,21 @@
     </div>
   </div>
 
+  <!-- ================= EVENT DETAILS LIGHTBOX MODAL ================= -->
+  <div id="eventDetailModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-3xl max-w-2xl w-full p-6 md:p-8 relative max-h-[90vh] overflow-y-auto shadow-2xl">
+      <button onclick="closeEventModal()" class="absolute top-4 right-4 bg-gray-100 hover:bg-gray-200 text-gray-700 w-9 h-9 rounded-full flex items-center justify-center font-bold text-lg transition-colors cursor-pointer">×</button>
+      
+      <div id="modalEventContent" class="space-y-6">
+        <!-- Populated dynamically -->
+      </div>
+    </div>
+  </div>
+
   <!-- General Action Modal -->
   <div id="actionModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-300">
     <div id="modalContentWrapper" class="bg-white w-full max-w-lg rounded-3xl shadow-2xl p-8 relative transform scale-95 transition-transform duration-300 max-h-[90vh] overflow-y-auto">
-      <button id="closeModalBtn" aria-label="Close modal" class="absolute top-6 right-6 w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-500 flex items-center justify-center transition-colors">
+      <button id="closeModalBtn" aria-label="Close modal" class="absolute top-6 right-6 w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-500 flex items-center justify-center transition-colors cursor-pointer">
         ✕
       </button>
       <div id="modalBody"></div>
@@ -525,6 +568,6 @@
   <!-- Supabase CDN Library -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <!-- Main Script -->
-  <script src="script.js"></script>
+  <script src="script.js?v=2.1"></script>
 </body>
 </html>
