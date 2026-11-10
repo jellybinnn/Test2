@@ -59,6 +59,35 @@ body {
   -webkit-backface-visibility: hidden;
 }
 
+/* ================================================================= */
+/* PROPORTIONAL & SCALED VIDEO BACKGROUND CONTAINER                 */
+/* ================================================================= */
+
+.video-background-container {
+  width: 70%;           /* Shrinks width (adjust to 60% or 80% if preferred) */
+  max-width: 900px;     /* Caps width on large desktop screens */
+  margin: 40px auto;    /* Centers the container with vertical spacing */
+  aspect-ratio: 16 / 9; /* Strictly locks the box to a 16:9 widescreen ratio */
+  overflow: hidden;     /* Clips any overflow */
+  border-radius: 16px;  /* Modern smooth rounded corners */
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15); /* Soft professional shadow */
+}
+
+.video-background-container video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;    /* Scales and crops the video proportionally without stretching */
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+  .video-background-container {
+    width: 90%;         /* Expands slightly on smaller mobile viewports */
+    margin: 20px auto;
+    border-radius: 12px;
+  }
+}
+
 header {
   position: fixed;
   top: 0;
@@ -210,7 +239,6 @@ nav a {
 
 .custom-scrollbar::-webkit-scrollbar {
   width: 6px;
-<<<<<<< HEAD
 }
 .custom-scrollbar::-webkit-scrollbar-track {
   background: #F8F9FA;
@@ -227,17 +255,3 @@ nav a {
 /* Hide scrollbar on swipeable rows (cat roster on mobile) */
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-=======
-}
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: #F8F9FA;
-  border-radius: 8px;
-}
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #CBD5E1;
-  border-radius: 8px;
-}
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #94A3B8;
-}
->>>>>>> a149c4a62d65f19c50fd0dd88e369f6abb62da59
