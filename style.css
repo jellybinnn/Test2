@@ -64,7 +64,7 @@ body {
 /* ================================================================= */
 
 .video-background-container {
-  width: 70%;           /* Shrinks width (adjust to 60% or 80% if preferred) */
+  width: 70%;           /* Desktop width */
   max-width: 900px;     /* Caps width on large desktop screens */
   margin: 40px auto;    /* Centers the container with vertical spacing */
   aspect-ratio: 16 / 9; /* Strictly locks the box to a 16:9 widescreen ratio */
@@ -79,11 +79,11 @@ body {
   object-fit: cover;    /* Scales and crops the video proportionally without stretching */
 }
 
-/* Mobile Responsiveness */
+/* Mobile Responsiveness: Compact overlay for smaller screens */
 @media (max-width: 768px) {
   .video-background-container {
-    width: 90%;         /* Expands slightly on smaller mobile viewports */
-    margin: 20px auto;
+    width: 78%;         /* Reduced width for a smaller, cleaner mobile frame */
+    margin: 20px auto;  /* Tighter vertical spacing */
     border-radius: 12px;
   }
 }
