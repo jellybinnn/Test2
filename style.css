@@ -210,6 +210,7 @@ nav a {
 
 .custom-scrollbar::-webkit-scrollbar {
   width: 6px;
+<<<<<<< HEAD
 }
 .custom-scrollbar::-webkit-scrollbar-track {
   background: #F8F9FA;
@@ -226,3 +227,17 @@ nav a {
 /* Hide scrollbar on swipeable rows (cat roster on mobile) */
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+=======
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #F8F9FA;
+  border-radius: 8px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+  border-radius: 8px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #94A3B8;
+}
+>>>>>>> a149c4a62d65f19c50fd0dd88e369f6abb62da59
