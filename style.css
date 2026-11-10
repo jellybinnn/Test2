@@ -1,3 +1,5 @@
+@import url('https://db.onlinewebfonts.com/c/81ab6cb1c7e0838dcd5000f594f21b1a?family=Lucidity+Condensed');
+
 :root {
   --primary: #008080;
   --primary-dark: #004d4d;
@@ -19,6 +21,17 @@
   margin: 0;
   padding: 0;
   font-family: 'Plus Jakarta Sans', sans-serif;
+  /* Crisp & Clean Font Rendering */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* Force Lucidity Condensed on Header Title & Main Elements with Sharper Rendering */
+.logo-title {
+  font-family: "Lucidity Condensed", sans-serif !important;
+  -webkit-font-smoothing: subpixel-antialiased;
+  text-rendering: geometricPrecision;
 }
 
 body {
@@ -27,6 +40,23 @@ body {
   line-height: 1.7;
   overflow-x: hidden;
   padding-top: 0;
+}
+
+.hero-gradient {
+  background: #26A5BA;
+}
+
+/* GPU-Accelerated Smooth Video Background */
+#heroGif {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  will-change: transform;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
 }
 
 header {
@@ -71,18 +101,16 @@ header.scrolled {
 }
 
 .logo-title {
-  font-family: 'Outfit', sans-serif;
-  font-size: 1.25rem;
+  font-family: "Lucidity Condensed", sans-serif !important;
+  font-size: 1.5rem;
   font-weight: 700;
-  color: var(--primary-dark);
-  letter-spacing: -0.3px;
+  letter-spacing: 0.5px;
   line-height: 1.2;
 }
 
 .logo-subtitle {
   font-size: 0.75rem;
   font-weight: 600;
-  color: var(--text-muted);
   letter-spacing: 0.5px;
   text-transform: uppercase;
 }
@@ -180,57 +208,21 @@ nav a {
   }
 }
 
-/* Fixed width with flexible height utility */
-.fixed-width-flexible-height {
-  width: 300px;
-  height: auto;
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #F8F9FA;
+  border-radius: 8px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+  border-radius: 8px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #94A3B8;
 }
 
-/* Event Navigation Button & Album Styles */
-.event-nav-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.6rem;
-  padding: 0.75rem 1.4rem;
-  background-color: var(--turquoise);
-  color: var(--white);
-  font-family: 'Outfit', sans-serif;
-  font-weight: 600;
-  font-size: 0.9rem;
-  border-radius: 10px;
-  text-decoration: none;
-  box-shadow: 0 3px 10px rgba(0, 168, 150, 0.25);
-  transition: all 0.2s ease;
-  border: none;
-  cursor: pointer;
-}
-
-.event-nav-btn:hover {
-  background-color: var(--turquoise-hover);
-  transform: translateY(-1px);
-  box-shadow: 0 5px 15px rgba(0, 168, 150, 0.35);
-}
-
-.event-album-container {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 1.5rem;
-  margin-top: 1.5rem;
-}
-
-.event-album-item {
-  width: 100%;
-  height: auto;
-  border-radius: 12px;
-  overflow: hidden;
-  background-color: var(--white);
-  border: 1px solid var(--border-color);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-}
-
-.event-album-item img {
-  width: 100%;
-  height: 200px;
-  object-fit: cover;
-  display: block;
-}
+/* Hide scrollbar on swipeable rows (cat roster on mobile) */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
