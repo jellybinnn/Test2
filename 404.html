@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex">
+  <title>Page not found | Hello Meow Cafe Cabanatuan</title>
+  <link rel="icon" type="image/png" href="https://res.cloudinary.com/tfk63bnl/image/upload/f_auto,q_auto/hmc_logo">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              DEFAULT: '#006B88',
+              dark: '#004255',
+              turquoise: '#00A896',
+              'turquoise-light': '#E6F7F5'
+            }
+          },
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            heading: ['"Quicksand"', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="min-h-screen flex flex-col font-sans antialiased text-white bg-gradient-to-b from-brand-dark to-brand selection:bg-brand-turquoise selection:text-white">
+
+  <header class="px-6 md:px-12 py-5">
+    <a href="/" class="inline-flex items-center gap-3 rounded-xl focus:outline-none focus-visible:ring-4 focus-visible:ring-white/60">
+      <img src="https://res.cloudinary.com/tfk63bnl/image/upload/f_auto,q_auto/hmc_logo" alt="" class="w-11 h-11 rounded-full object-cover border-2 border-brand-turquoise">
+      <span class="font-heading font-bold text-xl">Hello Meow Cafe<sup class="text-xs align-super">&reg;</sup></span>
+    </a>
+  </header>
+
+  <main class="flex-1 flex items-center justify-center px-6 py-12">
+    <div class="max-w-xl w-full text-center">
+
+      <p class="font-heading font-bold text-8xl sm:text-9xl leading-none tracking-tight" aria-hidden="true">
+        4<span class="inline-block align-middle text-6xl sm:text-7xl mx-1">🐾</span>4
+      </p>
+
+      <h1 class="mt-6 font-heading font-bold text-3xl sm:text-4xl leading-tight">
+        This page wandered off
+      </h1>
+      <p class="mt-4 text-base sm:text-lg text-brand-turquoise-light leading-relaxed">
+        We looked everywhere, even under the couch, but the page you want isn't here.
+        It may have moved, or the link might have a typo.
+      </p>
+
+      <div class="mt-9 flex flex-col sm:flex-row items-center justify-center gap-3">
+        <a href="/" class="w-full sm:w-auto px-8 py-4 rounded-xl bg-[#B84444] hover:bg-[#9E3939] text-white font-heading font-bold text-base shadow-xl shadow-black/20 transition-colors focus:outline-none focus-visible:ring-4 focus-visible:ring-white/60">
+          Back to home
+        </a>
+      </div>
+
+      <nav aria-label="Other places to go" class="mt-10 pt-8 border-t border-white/20">
+        <p class="text-sm font-semibold text-brand-turquoise-light mb-3">Or try one of these</p>
+        <ul class="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-base font-semibold">
+          <li><a href="/#about" class="underline underline-offset-4 decoration-white/40 hover:decoration-white">About us</a></li>
+          <li><a href="/#cat-lounge" class="underline underline-offset-4 decoration-white/40 hover:decoration-white">Cat lounge</a></li>
+          <li><a href="/#catRosterSection" class="underline underline-offset-4 decoration-white/40 hover:decoration-white">Meet the cats</a></li>
+          <li><a href="/#events" class="underline underline-offset-4 decoration-white/40 hover:decoration-white">Events</a></li>
+          <li><a href="https://www.facebook.com/hellomeowcafe" target="_blank" rel="noopener noreferrer" class="underline underline-offset-4 decoration-white/40 hover:decoration-white">Facebook</a></li>
+        </ul>
+      </nav>
+
+    </div>
+  </main>
+
+  <footer class="px-6 md:px-12 py-6 text-center text-sm text-brand-turquoise-light">
+    <p>Open daily, 9:00 AM – 9:00 PM · Purok 1 Maharlika Highway, Brgy Magsaysay Sur, Cabanatuan City</p>
+  </footer>
+
+  <script>
+    if (location.protocol === 'file:' || /404\.html$/.test(location.pathname)) {
+      document.querySelectorAll('a[href^="/"]').forEach(function (a) {
+        var h = a.getAttribute('href');
+        a.setAttribute('href', 'index.html' + (h.length > 1 ? h.slice(1) : ''));
+      });
+    }
+  </script>
+
+</body>
+</html>

@@ -1,4 +1,3 @@
-// --- CONFIGURATION & SUPABASE INITIALIZATION ---
 const SUPABASE_URL = 'https://uchlotinokpqhwpouczl.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_8iF-UjYhlzFovpA7Ay1K5g_V5vyaRjg';
 
@@ -11,11 +10,10 @@ try {
   console.error("Supabase initialization error:", e);
 }
 
-// --- DYNAMIC OPEN / CLOSE STATUS CHECKER ---
 function updateStoreStatus() {
-  const statusText = document.getElementById("statusText") || document.getElementById("cafeStatus");
+  const statusText = document.getElementById("statusText");
   const statusDot = document.getElementById("statusDot");
-  const statusBadge = document.getElementById("statusBadge") || document.getElementById("cafeStatus");
+  const statusBadge = document.getElementById("statusBadge");
   const mobileStatusText = document.getElementById("mobileStatusText");
   const mobileStatusDot = document.getElementById("mobileStatusDot");
 
@@ -50,7 +48,6 @@ function updateStoreStatus() {
   }
 }
 
-// --- FETCH & RENDER MENU ITEMS FROM SUPABASE ---
 let allMenuData = [];
 
 async function loadFrontendMenu() {
@@ -64,7 +61,6 @@ async function loadFrontendMenu() {
   }
 }
 
-// --- FETCH & RENDER EVENTS FROM SUPABASE (CHRONOLOGICAL SORTING) ---
 async function loadFrontendEvents() {
   const eventsContainer = document.getElementById("eventsGrid");
   const eventCountBadge = document.getElementById("eventCountBadge");
@@ -84,39 +80,6 @@ async function loadFrontendEvents() {
 
   if (events.length === 0) {
     events = JSON.parse(localStorage.getItem("hmc_local_events") || "[]");
-  }
-
-  if (events.length === 0) {
-    events = [
-      {
-        title: "Kapon event",
-        date: "Aug 8, 2026",
-        image: "https://res.cloudinary.com/tfk63bnl/image/upload/f_auto,q_auto/hmc_banner",
-        description: "Community spay and neuter (Kapon) outreach event.",
-        images: []
-      },
-      {
-        title: "HMC Anniversary 2026",
-        date: "Aug 8, 2026",
-        image: "https://res.cloudinary.com/tfk63bnl/image/upload/f_auto,q_auto/hmc_banner",
-        description: "Celebrating our official Hello Meow Cafe anniversary!",
-        images: []
-      },
-      {
-        title: "Apo Whang Od tattoo",
-        date: "Oct 2-4, 2026",
-        image: "https://res.cloudinary.com/tfk63bnl/image/upload/f_auto,q_auto/hmc_banner",
-        description: "Special event session with Apo Whang Od.",
-        images: []
-      },
-      {
-        title: "Wedding Booth",
-        date: "March 8, 2026, Sept 23, 2026, Oct 12, 2026",
-        image: "https://res.cloudinary.com/tfk63bnl/image/upload/f_auto,q_auto/hmc_banner",
-        description: "Hello Meow Cafe special wedding booth setup.",
-        images: []
-      }
-    ];
   }
 
   function parseEventDate(dateStr) {
@@ -160,7 +123,6 @@ async function loadFrontendEvents() {
   }).join("");
 }
 
-// --- LIGHTBOX MODAL CONTROLLERS ---
 window.openEventModal = function(ev) {
   const modal = document.getElementById("eventDetailModal");
   const content = document.getElementById("modalEventContent");
@@ -207,7 +169,6 @@ window.closeEventModal = function() {
   if (modal) modal.classList.add("hidden");
 };
 
-// --- INTERACTIVE UI LOGIC & INITIALIZATION ---
 document.addEventListener("DOMContentLoaded", () => {
   updateStoreStatus();
   setInterval(updateStoreStatus, 60000);
@@ -380,7 +341,6 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
-// --- LIGHTBOX FULL IMAGE VIEWER ---
 window.openLightbox = function(imgUrl) {
   let lb = document.getElementById("imgLightboxModal");
   if (!lb) {

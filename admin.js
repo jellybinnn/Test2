@@ -1,12 +1,8 @@
-// --- CONFIGURATION & SUPABASE INITIALIZATION ---
 const SUPABASE_URL = 'https://uchlotinokpqhwpouczl.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_8iF-UjYhlzFovpA7Ay1K5g_V5vyaRjg';
 
-// --- CLOUDINARY CONFIG (used by the Cat Roster photo uploader) ---
-// Create an UNSIGNED upload preset in Cloudinary (Settings > Upload > Upload presets)
-// and paste its name below.
 const CLOUDINARY_CLOUD_NAME = 'tfk63bnl';
-const CLOUDINARY_UPLOAD_PRESET = ''; // e.g. 'hmc_cats_unsigned'
+const CLOUDINARY_UPLOAD_PRESET = 'hmc_cats';
 
 let supabaseClient = null;
 try {
@@ -17,7 +13,6 @@ try {
   console.error("Supabase initialization error:", e);
 }
 
-// --- SMALL HELPERS ---
 function escapeHtml(str) {
   return String(str ?? '')
     .replace(/&/g, '&amp;')
@@ -27,14 +22,25 @@ function escapeHtml(str) {
     .replace(/'/g, '&#39;');
 }
 
-// --- AUTHENTICATION CHECKER ---
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
   const isAuth = sessionStorage.getItem("hmc_admin_auth");
   if (isAuth !== "true") {
     document.getElementById("adminLoginOverlay")?.classList.remove("hidden");
-  } else {
-    initAdminDashboard();
+    return;
   }
+
+  if (supabaseClient) {
+    try {
+      const { data: { session } } = await supabaseClient.auth.getSession();
+      if (session) {
+        console.log('Verified active Supabase admin session for:', session.user.email);
+      }
+    } catch (err) {
+      console.log('Supabase session check skipped or not required:', err);
+    }
+  }
+
+  initAdminDashboard();
 });
 
 function handleInternalLogin(e) {
@@ -49,7 +55,14 @@ function handleInternalLogin(e) {
   }
 }
 
-function adminLogout() {
+async function adminLogout() {
+  if (supabaseClient) {
+    try {
+      await supabaseClient.auth.signOut();
+    } catch (err) {
+      console.error("Supabase signout error:", err);
+    }
+  }
   sessionStorage.removeItem("hmc_admin_auth");
   location.reload();
 }
@@ -60,7 +73,6 @@ function initAdminDashboard() {
   loadAdminCats();
 }
 
-// --- TAB SWITCHER ---
 const TAB_ACTIVE_CLASS = "px-5 py-2.5 rounded-xl font-heading font-bold text-xs uppercase tracking-wider bg-brand-orange text-white shadow-md transition-all cursor-pointer";
 const TAB_INACTIVE_CLASS = "px-5 py-2.5 rounded-xl font-heading font-bold text-xs uppercase tracking-wider bg-gray-800 text-gray-300 hover:bg-gray-700 transition-all cursor-pointer";
 
@@ -85,7 +97,6 @@ function switchTab(tab) {
   });
 }
 
-// --- MENU MANAGER (SUPABASE) ---
 let adminMenuList = [];
 
 async function loadAdminMenu() {
@@ -113,13 +124,13 @@ function renderAdminMenuTable() {
 
   tbody.innerHTML = adminMenuList.map(item => `
     <tr class="hover:bg-gray-800/50 transition-colors">
-      <td class="p-4 font-semibold text-brand-turquoise text-xs">${item.category}</td>
-      <td class="p-4 font-bold text-white">${item.name}</td>
-      <td class="p-4 text-brand-orange font-bold">${item.price}</td>
-      <td class="p-4 text-gray-400 text-xs max-w-xs truncate">${item.description || ''}</td>
+      <td class="p-4 font-semibold text-brand-turquoise text-xs">${escapeHtml(item.category)}</td>
+      <td class="p-4 font-bold text-white">${escapeHtml(item.name)}</td>
+      <td class="p-4 text-brand-orange font-bold">${escapeHtml(item.price)}</td>
+      <td class="p-4 text-gray-400 text-xs max-w-xs truncate">${escapeHtml(item.description || '')}</td>
       <td class="p-4 text-right space-x-2">
-        <button onclick="editMenuItem('${item.id}')" class="px-3 py-1.5 rounded-lg bg-brand/20 text-brand-turquoise hover:bg-brand/40 text-xs font-bold transition-colors cursor-pointer">Edit</button>
-        <button onclick="deleteMenuItem('${item.id}')" class="px-3 py-1.5 rounded-lg bg-rose-500/20 text-rose-300 hover:bg-rose-500/30 text-xs font-bold transition-colors cursor-pointer">Delete</button>
+        <button onclick="editMenuItem('${escapeHtml(item.id)}')" class="px-3 py-1.5 rounded-lg bg-brand/20 text-brand-turquoise hover:bg-brand/40 text-xs font-bold transition-colors cursor-pointer">Edit</button>
+        <button onclick="deleteMenuItem('${escapeHtml(item.id)}')" class="px-3 py-1.5 rounded-lg bg-rose-500/20 text-rose-300 hover:bg-rose-500/30 text-xs font-bold transition-colors cursor-pointer">Delete</button>
       </td>
     </tr>
   `).join("");
@@ -159,7 +170,7 @@ async function handleMenuSubmit(e) {
 }
 
 function editMenuItem(id) {
-  const item = adminMenuList.find(m => m.id == id);
+  const item = adminMenuList.find(m => String(m.id) === String(id));
   if (!item) return;
 
   document.getElementById("editMenuId").value = item.id;
@@ -195,7 +206,6 @@ async function deleteMenuItem(id) {
   }
 }
 
-// --- EVENTS MANAGER (SUPABASE WITH DIRECT CLOUDINARY URL LINK SUPPORT) ---
 let adminEventsList = [];
 
 async function loadAdminEvents() {
@@ -217,8 +227,11 @@ async function loadAdminEvents() {
 
 function renderAdminEventsTable() {
   const tbody = document.getElementById("eventsTableBody");
-  const badge = document.getElementById("eventCountBadge");
-  if (badge) badge.textContent = adminEventsList.length;
+  const navBadge = document.getElementById("navEventCountBadge");
+  const tableBadge = document.getElementById("tableEventCountBadge");
+  
+  if (navBadge) navBadge.textContent = adminEventsList.length;
+  if (tableBadge) tableBadge.textContent = adminEventsList.length;
   if (!tbody) return;
 
   if (adminEventsList.length === 0) {
@@ -234,14 +247,14 @@ function renderAdminEventsTable() {
     return `
       <tr class="hover:bg-gray-800/50 transition-colors">
         <td class="p-4 font-bold text-white flex items-center gap-3">
-          <img src="${ev.image || 'https://res.cloudinary.com/tfk63bnl/image/upload/f_auto,q_auto/hmc_banner'}" class="w-10 h-10 rounded-lg object-cover">
+          <img src="${escapeHtml(ev.image || 'https://res.cloudinary.com/tfk63bnl/image/upload/f_auto,q_auto/hmc_banner')}" class="w-10 h-10 rounded-lg object-cover">
           <div>
-            <span>${ev.title}</span>
+            <span>${escapeHtml(ev.title)}</span>
             ${imgCount > 0 ? `<span class="block text-[10px] text-brand-turquoise font-semibold">+${imgCount} gallery photos</span>` : ''}
           </div>
         </td>
-        <td class="p-4 text-brand-orange font-semibold text-xs">${ev.date}</td>
-        <td class="p-4 text-gray-400 text-xs max-w-xs truncate">${ev.description || ''}</td>
+        <td class="p-4 text-brand-orange font-semibold text-xs">${escapeHtml(ev.date)}</td>
+        <td class="p-4 text-gray-400 text-xs max-w-xs truncate">${escapeHtml(ev.description || '')}</td>
         <td class="p-4 text-right space-x-2">
           <button onclick="editEventItem(${index})" class="px-3 py-1.5 rounded-lg bg-brand/20 text-brand-turquoise hover:bg-brand/40 text-xs font-bold transition-colors cursor-pointer">Edit</button>
           <button onclick="deleteEventItem(${index})" class="px-3 py-1.5 rounded-lg bg-rose-500/20 text-rose-300 hover:bg-rose-500/30 text-xs font-bold transition-colors cursor-pointer">Delete</button>
@@ -260,7 +273,6 @@ async function handleEventSubmit(e) {
   const galleryInput = document.getElementById("eventFormGalleryUrls").value;
   const description = document.getElementById("eventFormDesc").value;
 
-  // Convert comma-separated Cloudinary links into an array
   const imagesArray = galleryInput ? galleryInput.split(',').map(url => url.trim()).filter(Boolean) : [];
 
   const newEventObj = {
@@ -320,7 +332,6 @@ function editEventItem(index) {
   document.getElementById("eventFormImage").value = ev.image || '';
   document.getElementById("eventFormDesc").value = ev.description || '';
 
-  // Populate gallery input field with comma-separated URLs
   let galleryUrlsStr = "";
   if (Array.isArray(ev.images)) {
     galleryUrlsStr = ev.images.join(', ');
@@ -359,7 +370,6 @@ async function deleteEventItem(index) {
   alert("Event deleted.");
 }
 
-// --- CAT ROSTER MANAGER (SUPABASE + CLOUDINARY UPLOAD) ---
 let adminCatsList = [];
 let catUploadWidget = null;
 
@@ -403,6 +413,7 @@ function renderAdminCatsTable() {
       </td>
       <td class="p-4 text-gray-400 text-xs max-w-sm">${escapeHtml(cat.description)}</td>
       <td class="p-4 text-right space-x-2 whitespace-nowrap">
+        <button onclick="previewCat('${escapeHtml(cat.id)}')" class="px-3 py-1.5 rounded-lg bg-gray-800 text-gray-200 hover:bg-gray-700 text-xs font-bold transition-colors cursor-pointer">Preview</button>
         <button onclick="editCat('${escapeHtml(cat.id)}')" class="px-3 py-1.5 rounded-lg bg-brand/20 text-brand-turquoise hover:bg-brand/40 text-xs font-bold transition-colors cursor-pointer">Edit</button>
         <button onclick="deleteCat('${escapeHtml(cat.id)}')" class="px-3 py-1.5 rounded-lg bg-rose-500/20 text-rose-300 hover:bg-rose-500/30 text-xs font-bold transition-colors cursor-pointer">Delete</button>
       </td>
@@ -446,9 +457,9 @@ function openCatUploadWidget() {
         folder: 'hmc_cats',
         resourceType: 'image',
         clientAllowedFormats: ['jpg', 'jpeg', 'png', 'webp'],
-        maxFileSize: 10000000, // 10 MB
+        maxFileSize: 10000000,
         cropping: true,
-        croppingAspectRatio: 0.8, // 4:5 portrait, matches the roster cards
+        croppingAspectRatio: 0.8,
         showSkipCropButton: true
       },
       (error, result) => {
@@ -550,3 +561,67 @@ async function deleteCat(id) {
     alert("Error deleting: " + err.message);
   }
 }
+
+const SPONSOR_URL = 'https://www.facebook.com/hellomeowcafe';
+let previewLastTrigger = null;
+
+function previewCat(id) {
+  const cat = adminCatsList.find(c => String(c.id) === String(id));
+  if (!cat) return;
+  openCatPreview(cat, document.activeElement);
+}
+
+function previewCatFromForm() {
+  const name = document.getElementById("catFormName").value.trim();
+  const description = document.getElementById("catFormDesc").value.trim();
+  const image = document.getElementById("catFormImage").value.trim();
+  if (!name || !image) {
+    alert("Add a name and a photo first to see the preview.");
+    return;
+  }
+  openCatPreview({ name, description, image }, document.activeElement);
+}
+
+function openCatPreview(cat, trigger) {
+  const sheet = document.getElementById("catProfileSheet");
+  const body = document.getElementById("catSheetBody");
+  if (!sheet || !body) return;
+
+  body.innerHTML = `
+    <p class="text-xs font-semibold text-gray-500 mb-4 pr-12">Preview: this is how visitors see ${escapeHtml(cat.name)} on the site.</p>
+    <div class="flex gap-4 items-start">
+      <img src="${escapeHtml(cat.image)}" alt="${escapeHtml(cat.name)}" class="w-32 shrink-0 aspect-[4/5] object-cover rounded-2xl bg-gray-100">
+      <div class="pt-2 pr-2 min-w-0">
+        <h3 id="catSheetName" class="font-heading font-bold text-2xl text-gray-900 leading-tight break-words">${escapeHtml(cat.name)}</h3>
+      </div>
+    </div>
+    <p class="mt-5 text-base text-gray-700 leading-relaxed font-sans">${escapeHtml(cat.description)}</p>
+    <a href="${SPONSOR_URL}" target="_blank" rel="noopener noreferrer" class="mt-6 flex items-center justify-center py-3.5 rounded-2xl bg-brand-orange text-white font-heading font-bold text-base hover:bg-brand-orange-hover transition-colors">
+      Sponsor ${escapeHtml(cat.name)}
+    </a>
+  `;
+
+  previewLastTrigger = trigger || null;
+  sheet.classList.remove("hidden");
+  document.body.style.overflow = "hidden";
+  document.getElementById("catSheetDialog").focus();
+}
+
+function closeCatPreview() {
+  const sheet = document.getElementById("catProfileSheet");
+  if (!sheet || sheet.classList.contains("hidden")) return;
+  sheet.classList.add("hidden");
+  document.body.style.overflow = "";
+  if (previewLastTrigger && typeof previewLastTrigger.focus === "function") previewLastTrigger.focus();
+  previewLastTrigger = null;
+}
+
+document.addEventListener("click", (e) => {
+  if (e.target.closest("[data-sheet-close]") || e.target.hasAttribute("data-sheet-backdrop")) {
+    closeCatPreview();
+  }
+});
+
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") closeCatPreview();
+});

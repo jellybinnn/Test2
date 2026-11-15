@@ -21,13 +21,11 @@
   margin: 0;
   padding: 0;
   font-family: 'Plus Jakarta Sans', sans-serif;
-  /* Crisp & Clean Font Rendering */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
 }
 
-/* Force Lucidity Condensed on Header Title & Main Elements with Sharper Rendering */
 .logo-title {
   font-family: "Lucidity Condensed", sans-serif !important;
   -webkit-font-smoothing: subpixel-antialiased;
@@ -46,7 +44,6 @@ body {
   background: #26A5BA;
 }
 
-/* GPU-Accelerated Smooth Video Background */
 #heroGif {
   width: 100%;
   height: 100%;
@@ -59,31 +56,26 @@ body {
   -webkit-backface-visibility: hidden;
 }
 
-/* ================================================================= */
-/* PROPORTIONAL & SCALED VIDEO BACKGROUND CONTAINER                 */
-/* ================================================================= */
-
 .video-background-container {
-  width: 70%;           /* Desktop width */
-  max-width: 900px;     /* Caps width on large desktop screens */
-  margin: 40px auto;    /* Centers the container with vertical spacing */
-  aspect-ratio: 16 / 9; /* Strictly locks the box to a 16:9 widescreen ratio */
-  overflow: hidden;     /* Clips any overflow */
-  border-radius: 16px;  /* Modern smooth rounded corners */
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15); /* Soft professional shadow */
+  width: 70%;
+  max-width: 900px;
+  margin: 40px auto;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border-radius: 16px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
 }
 
 .video-background-container video {
   width: 100%;
   height: 100%;
-  object-fit: cover;    /* Scales and crops the video proportionally without stretching */
+  object-fit: cover;
 }
 
-/* Mobile Responsiveness: Compact overlay for smaller screens */
 @media (max-width: 768px) {
   .video-background-container {
-    width: 78%;         /* Reduced width for a smaller, cleaner mobile frame */
-    margin: 20px auto;  /* Tighter vertical spacing */
+    width: 78%;
+    margin: 20px auto;
     border-radius: 12px;
   }
 }
@@ -252,6 +244,5 @@ nav a {
   background: #94A3B8;
 }
 
-/* Hide scrollbar on swipeable rows (cat roster on mobile) */
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }

@@ -5,18 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Hello Meow Cafe Cabanatuan</title>
   <link rel="icon" type="image/png" href="https://res.cloudinary.com/tfk63bnl/image/upload/f_auto,q_auto/hmc_logo">
-  
-  <!-- DNS Preconnect for Cloudinary & CDN Assets -->
+
   <link rel="dns-prefetch" href="https://res.cloudinary.com">
   <link rel="preconnect" href="https://res.cloudinary.com" crossorigin>
   <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
-  
-  <!-- Font Preconnecting & Preloading to Prevent Font Glitches -->
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Caveat:wght@700&display=swap">
   <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Caveat:wght@700&display=swap" rel="stylesheet">
-  
+
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -56,7 +54,6 @@
 </head>
 <body class="min-h-screen flex flex-col antialiased selection:bg-brand-turquoise selection:text-white">
 
-  <!-- Header -->
   <header id="mainHeader" class="fixed top-0 left-0 w-full z-50 transition-all duration-300 bg-transparent py-4 px-6 md:px-12 flex items-center justify-between">
     <a href="#home" class="logo-container group">
       <img decoding="async" src="https://res.cloudinary.com/tfk63bnl/image/upload/f_auto,q_auto/hmc_logo" alt="Hello Meow Cafe Logo" class="logo-img group-hover:scale-105 transition-transform">
@@ -93,7 +90,6 @@
     </div>
   </header>
 
-  <!-- Mobile Nav Overlay -->
   <div id="mobileMenuOverlay" class="fixed inset-0 bg-black/50 z-50 opacity-0 pointer-events-none transition-opacity duration-300 lg:hidden">
     <div id="mobileMenuDrawer" class="absolute top-0 right-0 w-4/5 max-w-sm h-full bg-white shadow-2xl p-6 flex flex-col justify-between transform translate-x-full transition-transform duration-300 !text-left !items-start" style="text-align: left !important;">
       <div class="w-full" style="text-align: left !important;">
@@ -134,7 +130,6 @@
     </div>
   </div>
 
-  <!-- Hero Section -->
   <section id="home" class="relative min-h-[92vh] flex items-center justify-center pt-28 pb-16 px-6 overflow-hidden">
     <div class="absolute inset-0 z-0">
       <video id="heroGif" autoplay muted loop playsinline preload="metadata" class="w-full h-full object-cover object-center">
@@ -150,7 +145,7 @@
       <h1 class="font-heading font-extrabold text-4xl sm:text-6xl lg:text-7xl tracking-tight leading-tight mb-6">
         Eat, Drink, Support &amp; <span class="text-brand-turquoise-light font-heading">Pet</span>
       </h1>
-      
+
       <p class="text-sm sm:text-base text-gray-100 font-medium max-w-2xl mx-auto mb-10 leading-relaxed drop-shadow-md font-sans">
         1st community cat cafe in Nueva Ecija established August 8, 2022 with social responsibility of rescuing, feeding and encouraging kapon for community cats.
       </p>
@@ -183,7 +178,6 @@
     </div>
   </section>
 
-  <!-- About Section with Pinned Google Maps Embed -->
   <section id="about" class="py-24 px-6 md:px-12 max-w-6xl mx-auto">
     <div class="bg-white rounded-3xl p-8 sm:p-14 shadow-soft border border-gray-100 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
       <div>
@@ -191,7 +185,7 @@
         <h2 class="font-heading font-extrabold text-3xl sm:text-4xl text-gray-900 tracking-tight mb-6 uppercase">
           A Sanctuary Built on Compassion &amp; Community
         </h2>
-        
+
         <div class="mb-6 p-4 rounded-2xl bg-brand-turquoise-light/60 border border-brand-turquoise/30">
           <h4 class="font-heading font-bold text-xs text-brand uppercase tracking-wider mb-1">🌟 Our Vision</h4>
           <p class="text-xs sm:text-sm text-brand-dark font-medium leading-relaxed font-sans">
@@ -224,17 +218,16 @@
           </div>
         </div>
       </div>
-      
-      <!-- Interactive Pinned Google Maps Widget -->
+
       <div class="relative">
         <div class="absolute -inset-4 bg-brand-turquoise-light rounded-3xl transform -rotate-2 -z-10"></div>
         <div class="rounded-2xl overflow-hidden shadow-elevated bg-white p-2 h-[500px]">
-          <iframe 
+          <iframe
             title="Hello Meow Cafe Location Map"
             src="https://maps.google.com/maps?q=Hello%20Meow%20Cafe%2C%20Cabanatuan%20City%2C%20Nueva%20Ecija&t=&z=15&ie=UTF8&iwloc=&output=embed"
-            class="w-full h-full rounded-xl border-0" 
-            allowfullscreen="" 
-            loading="lazy" 
+            class="w-full h-full rounded-xl border-0"
+            allowfullscreen=""
+            loading="lazy"
             referrerpolicy="no-referrer-when-downgrade">
           </iframe>
         </div>
@@ -242,7 +235,6 @@
     </div>
   </section>
 
-  <!-- Cat Lounge Section -->
   <section id="cat-lounge" class="py-20 px-6 md:px-12 bg-gradient-to-b from-brand-cream to-white border-y border-gray-100">
     <div class="max-w-5xl mx-auto">
       <div class="text-center max-w-2xl mx-auto mb-16">
@@ -289,7 +281,6 @@
     </div>
   </section>
 
-  <!-- Cat Roster Section -->
   <section id="catRosterSection" class="py-20 px-6 md:px-12 bg-white border-b border-gray-100">
     <div class="max-w-6xl mx-auto">
       <div class="text-center max-w-2xl mx-auto mb-10">
@@ -301,76 +292,10 @@
         <p class="text-xs text-brand-turquoise font-semibold mt-3 md:hidden font-sans">Swipe to meet them all →</p>
       </div>
 
-      <div id="catRosterGrid" class="flex gap-4 overflow-x-auto snap-x snap-mandatory pb-4 -mx-6 px-6 no-scrollbar md:mx-0 md:px-0 md:pb-0 md:grid md:grid-cols-5 md:gap-5 md:overflow-visible">
-        <!-- Cat 1 -->
-        <article class="group relative shrink-0 w-44 sm:w-52 md:w-auto snap-start aspect-[4/5] rounded-2xl overflow-hidden shadow-card border border-gray-100">
-          <img decoding="async" loading="lazy" src="https://res.cloudinary.com/tfk63bnl/image/upload/f_auto,q_auto,w_500/v1793592032/249f565e-cc19-43a3-a5e4-ad53a2120c3d.jpg" alt="Cat 1" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
-          <div class="absolute inset-x-0 bottom-0 p-3 pt-10 bg-gradient-to-t from-black/75 via-black/40 to-transparent text-white">
-            <h3 class="font-heading font-bold text-sm leading-tight">Cat 1</h3>
-            <p class="text-[11px] text-white/85 leading-snug mt-0.5">Shy • loves chin scratches</p>
-            <div class="flex flex-wrap gap-1 mt-1.5">
-              <span class="px-2 py-0.5 rounded-full bg-white/20 backdrop-blur-sm text-[10px] font-semibold">Cuddly</span>
-              <span class="px-2 py-0.5 rounded-full bg-brand-orange/80 text-[10px] font-semibold">Rescue</span>
-            </div>
-          </div>
-        </article>
-
-        <!-- Cat 2 -->
-        <article class="group relative shrink-0 w-44 sm:w-52 md:w-auto snap-start aspect-[4/5] rounded-2xl overflow-hidden shadow-card border border-gray-100">
-          <img decoding="async" loading="lazy" src="https://res.cloudinary.com/tfk63bnl/image/upload/f_auto,q_auto,w_500/v1793592034/bfeac933-1818-4d47-8e72-7742a854b9b2.jpg" alt="Cat 2" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
-          <div class="absolute inset-x-0 bottom-0 p-3 pt-10 bg-gradient-to-t from-black/75 via-black/40 to-transparent text-white">
-            <h3 class="font-heading font-bold text-sm leading-tight">Cat 2</h3>
-            <p class="text-[11px] text-white/85 leading-snug mt-0.5">Playful • always chasing toys</p>
-            <div class="flex flex-wrap gap-1 mt-1.5">
-              <span class="px-2 py-0.5 rounded-full bg-white/20 backdrop-blur-sm text-[10px] font-semibold">Playful</span>
-              <span class="px-2 py-0.5 rounded-full bg-brand-orange/80 text-[10px] font-semibold">Rescue</span>
-            </div>
-          </div>
-        </article>
-
-        <!-- Cat 3 -->
-        <article class="group relative shrink-0 w-44 sm:w-52 md:w-auto snap-start aspect-[4/5] rounded-2xl overflow-hidden shadow-card border border-gray-100">
-          <img decoding="async" loading="lazy" src="https://res.cloudinary.com/tfk63bnl/image/upload/f_auto,q_auto,w_500/v1793592034/f3fbc4c7-696d-4a38-8a9a-151f34a4cf58.jpg" alt="Cat 3" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
-          <div class="absolute inset-x-0 bottom-0 p-3 pt-10 bg-gradient-to-t from-black/75 via-black/40 to-transparent text-white">
-            <h3 class="font-heading font-bold text-sm leading-tight">Cat 3</h3>
-            <p class="text-[11px] text-white/85 leading-snug mt-0.5">Chill • the lounge napper</p>
-            <div class="flex flex-wrap gap-1 mt-1.5">
-              <span class="px-2 py-0.5 rounded-full bg-white/20 backdrop-blur-sm text-[10px] font-semibold">Sleepy</span>
-              <span class="px-2 py-0.5 rounded-full bg-brand-orange/80 text-[10px] font-semibold">Rescue</span>
-            </div>
-          </div>
-        </article>
-
-        <!-- Cat 4 -->
-        <article class="group relative shrink-0 w-44 sm:w-52 md:w-auto snap-start aspect-[4/5] rounded-2xl overflow-hidden shadow-card border border-gray-100">
-          <img decoding="async" loading="lazy" src="https://res.cloudinary.com/tfk63bnl/image/upload/f_auto,q_auto,w_500/v1793592034/0492febb-c419-4433-bfb9-2f42b15d43c4.jpg" alt="Cat 4" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
-          <div class="absolute inset-x-0 bottom-0 p-3 pt-10 bg-gradient-to-t from-black/75 via-black/40 to-transparent text-white">
-            <h3 class="font-heading font-bold text-sm leading-tight">Cat 4</h3>
-            <p class="text-[11px] text-white/85 leading-snug mt-0.5">Curious • greets every guest</p>
-            <div class="flex flex-wrap gap-1 mt-1.5">
-              <span class="px-2 py-0.5 rounded-full bg-white/20 backdrop-blur-sm text-[10px] font-semibold">Friendly</span>
-              <span class="px-2 py-0.5 rounded-full bg-brand-orange/80 text-[10px] font-semibold">Rescue</span>
-            </div>
-          </div>
-        </article>
-
-        <!-- Cat 5 -->
-        <article class="group relative shrink-0 w-44 sm:w-52 md:w-auto snap-start aspect-[4/5] rounded-2xl overflow-hidden shadow-card border border-gray-100">
-          <img decoding="async" loading="lazy" src="https://res.cloudinary.com/tfk63bnl/image/upload/f_auto,q_auto,w_500/v1793592034/e7778ee3-cef2-4eb6-804d-8b85f4d3bcc1.jpg" alt="Cat 5" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
-          <div class="absolute inset-x-0 bottom-0 p-3 pt-10 bg-gradient-to-t from-black/75 via-black/40 to-transparent text-white">
-            <h3 class="font-heading font-bold text-sm leading-tight">Cat 5</h3>
-            <p class="text-[11px] text-white/85 leading-snug mt-0.5">Gentle • a lap-cat in training</p>
-            <div class="flex flex-wrap gap-1 mt-1.5">
-              <span class="px-2 py-0.5 rounded-full bg-white/20 backdrop-blur-sm text-[10px] font-semibold">Gentle</span>
-              <span class="px-2 py-0.5 rounded-full bg-brand-orange/80 text-[10px] font-semibold">Rescue</span>
-            </div>
-          </div>
-        </article>
-      </div>
+      <div id="catRosterGrid" class="flex gap-4 overflow-x-auto snap-x snap-mandatory pb-4 -mx-6 px-6 no-scrollbar md:mx-0 md:px-0 md:pb-0 md:grid md:grid-cols-5 md:gap-5 md:overflow-visible"></div>
     </div>
   </section>
 
-  <!-- Cafe Menu Section -->
   <section id="menu" class="py-24 px-6 md:px-12 max-w-5xl mx-auto">
     <div class="text-center max-w-2xl mx-auto mb-12">
       <span class="text-brand-turquoise font-heading font-bold text-xs uppercase tracking-widest block mb-2">Delicious Offerings</span>
@@ -464,7 +389,7 @@
             </button>
           </div>
         </div>
-        
+
         <div class="h-[420px] overflow-y-auto pr-2 custom-scrollbar">
           <div id="drawerItemsGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
         </div>
@@ -472,7 +397,6 @@
     </div>
   </section>
 
-  <!-- Events Gallery Section (Sorted Older to Latest) -->
   <section id="events" class="py-24 px-6 md:px-12 bg-gradient-to-b from-white to-brand-cream border-y border-gray-100">
     <div class="max-w-6xl mx-auto">
       <div class="flex flex-col md:flex-row justify-between items-center mb-12 gap-6 text-center md:text-left">
@@ -492,7 +416,6 @@
     </div>
   </section>
 
-  <!-- Testimonial Section -->
   <section class="py-20 px-6 md:px-12 bg-brand-cream border-y border-gray-100">
     <div class="max-w-4xl mx-auto text-center">
       <span class="text-brand-turquoise font-heading font-bold text-xs uppercase tracking-widest block mb-2">Guest Experiences</span>
@@ -518,7 +441,6 @@
     </div>
   </section>
 
-  <!-- Footer -->
   <footer class="bg-brand-dark text-white py-16 px-6 md:px-12 mt-auto">
     <div class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-10 mb-12">
       <div class="md:col-span-2">
@@ -551,7 +473,7 @@
         <h4 class="font-heading font-bold text-white text-sm uppercase tracking-wider mb-4">Visit &amp; Contact</h4>
         <p class="text-sm text-white/90 mb-2 font-sans">Purok 1 Maharlika Highway Brgy Magsaysay Sur Cabanatuan City Nueva Ecija</p>
         <p class="text-sm text-white/90 mb-4 font-sans">hellomeowcafe.com.ph</p>
-        
+
         <div class="flex flex-col gap-3">
           <a href="https://maps.google.com/?q=Hello+Meow+Cafe+Magsaysay+Sur+Cabanatuan+City" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 text-xs text-brand-turquoise-light hover:underline font-sans font-semibold mb-2">
             <span>📍</span> View on Google Maps / Get Directions →
@@ -568,14 +490,13 @@
     </div>
   </footer>
 
-  <!-- Welcome Greetings Modal -->
   <div id="welcomePopup" class="fixed inset-0 bg-black/70 backdrop-blur-md z-[100] flex items-center justify-center p-4 transition-all duration-300 opacity-0 pointer-events-none">
     <div id="popupCard" class="relative max-w-md w-full transform scale-90 transition-all duration-300 flex flex-col items-center">
       <div class="w-full bg-[#26A5BA] rounded-[2.5rem] shadow-2xl flex flex-col items-center justify-center px-6 py-8 text-center relative z-10 overflow-hidden">
         <h2 class="text-5xl sm:text-6xl text-white tracking-wide font-handwriting font-bold drop-shadow-md z-10">
           Hello Meow!
         </h2>
-        
+
         <div class="w-24 h-24 my-1 z-10 overflow-hidden flex items-center justify-center">
           <video autoplay muted loop playsinline class="w-full h-full object-cover mix-blend-screen scale-100">
             <source src="https://res.cloudinary.com/tfk63bnl/video/upload/v1793692925/Enhancer-Ultra_HD-AQM-vmNT0ZMuihRrngkxRer_E6P473b7XxXxdkkHeLufFDwvLpWfJk7UUqokUo9OfemtqtVfZlD_JwgGxYmtmsrAWACjzpGGoxWobfVzSA_processed.webm" type="video/webm">
@@ -604,16 +525,29 @@
     </div>
   </div>
 
-  <!-- Event Details Lightbox Modal -->
+  <div id="catProfileSheet" class="fixed inset-0 z-[120] hidden">
+    <div data-sheet-backdrop class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+    <div class="absolute inset-x-0 bottom-0 md:inset-0 md:flex md:items-center md:justify-center pointer-events-none">
+      <div id="catSheetDialog" role="dialog" aria-modal="true" aria-labelledby="catSheetName" tabindex="-1" class="pointer-events-auto relative w-full md:max-w-md max-h-[88vh] overflow-y-auto bg-white rounded-t-3xl md:rounded-3xl shadow-2xl outline-none">
+        <div class="flex justify-center pt-2.5 md:hidden"><div class="w-11 h-1.5 rounded-full bg-gray-300"></div></div>
+        <button type="button" data-sheet-close aria-label="Close profile" class="absolute top-3 right-3 w-11 h-11 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 flex items-center justify-center cursor-pointer">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+        <div id="catSheetBody" class="p-5 pt-6 md:p-7"></div>
+      </div>
+    </div>
+  </div>
+
   <div id="eventDetailModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] flex items-center justify-center p-4 hidden">
     <div class="bg-white rounded-3xl max-w-2xl w-full p-6 md:p-8 relative max-h-[90vh] overflow-y-auto shadow-2xl">
       <button onclick="closeEventModal()" class="absolute top-4 right-4 bg-gray-100 hover:bg-gray-200 text-gray-700 w-9 h-9 rounded-full flex items-center justify-center font-bold text-lg transition-colors cursor-pointer">×</button>
-      
+
       <div id="modalEventContent" class="space-y-6"></div>
     </div>
   </div>
 
-  <!-- General Action Modal -->
   <div id="actionModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-300">
     <div id="modalContentWrapper" class="bg-white w-full max-w-lg rounded-3xl shadow-2xl p-8 relative transform scale-95 transition-transform duration-300 max-h-[90vh] overflow-y-auto">
       <button id="closeModalBtn" aria-label="Close modal" class="absolute top-6 right-6 w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-500 flex items-center justify-center transition-colors cursor-pointer">
@@ -623,9 +557,7 @@
     </div>
   </div>
 
-  <!-- Supabase CDN Library -->
   <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <!-- Main Script -->
   <script defer src="script.js?v=2.1"></script>
   <script defer src="roster.js"></script>
 </body>
