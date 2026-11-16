@@ -11,6 +11,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
   
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://upload-widget.cloudinary.com/global/all.js" type="text/javascript"></script>
   <script>
     tailwind.config = {
@@ -100,9 +101,13 @@
         <button onclick="switchTab('cats')" id="navCatsBtn" class="px-5 py-2.5 rounded-xl font-heading font-bold text-xs uppercase tracking-wider bg-gray-800 text-gray-300 hover:bg-gray-700 transition-all cursor-pointer">
           🐱 Cat Roster (<span id="catCountBadge">0</span>)
         </button>
+        <button onclick="switchTab('graphs')" id="navGraphsBtn" class="px-5 py-2.5 rounded-xl font-heading font-bold text-xs uppercase tracking-wider bg-gray-800 text-gray-300 hover:bg-gray-700 transition-all cursor-pointer">
+          📊 Analytics & Graphs
+        </button>
       </div>
     </div>
 
+    <!-- MENU SECTION -->
     <section id="menuSection" class="space-y-8">
       <div class="bg-gray-900 rounded-3xl p-6 md:p-8 border border-gray-800 shadow-xl">
         <div class="flex justify-between items-center mb-6 pb-4 border-b border-gray-800">
@@ -189,6 +194,7 @@
       </div>
     </section>
 
+    <!-- EVENTS SECTION -->
     <section id="eventsSection" class="space-y-8 hidden">
       <div class="bg-gray-900 rounded-3xl p-6 md:p-8 border border-gray-800 shadow-xl">
         <div class="flex justify-between items-center mb-6 pb-4 border-b border-gray-800">
@@ -264,6 +270,7 @@
       </div>
     </section>
 
+    <!-- CATS SECTION -->
     <section id="catsSection" class="space-y-8 hidden">
       <div class="bg-gray-900 rounded-3xl p-6 md:p-8 border border-gray-800 shadow-xl">
         <div class="flex justify-between items-center mb-6 pb-4 border-b border-gray-800">
@@ -342,6 +349,71 @@
             <tbody id="catsTableBody" class="divide-y divide-gray-800">
             </tbody>
           </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- GRAPHS & ANALYTICS SECTION -->
+    <section id="graphsSection" class="space-y-8 hidden">
+      <div class="bg-gray-900 rounded-3xl p-6 md:p-8 border border-gray-800 shadow-xl">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 pb-4 border-b border-gray-800">
+          <div>
+            <h2 class="font-heading font-bold text-xl text-white">📊 System Analytics, Traffic & Interactions</h2>
+            <p class="text-xs text-gray-400 mt-0.5">Live breakdown of your Supabase database counts, website visits, and visitor interactions.</p>
+          </div>
+          <button onclick="loadAdminMenu(); loadAdminEvents(); loadAdminCats(); loadAdminAnalytics();" class="px-4 py-2 rounded-xl bg-brand-turquoise/20 text-brand-turquoise hover:bg-brand-turquoise/30 text-xs font-bold transition-colors cursor-pointer">
+            🔄 Refresh Data
+          </button>
+        </div>
+
+        <!-- 5-Column Metric Stat Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5 mb-8">
+          <div class="bg-gray-950 p-5 rounded-2xl border border-gray-800 flex items-center justify-between">
+            <div>
+              <p class="text-xs text-gray-400 uppercase tracking-wider font-semibold">Total Menu</p>
+              <h3 id="statMenuCount" class="text-3xl font-heading font-extrabold text-brand-orange mt-1">0</h3>
+            </div>
+            <span class="text-3xl">🍔</span>
+          </div>
+          <div class="bg-gray-950 p-5 rounded-2xl border border-gray-800 flex items-center justify-between">
+            <div>
+              <p class="text-xs text-gray-400 uppercase tracking-wider font-semibold">Events</p>
+              <h3 id="statEventCount" class="text-3xl font-heading font-extrabold text-brand-turquoise mt-1">0</h3>
+            </div>
+            <span class="text-3xl">🗓️</span>
+          </div>
+          <div class="bg-gray-950 p-5 rounded-2xl border border-gray-800 flex items-center justify-between">
+            <div>
+              <p class="text-xs text-gray-400 uppercase tracking-wider font-semibold">Cat Roster</p>
+              <h3 id="statCatCount" class="text-3xl font-heading font-extrabold text-purple-400 mt-1">0</h3>
+            </div>
+            <span class="text-3xl">🐱</span>
+          </div>
+          <div class="bg-gray-950 p-5 rounded-2xl border border-gray-800 flex items-center justify-between">
+            <div>
+              <p class="text-xs text-gray-400 uppercase tracking-wider font-semibold">Total Visits</p>
+              <h3 id="statTrafficCount" class="text-3xl font-heading font-extrabold text-emerald-400 mt-1">0</h3>
+            </div>
+            <span class="text-3xl">📈</span>
+          </div>
+          <div class="bg-gray-950 p-5 rounded-2xl border border-gray-800 flex items-center justify-between">
+            <div>
+              <p class="text-xs text-gray-400 uppercase tracking-wider font-semibold">Interactions</p>
+              <h3 id="statInteractionCount" class="text-3xl font-heading font-extrabold text-pink-400 mt-1">0</h3>
+            </div>
+            <span class="text-3xl">🖱️</span>
+          </div>
+        </div>
+
+        <!-- Chart Container -->
+        <div class="bg-gray-950 p-6 rounded-2xl border border-gray-800">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="font-heading font-bold text-sm text-gray-300 uppercase tracking-wider">Index Database & Live Visitor Traffic Overview</h3>
+            <span class="text-xs text-gray-500">Live Supabase Sync</span>
+          </div>
+          <div class="relative h-80 w-full">
+            <canvas id="adminStatsChart"></canvas>
+          </div>
         </div>
       </div>
     </section>

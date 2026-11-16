@@ -28,18 +28,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     document.getElementById("adminLoginOverlay")?.classList.remove("hidden");
     return;
   }
-
-  if (supabaseClient) {
-    try {
-      const { data: { session } } = await supabaseClient.auth.getSession();
-      if (session) {
-        console.log('Verified active Supabase admin session for:', session.user.email);
-      }
-    } catch (err) {
-      console.log('Supabase session check skipped or not required:', err);
-    }
-  }
-
   initAdminDashboard();
 });
 
@@ -56,13 +44,6 @@ function handleInternalLogin(e) {
 }
 
 async function adminLogout() {
-  if (supabaseClient) {
-    try {
-      await supabaseClient.auth.signOut();
-    } catch (err) {
-      console.error("Supabase signout error:", err);
-    }
-  }
   sessionStorage.removeItem("hmc_admin_auth");
   location.reload();
 }
@@ -71,6 +52,96 @@ function initAdminDashboard() {
   loadAdminMenu();
   loadAdminEvents();
   loadAdminCats();
+  loadAdminAnalytics();
+}
+
+let adminAnalyticsData = { visits: 0, interactions: 0 };
+
+async function loadAdminAnalytics() {
+  if (!supabaseClient) return;
+  try {
+    const { data, error } = await supabaseClient.from('analytics_logs').select('*');
+    if (error) throw error;
+    
+    const logs = data || [];
+    const visits = logs.filter(l => l.event_type === 'page_view').length;
+    const interactions = logs.filter(l => l.event_type !== 'page_view').length;
+
+    adminAnalyticsData = { visits, interactions };
+    renderAdminChart();
+  } catch (err) {
+    console.error("Error loading analytics:", err);
+  }
+}
+
+// 📊 Live Chart.js Integration Overlooking Index Data, Visits & Interactions
+let adminStatsChart = null;
+
+function renderAdminChart() {
+  const ctx = document.getElementById('adminStatsChart');
+
+  const menuCount = adminMenuList.length;
+  const eventsCount = adminEventsList.length;
+  const catsCount = adminCatsList.length;
+  const totalVisits = adminAnalyticsData.visits;
+  const totalInteractions = adminAnalyticsData.interactions;
+
+  if (document.getElementById('statMenuCount')) document.getElementById('statMenuCount').textContent = menuCount;
+  if (document.getElementById('statEventCount')) document.getElementById('statEventCount').textContent = eventsCount;
+  if (document.getElementById('statCatCount')) document.getElementById('statCatCount').textContent = catsCount;
+  if (document.getElementById('statTrafficCount')) document.getElementById('statTrafficCount').textContent = totalVisits.toLocaleString();
+  if (document.getElementById('statInteractionCount')) document.getElementById('statInteractionCount').textContent = totalInteractions.toLocaleString();
+
+  if (!ctx) return;
+
+  if (adminStatsChart) {
+    adminStatsChart.destroy();
+  }
+
+  adminStatsChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: ['Menu Items', 'Events', 'Cat Roster', 'Website Visits', 'Interactions'],
+      datasets: [{
+        label: 'Live Database & Traffic Metrics',
+        data: [menuCount, eventsCount, catsCount, totalVisits, totalInteractions],
+        backgroundColor: [
+          'rgba(249, 115, 22, 0.8)',
+          'rgba(20, 184, 166, 0.8)',
+          'rgba(168, 85, 247, 0.8)',
+          'rgba(52, 211, 153, 0.8)',
+          'rgba(236, 72, 153, 0.8)'
+        ],
+        borderColor: [
+          'rgb(249, 115, 22)',
+          'rgb(20, 184, 166)',
+          'rgb(168, 85, 247)',
+          'rgb(52, 211, 153)',
+          'rgb(236, 72, 153)'
+        ],
+        borderWidth: 2,
+        borderRadius: 8
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          grid: { color: 'rgba(255, 255, 255, 0.05)' },
+          ticks: { color: '#9ca3af', precision: 0 }
+        },
+        x: {
+          grid: { display: false },
+          ticks: { color: '#9ca3af' }
+        }
+      }
+    }
+  });
 }
 
 const TAB_ACTIVE_CLASS = "px-5 py-2.5 rounded-xl font-heading font-bold text-xs uppercase tracking-wider bg-brand-orange text-white shadow-md transition-all cursor-pointer";
@@ -80,7 +151,8 @@ function switchTab(tab) {
   const tabs = {
     menu:   { section: "menuSection",   button: "navMenuBtn" },
     events: { section: "eventsSection", button: "navEventsBtn" },
-    cats:   { section: "catsSection",   button: "navCatsBtn" }
+    cats:   { section: "catsSection",   button: "navCatsBtn" },
+    graphs: { section: "graphsSection", button: "navGraphsBtn" }
   };
 
   Object.entries(tabs).forEach(([name, ids]) => {
@@ -90,6 +162,10 @@ function switchTab(tab) {
     if (name === tab) {
       section.classList.remove("hidden");
       button.className = TAB_ACTIVE_CLASS;
+      if (tab === 'graphs') {
+        loadAdminAnalytics();
+        renderAdminChart();
+      }
     } else {
       section.classList.add("hidden");
       button.className = TAB_INACTIVE_CLASS;
@@ -106,6 +182,7 @@ async function loadAdminMenu() {
     if (error) throw error;
     adminMenuList = data || [];
     renderAdminMenuTable();
+    renderAdminChart();
   } catch (err) {
     console.error("Error loading menu:", err);
   }
@@ -148,16 +225,11 @@ async function handleMenuSubmit(e) {
 
   try {
     if (id) {
-      const { error } = await supabaseClient
-        .from('menu_items')
-        .update({ category, name, price, description })
-        .eq('id', id);
+      const { error } = await supabaseClient.from('menu_items').update({ category, name, price, description }).eq('id', id);
       if (error) throw error;
       alert("Menu item updated successfully!");
     } else {
-      const { error } = await supabaseClient
-        .from('menu_items')
-        .insert([{ category, name, price, description }]);
+      const { error } = await supabaseClient.from('menu_items').insert([{ category, name, price, description }]);
       if (error) throw error;
       alert("Menu item added to Supabase successfully!");
     }
@@ -218,10 +290,12 @@ async function loadAdminEvents() {
       adminEventsList = JSON.parse(localStorage.getItem("hmc_local_events") || "[]");
     }
     renderAdminEventsTable();
+    renderAdminChart();
   } catch (err) {
     console.error("Error loading events:", err);
     adminEventsList = JSON.parse(localStorage.getItem("hmc_local_events") || "[]");
     renderAdminEventsTable();
+    renderAdminChart();
   }
 }
 
@@ -274,30 +348,18 @@ async function handleEventSubmit(e) {
   const description = document.getElementById("eventFormDesc").value;
 
   const imagesArray = galleryInput ? galleryInput.split(',').map(url => url.trim()).filter(Boolean) : [];
-
-  const newEventObj = {
-    title,
-    date,
-    image,
-    description,
-    images: imagesArray
-  };
+  const newEventObj = { title, date, image, description, images: imagesArray };
 
   if (supabaseClient) {
     try {
       if (index !== "" && adminEventsList[index]?.id) {
-        const { error } = await supabaseClient
-          .from('events')
-          .update(newEventObj)
-          .eq('id', adminEventsList[index].id);
+        const { error } = await supabaseClient.from('events').update(newEventObj).eq('id', adminEventsList[index].id);
         if (error) throw error;
-        alert("Event updated successfully in Supabase!");
+        alert("Event updated successfully!");
       } else {
-        const { error } = await supabaseClient
-          .from('events')
-          .insert([newEventObj]);
+        const { error } = await supabaseClient.from('events').insert([newEventObj]);
         if (error) throw error;
-        alert("Event saved successfully to Supabase!");
+        alert("Event saved successfully!");
       }
       loadAdminEvents();
     } catch (err) {
@@ -307,19 +369,16 @@ async function handleEventSubmit(e) {
   } else {
     saveEventLocally(newEventObj, index);
   }
-
   resetEventForm();
 }
 
 function saveEventLocally(newEventObj, index) {
-  if (index !== "") {
-    adminEventsList[index] = newEventObj;
-  } else {
-    adminEventsList.unshift(newEventObj);
-  }
+  if (index !== "") adminEventsList[index] = newEventObj;
+  else adminEventsList.unshift(newEventObj);
   localStorage.setItem("hmc_local_events", JSON.stringify(adminEventsList));
   alert("Event saved successfully!");
   renderAdminEventsTable();
+  renderAdminChart();
 }
 
 function editEventItem(index) {
@@ -333,11 +392,8 @@ function editEventItem(index) {
   document.getElementById("eventFormDesc").value = ev.description || '';
 
   let galleryUrlsStr = "";
-  if (Array.isArray(ev.images)) {
-    galleryUrlsStr = ev.images.join(', ');
-  } else if (typeof ev.images === 'string') {
-    galleryUrlsStr = ev.images;
-  }
+  if (Array.isArray(ev.images)) galleryUrlsStr = ev.images.join(', ');
+  else if (typeof ev.images === 'string') galleryUrlsStr = ev.images;
   document.getElementById("eventFormGalleryUrls").value = galleryUrlsStr;
 
   document.getElementById("eventFormTitleText").textContent = "✏️ Edit Event";
@@ -358,15 +414,12 @@ async function deleteEventItem(index) {
   if (!confirm("Are you sure you want to delete this event?")) return;
   const ev = adminEventsList[index];
   if (supabaseClient && ev?.id) {
-    try {
-      await supabaseClient.from('events').delete().eq('id', ev.id);
-    } catch (err) {
-      console.error("Error deleting from supabase:", err);
-    }
+    try { await supabaseClient.from('events').delete().eq('id', ev.id); } catch (err) { console.error(err); }
   }
   adminEventsList.splice(index, 1);
   localStorage.setItem("hmc_local_events", JSON.stringify(adminEventsList));
   renderAdminEventsTable();
+  renderAdminChart();
   alert("Event deleted.");
 }
 
@@ -376,19 +429,13 @@ let catUploadWidget = null;
 async function loadAdminCats() {
   if (!supabaseClient) return;
   try {
-    const { data, error } = await supabaseClient
-      .from('cats')
-      .select('*')
-      .order('created_at', { ascending: true });
+    const { data, error } = await supabaseClient.from('cats').select('*').order('created_at', { ascending: true });
     if (error) throw error;
     adminCatsList = data || [];
     renderAdminCatsTable();
+    renderAdminChart();
   } catch (err) {
     console.error("Error loading cats:", err);
-    const tbody = document.getElementById("catsTableBody");
-    if (tbody) {
-      tbody.innerHTML = `<tr><td colspan="3" class="p-6 text-center text-rose-400 text-xs">Could not load the cat roster (${escapeHtml(err.message)}). Make sure the <code>cats</code> table exists in Supabase.</td></tr>`;
-    }
   }
 }
 
@@ -438,14 +485,9 @@ function updateCatPhotoPreview(url) {
 
 function openCatUploadWidget() {
   if (!window.cloudinary) {
-    alert("The Cloudinary upload widget failed to load. Check your internet connection, or paste a Cloudinary photo URL instead.");
+    alert("Cloudinary widget failed to load.");
     return;
   }
-  if (!CLOUDINARY_UPLOAD_PRESET) {
-    alert("Set CLOUDINARY_UPLOAD_PRESET at the top of admin.js to your unsigned Cloudinary upload preset name first. You can still paste a photo URL into the Photo URL field in the meantime.");
-    return;
-  }
-
   if (!catUploadWidget) {
     catUploadWidget = window.cloudinary.createUploadWidget(
       {
@@ -463,12 +505,7 @@ function openCatUploadWidget() {
         showSkipCropButton: true
       },
       (error, result) => {
-        if (error) {
-          console.error("Cloudinary upload error:", error);
-          alert("Photo upload failed. Please try again.");
-          return;
-        }
-        if (result && result.event === "success") {
+        if (!error && result && result.event === "success") {
           const url = result.info.secure_url;
           document.getElementById("catFormImage").value = url;
           updateCatPhotoPreview(url);
@@ -481,36 +518,20 @@ function openCatUploadWidget() {
 
 async function handleCatSubmit(e) {
   e.preventDefault();
-  if (!supabaseClient) {
-    alert("Supabase is not connected, so the cat can't be saved.");
-    return;
-  }
+  if (!supabaseClient) return;
 
   const id = document.getElementById("editCatId").value;
   const name = document.getElementById("catFormName").value.trim();
   const description = document.getElementById("catFormDesc").value.trim();
   const image = document.getElementById("catFormImage").value.trim();
 
-  if (!image) {
-    alert("Please upload a photo (or paste a photo URL) before saving.");
-    return;
-  }
-
-  const submitBtn = document.getElementById("catSubmitBtn");
-  submitBtn.disabled = true;
-
   try {
     if (id) {
-      const { error } = await supabaseClient
-        .from('cats')
-        .update({ name, description, image })
-        .eq('id', id);
+      const { error } = await supabaseClient.from('cats').update({ name, description, image }).eq('id', id);
       if (error) throw error;
       alert("Cat updated successfully!");
     } else {
-      const { error } = await supabaseClient
-        .from('cats')
-        .insert([{ name, description, image }]);
+      const { error } = await supabaseClient.from('cats').insert([{ name, description, image }]);
       if (error) throw error;
       alert("Cat added to the roster!");
     }
@@ -519,8 +540,6 @@ async function handleCatSubmit(e) {
   } catch (err) {
     console.error("Error saving cat:", err);
     alert("Error saving cat: " + err.message);
-  } finally {
-    submitBtn.disabled = false;
   }
 }
 
@@ -554,11 +573,10 @@ async function deleteCat(id) {
   try {
     const { error } = await supabaseClient.from('cats').delete().eq('id', id);
     if (error) throw error;
-    alert("Cat removed from the roster.");
+    alert("Cat removed.");
     loadAdminCats();
   } catch (err) {
     console.error("Error deleting cat:", err);
-    alert("Error deleting: " + err.message);
   }
 }
 
@@ -576,7 +594,7 @@ function previewCatFromForm() {
   const description = document.getElementById("catFormDesc").value.trim();
   const image = document.getElementById("catFormImage").value.trim();
   if (!name || !image) {
-    alert("Add a name and a photo first to see the preview.");
+    alert("Add a name and a photo first.");
     return;
   }
   openCatPreview({ name, description, image }, document.activeElement);
@@ -588,15 +606,15 @@ function openCatPreview(cat, trigger) {
   if (!sheet || !body) return;
 
   body.innerHTML = `
-    <p class="text-xs font-semibold text-gray-500 mb-4 pr-12">Preview: this is how visitors see ${escapeHtml(cat.name)} on the site.</p>
+    <p class="text-xs font-semibold text-gray-500 mb-4 pr-12">Preview: how visitors see ${escapeHtml(cat.name)}</p>
     <div class="flex gap-4 items-start">
       <img src="${escapeHtml(cat.image)}" alt="${escapeHtml(cat.name)}" class="w-32 shrink-0 aspect-[4/5] object-cover rounded-2xl bg-gray-100">
       <div class="pt-2 pr-2 min-w-0">
-        <h3 id="catSheetName" class="font-heading font-bold text-2xl text-gray-900 leading-tight break-words">${escapeHtml(cat.name)}</h3>
+        <h3 class="font-bold text-2xl text-gray-900 leading-tight break-words">${escapeHtml(cat.name)}</h3>
       </div>
     </div>
-    <p class="mt-5 text-base text-gray-700 leading-relaxed font-sans">${escapeHtml(cat.description)}</p>
-    <a href="${SPONSOR_URL}" target="_blank" rel="noopener noreferrer" class="mt-6 flex items-center justify-center py-3.5 rounded-2xl bg-brand-orange text-white font-heading font-bold text-base hover:bg-brand-orange-hover transition-colors">
+    <p class="mt-5 text-base text-gray-700 leading-relaxed">${escapeHtml(cat.description)}</p>
+    <a href="${SPONSOR_URL}" target="_blank" rel="noopener noreferrer" class="mt-6 flex items-center justify-center py-3.5 rounded-2xl bg-brand-orange text-white font-bold text-base hover:bg-orange-600 transition-colors">
       Sponsor ${escapeHtml(cat.name)}
     </a>
   `;
@@ -604,7 +622,6 @@ function openCatPreview(cat, trigger) {
   previewLastTrigger = trigger || null;
   sheet.classList.remove("hidden");
   document.body.style.overflow = "hidden";
-  document.getElementById("catSheetDialog").focus();
 }
 
 function closeCatPreview() {
@@ -612,16 +629,13 @@ function closeCatPreview() {
   if (!sheet || sheet.classList.contains("hidden")) return;
   sheet.classList.add("hidden");
   document.body.style.overflow = "";
-  if (previewLastTrigger && typeof previewLastTrigger.focus === "function") previewLastTrigger.focus();
+  if (previewLastTrigger) previewLastTrigger.focus();
   previewLastTrigger = null;
 }
 
 document.addEventListener("click", (e) => {
-  if (e.target.closest("[data-sheet-close]") || e.target.hasAttribute("data-sheet-backdrop")) {
-    closeCatPreview();
-  }
+  if (e.target.closest("[data-sheet-close]") || e.target.hasAttribute("data-sheet-backdrop")) closeCatPreview();
 });
-
 document.addEventListener("keydown", (e) => {
   if (e.key === "Escape") closeCatPreview();
 });

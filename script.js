@@ -10,6 +10,16 @@ try {
   console.error("Supabase initialization error:", e);
 }
 
+// Log visitor page views & interactions to Supabase
+async function logVisitorInteraction(eventType, details = '') {
+  if (!supabaseClient) return;
+  try {
+    await supabaseClient.from('analytics_logs').insert([{ event_type: eventType, details }]);
+  } catch (err) {
+    console.error("Error logging interaction:", err);
+  }
+}
+
 function updateStoreStatus() {
   const statusText = document.getElementById("statusText");
   const statusDot = document.getElementById("statusDot");
@@ -124,6 +134,7 @@ async function loadFrontendEvents() {
 }
 
 window.openEventModal = function(ev) {
+  logVisitorInteraction('event_view', ev.title || 'Event Modal');
   const modal = document.getElementById("eventDetailModal");
   const content = document.getElementById("modalEventContent");
   if (!modal || !content) return;
@@ -170,6 +181,9 @@ window.closeEventModal = function() {
 };
 
 document.addEventListener("DOMContentLoaded", () => {
+  // Log the initial page visit
+  logVisitorInteraction('page_view', window.location.pathname);
+
   updateStoreStatus();
   setInterval(updateStoreStatus, 60000);
 
@@ -245,8 +259,15 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   popupAboutBtn?.addEventListener("click", () => {
+    logVisitorInteraction('popup_interaction', 'About Us');
     closeWelcomePopup();
     window.scrollTo({ top: 0, behavior: "smooth" });
+  });
+
+  document.querySelectorAll(".popup-link").forEach(link => {
+    link.addEventListener("click", () => {
+      logVisitorInteraction('popup_interaction', link.textContent.trim());
+    });
   });
 
   const menuBubbles = document.querySelectorAll(".menu-bubble");
@@ -305,6 +326,7 @@ document.addEventListener("DOMContentLoaded", () => {
     bubble.addEventListener("click", () => {
       const category = bubble.getAttribute("data-category");
       activeCategory = category;
+      logVisitorInteraction('menu_click', category);
       
       if (drawerCategoryTitle) drawerCategoryTitle.textContent = category;
       if (drawerCategoryIcon) drawerCategoryIcon.textContent = categoryIcons[category] || "🍽️";
@@ -333,10 +355,13 @@ document.addEventListener("DOMContentLoaded", () => {
     renderDrawerItems(filtered, e.target.value);
   });
 
-  document.querySelectorAll("#reserveBtn, #loungeReserveBtn, #footerBookBtn").forEach(btn => {
+  document.querySelectorAll("#reserveBtn, #loungeReserveBtn, #footerBookBtn, #mobileReserveBtn").forEach(btn => {
     btn?.addEventListener("click", (e) => {
-      e.preventDefault();
-      document.getElementById("cat-lounge")?.scrollIntoView({ behavior: "smooth" });
+      logVisitorInteraction('reservation_click', btn.id || 'Booking Button');
+      if (btn.getAttribute("href") && btn.getAttribute("href").startsWith("#")) {
+        e.preventDefault();
+        document.getElementById("cat-lounge")?.scrollIntoView({ behavior: "smooth" });
+      }
     });
   });
 });
