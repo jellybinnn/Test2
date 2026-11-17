@@ -283,13 +283,28 @@
 
   <section id="catRosterSection" class="py-20 px-6 md:px-12 bg-white border-b border-gray-100">
     <div class="max-w-6xl mx-auto">
-      <div class="text-center max-w-2xl mx-auto mb-10">
+      <div class="text-center max-w-2xl mx-auto mb-8">
         <span class="text-brand-turquoise font-heading font-bold text-xs uppercase tracking-widest block mb-2">Our Resident Rescues</span>
         <h2 class="font-heading font-extrabold text-3xl sm:text-4xl text-gray-900 tracking-tight uppercase">
           Meet Our Cat Roster
         </h2>
-        <p class="text-brand-muted mt-3 font-sans">Some of the lovely feline residents currently lounging and making themselves at home in our cafe.</p>
+        <p class="text-brand-muted mt-3 font-sans">Filter by family or crew to meet our lovely feline residents.</p>
         <p class="text-xs text-brand-turquoise font-semibold mt-3 md:hidden font-sans">Swipe to meet them all →</p>
+      </div>
+
+      <!-- Category Filter Pills -->
+      <div id="catFilterButtons" class="flex flex-wrap items-center justify-center gap-2 mb-10">
+        <button data-filter="All" class="cat-filter-btn px-4 py-2 rounded-full text-xs font-bold bg-brand-orange text-white shadow-sm transition-all cursor-pointer">All Cats</button>
+        <button data-filter="The British Shorthair Family" class="cat-filter-btn px-4 py-2 rounded-full text-xs font-bold bg-gray-100 text-gray-600 hover:bg-gray-200 transition-all cursor-pointer">The British Shorthair Family</button>
+        <button data-filter="British Shorthair Gang" class="cat-filter-btn px-4 py-2 rounded-full text-xs font-bold bg-gray-100 text-gray-600 hover:bg-gray-200 transition-all cursor-pointer">British Shorthair Gang</button>
+        <button data-filter="The Mama Cats!" class="cat-filter-btn px-4 py-2 rounded-full text-xs font-bold bg-gray-100 text-gray-600 hover:bg-gray-200 transition-all cursor-pointer">The Mama Cats!</button>
+        <button data-filter="The Ragdoll Family" class="cat-filter-btn px-4 py-2 rounded-full text-xs font-bold bg-gray-100 text-gray-600 hover:bg-gray-200 transition-all cursor-pointer">The Ragdoll Family</button>
+        <button data-filter="The Ninja Tag Team" class="cat-filter-btn px-4 py-2 rounded-full text-xs font-bold bg-gray-100 text-gray-600 hover:bg-gray-200 transition-all cursor-pointer">The Ninja Tag Team</button>
+        <button data-filter="Our Spayed Single Ladies" class="cat-filter-btn px-4 py-2 rounded-full text-xs font-bold bg-gray-100 text-gray-600 hover:bg-gray-200 transition-all cursor-pointer">Our Spayed Single Ladies</button>
+        <button data-filter="The Youngsters" class="cat-filter-btn px-4 py-2 rounded-full text-xs font-bold bg-gray-100 text-gray-600 hover:bg-gray-200 transition-all cursor-pointer">The Youngsters</button>
+        <button data-filter="The Juniors" class="cat-filter-btn px-4 py-2 rounded-full text-xs font-bold bg-gray-100 text-gray-600 hover:bg-gray-200 transition-all cursor-pointer">The Juniors</button>
+        <button data-filter="The Escape Artist" class="cat-filter-btn px-4 py-2 rounded-full text-xs font-bold bg-gray-100 text-gray-600 hover:bg-gray-200 transition-all cursor-pointer">The Escape Artist</button>
+        <button data-filter="The Legit Cuddle Bugs" class="cat-filter-btn px-4 py-2 rounded-full text-xs font-bold bg-gray-100 text-gray-600 hover:bg-gray-200 transition-all cursor-pointer">The Legit Cuddle Bugs</button>
       </div>
 
       <div id="catRosterGrid" class="flex gap-4 overflow-x-auto snap-x snap-mandatory pb-4 -mx-6 px-6 no-scrollbar md:mx-0 md:px-0 md:pb-0 md:grid md:grid-cols-5 md:gap-5 md:overflow-visible"></div>

@@ -74,7 +74,6 @@ async function loadAdminAnalytics() {
   }
 }
 
-// 📊 Live Chart.js Integration Overlooking Index Data, Visits & Interactions
 let adminStatsChart = null;
 
 function renderAdminChart() {
@@ -435,7 +434,7 @@ async function loadAdminCats() {
     renderAdminCatsTable();
     renderAdminChart();
   } catch (err) {
-    console.error("Error loading cats:", err);
+    console.error("Error loading cats from Supabase:", err);
   }
 }
 
@@ -446,26 +445,34 @@ function renderAdminCatsTable() {
   if (!tbody) return;
 
   if (adminCatsList.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="3" class="p-6 text-center text-gray-500 text-xs">No cats in the roster yet. Add your first one above!</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-gray-500 text-xs">No cats in roster yet. Add one above!</td></tr>`;
     return;
   }
 
-  tbody.innerHTML = adminCatsList.map(cat => `
-    <tr class="hover:bg-gray-800/50 transition-colors">
-      <td class="p-4">
-        <div class="flex items-center gap-3">
-          <img src="${escapeHtml(cat.image)}" alt="${escapeHtml(cat.name)}" class="w-12 h-14 rounded-lg object-cover bg-gray-800">
-          <span class="font-bold text-white">${escapeHtml(cat.name)}</span>
-        </div>
-      </td>
-      <td class="p-4 text-gray-400 text-xs max-w-sm">${escapeHtml(cat.description)}</td>
-      <td class="p-4 text-right space-x-2 whitespace-nowrap">
-        <button onclick="previewCat('${escapeHtml(cat.id)}')" class="px-3 py-1.5 rounded-lg bg-gray-800 text-gray-200 hover:bg-gray-700 text-xs font-bold transition-colors cursor-pointer">Preview</button>
-        <button onclick="editCat('${escapeHtml(cat.id)}')" class="px-3 py-1.5 rounded-lg bg-brand/20 text-brand-turquoise hover:bg-brand/40 text-xs font-bold transition-colors cursor-pointer">Edit</button>
-        <button onclick="deleteCat('${escapeHtml(cat.id)}')" class="px-3 py-1.5 rounded-lg bg-rose-500/20 text-rose-300 hover:bg-rose-500/30 text-xs font-bold transition-colors cursor-pointer">Delete</button>
-      </td>
-    </tr>
-  `).join("");
+  tbody.innerHTML = adminCatsList.map(cat => {
+    const hasPhoto = cat.image && cat.image.trim() !== '';
+    const thumbHtml = hasPhoto
+      ? `<img src="${escapeHtml(cat.image)}" alt="${escapeHtml(cat.name)}" class="w-12 h-14 rounded-lg object-cover bg-gray-800">`
+      : `<div class="w-12 h-14 rounded-lg bg-gray-800 flex items-center justify-center text-xl">🐱</div>`;
+
+    return `
+      <tr class="hover:bg-gray-800/50 transition-colors">
+        <td class="p-4">
+          <div class="flex items-center gap-3">
+            ${thumbHtml}
+            <span class="font-bold text-white">${escapeHtml(cat.name)}</span>
+          </div>
+        </td>
+        <td class="p-4 text-brand-turquoise text-xs font-semibold">${escapeHtml(cat.category || 'Resident')}</td>
+        <td class="p-4 text-gray-400 text-xs max-w-sm">${escapeHtml(cat.description)}</td>
+        <td class="p-4 text-right space-x-2 whitespace-nowrap">
+          <button onclick="previewCat('${escapeHtml(cat.id)}')" class="px-3 py-1.5 rounded-lg bg-gray-800 text-gray-200 hover:bg-gray-700 text-xs font-bold transition-colors cursor-pointer">Preview</button>
+          <button onclick="editCat('${escapeHtml(cat.id)}')" class="px-3 py-1.5 rounded-lg bg-brand/20 text-brand-turquoise hover:bg-brand/40 text-xs font-bold transition-colors cursor-pointer">Edit</button>
+          <button onclick="deleteCat('${escapeHtml(cat.id)}')" class="px-3 py-1.5 rounded-lg bg-rose-500/20 text-rose-300 hover:bg-rose-500/30 text-xs font-bold transition-colors cursor-pointer">Delete</button>
+        </td>
+      </tr>
+    `;
+  }).join("");
 }
 
 function updateCatPhotoPreview(url) {
@@ -522,16 +529,17 @@ async function handleCatSubmit(e) {
 
   const id = document.getElementById("editCatId").value;
   const name = document.getElementById("catFormName").value.trim();
+  const category = document.getElementById("catFormCategory").value;
   const description = document.getElementById("catFormDesc").value.trim();
   const image = document.getElementById("catFormImage").value.trim();
 
   try {
     if (id) {
-      const { error } = await supabaseClient.from('cats').update({ name, description, image }).eq('id', id);
+      const { error } = await supabaseClient.from('cats').update({ name, category, description, image }).eq('id', id);
       if (error) throw error;
       alert("Cat updated successfully!");
     } else {
-      const { error } = await supabaseClient.from('cats').insert([{ name, description, image }]);
+      const { error } = await supabaseClient.from('cats').insert([{ name, category, description, image }]);
       if (error) throw error;
       alert("Cat added to the roster!");
     }
@@ -549,6 +557,7 @@ function editCat(id) {
 
   document.getElementById("editCatId").value = cat.id;
   document.getElementById("catFormName").value = cat.name || '';
+  document.getElementById("catFormCategory").value = cat.category || 'The British Shorthair Family';
   document.getElementById("catFormDesc").value = cat.description || '';
   document.getElementById("catFormImage").value = cat.image || '';
   updateCatPhotoPreview(cat.image || '');
@@ -591,13 +600,14 @@ function previewCat(id) {
 
 function previewCatFromForm() {
   const name = document.getElementById("catFormName").value.trim();
+  const category = document.getElementById("catFormCategory").value;
   const description = document.getElementById("catFormDesc").value.trim();
   const image = document.getElementById("catFormImage").value.trim();
-  if (!name || !image) {
-    alert("Add a name and a photo first.");
+  if (!name) {
+    alert("Add a name first.");
     return;
   }
-  openCatPreview({ name, description, image }, document.activeElement);
+  openCatPreview({ name, category, description, image }, document.activeElement);
 }
 
 function openCatPreview(cat, trigger) {
@@ -605,11 +615,15 @@ function openCatPreview(cat, trigger) {
   const body = document.getElementById("catSheetBody");
   if (!sheet || !body) return;
 
+  const displayImg = (cat.image && cat.image.trim() !== '') ? cat.image : 'https://res.cloudinary.com/tfk63bnl/image/upload/f_auto,q_auto/hmc_logo';
+  const displayCat = cat.category || 'The British Shorthair Family';
+
   body.innerHTML = `
     <p class="text-xs font-semibold text-gray-500 mb-4 pr-12">Preview: how visitors see ${escapeHtml(cat.name)}</p>
     <div class="flex gap-4 items-start">
-      <img src="${escapeHtml(cat.image)}" alt="${escapeHtml(cat.name)}" class="w-32 shrink-0 aspect-[4/5] object-cover rounded-2xl bg-gray-100">
+      <img src="${escapeHtml(displayImg)}" alt="${escapeHtml(cat.name)}" class="w-32 shrink-0 aspect-[4/5] object-cover rounded-2xl bg-gray-100">
       <div class="pt-2 pr-2 min-w-0">
+        <span class="inline-block px-2.5 py-0.5 rounded-full bg-brand-turquoise-light text-brand-dark text-xs font-bold mb-1.5">${escapeHtml(displayCat)}</span>
         <h3 class="font-bold text-2xl text-gray-900 leading-tight break-words">${escapeHtml(cat.name)}</h3>
       </div>
     </div>

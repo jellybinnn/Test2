@@ -1,7 +1,9 @@
 (function () {
   var SPONSOR_URL = 'https://www.facebook.com/hellomeowcafe';
+  var DEFAULT_CAT_IMAGE = 'https://res.cloudinary.com/tfk63bnl/image/upload/f_auto,q_auto/hmc_logo';
   var catsData = [];
   var lastTrigger = null;
+  var currentFilter = 'All';
 
   function esc(str) {
     return String(str ?? '')
@@ -10,17 +12,6 @@
       .replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;')
       .replace(/'/g, '&#39;');
-  }
-
-  function getTags(cat) {
-    var tags = [];
-    if (Array.isArray(cat.tags)) tags = cat.tags;
-    else if (typeof cat.tags === 'string' && cat.tags.trim() !== '') {
-      tags = cat.tags.split(',');
-    }
-    tags = tags.map(function (t) { return String(t).trim(); }).filter(Boolean);
-    if (cat.age && String(cat.age).trim() !== '') tags.push(String(cat.age).trim());
-    return tags;
   }
 
   function bindSheet(el) {
@@ -61,29 +52,27 @@
     return el;
   }
 
-  function openCatSheet(index, trigger) {
-    var cat = catsData[index];
+  function openCatSheet(cat, trigger) {
     if (!cat) return;
 
     var sheet = ensureSheet();
     var body = document.getElementById('catSheetBody');
-    var tags = getTags(cat);
+    var hasPhoto = cat.image && cat.image.trim() !== '';
+    var catCategory = cat.category || 'Resident';
 
-    var tagsHtml = tags.length
-      ? '<div class="flex flex-wrap gap-1.5 mt-3">' +
-          tags.map(function (t) {
-            return '<span class="px-3 py-1 rounded-full bg-brand-turquoise-light text-brand-dark text-sm font-semibold font-sans">' + esc(t) + '</span>';
-          }).join('') +
-        '</div>'
-      : '';
+    var avatarHtml = hasPhoto
+      ? '<img src="' + esc(cat.image) + '" alt="' + esc(cat.name) + '" class="w-32 shrink-0 aspect-[4/5] object-cover rounded-2xl bg-brand-turquoise-light/40">'
+      : '<div class="w-32 shrink-0 aspect-[4/5] rounded-2xl bg-gradient-to-br from-brand-dark to-brand-turquoise flex flex-col items-center justify-center text-white p-3 text-center">' +
+          '<span class="text-4xl mb-1">🐱</span>' +
+          '<span class="text-[10px] font-bold uppercase tracking-wider opacity-85">No Photo Yet</span>' +
+        '</div>';
 
     body.innerHTML =
       '<div class="flex gap-4 items-start">' +
-        '<img src="' + esc(cat.image) + '" alt="' + esc(cat.name) + '" ' +
-             'class="w-32 shrink-0 aspect-[4/5] object-cover rounded-2xl bg-gray-100">' +
-        '<div class="pt-6 pr-10 min-w-0">' +
+        avatarHtml +
+        '<div class="pt-2 pr-10 min-w-0">' +
+          '<span class="inline-block px-3 py-1 rounded-full bg-brand-turquoise-light text-brand-dark text-xs font-bold mb-2 font-sans">' + esc(catCategory) + '</span>' +
           '<h3 id="catSheetName" class="font-heading font-bold text-2xl text-gray-900 leading-tight break-words">' + esc(cat.name) + '</h3>' +
-          tagsHtml +
         '</div>' +
       '</div>' +
       '<p class="mt-5 text-base text-gray-700 leading-relaxed font-sans">' + esc(cat.description) + '</p>' +
@@ -111,17 +100,71 @@
     if (e.key === 'Escape') closeCatSheet();
   });
 
-  async function loadCatRoster() {
-    const grid =
-      document.getElementById('catRosterGrid') ||
-      document.querySelector('#catRosterSection .snap-x');
+  function renderRoster() {
+    const grid = document.getElementById('catRosterGrid');
     if (!grid) return;
 
-    const client = (typeof supabaseClient !== 'undefined') ? supabaseClient : null;
-    if (!client) {
-      console.warn("Supabase client is not available for public roster loading.");
+    var filtered = catsData.filter(function (cat) {
+      if (currentFilter === 'All') return true;
+      return (cat.category || '').toLowerCase() === currentFilter.toLowerCase();
+    });
+
+    if (filtered.length === 0) {
+      grid.innerHTML = '<div class="col-span-5 text-center text-gray-400 py-10 text-sm">No cats found in this category yet.</div>';
       return;
     }
+
+    grid.innerHTML = filtered.map((cat) => {
+      var hasPhoto = cat.image && cat.image.trim() !== '';
+      var catCategory = cat.category || 'Resident';
+
+      var visualHtml = hasPhoto
+        ? `<img src="${esc(cat.image)}" alt="${esc(cat.name)}" loading="lazy" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">`
+        : `<div class="absolute inset-0 bg-gradient-to-br from-brand-dark to-brand-turquoise flex flex-col items-center justify-start pt-8 p-4 text-center">
+             <span class="text-5xl mb-1.5 opacity-85">🐱</span>
+             <span class="text-[10px] uppercase tracking-widest text-white/75 font-bold">Photo Coming Soon</span>
+           </div>`;
+
+      return `
+        <article data-cat-id="${esc(cat.id)}" role="button" tabindex="0" aria-label="View ${esc(cat.name)}'s profile"
+          class="group relative shrink-0 w-48 sm:w-56 md:w-auto snap-start aspect-[4/5] rounded-2xl overflow-hidden shadow-card border border-gray-100 cursor-pointer focus:outline-none focus-visible:ring-4 focus-visible:ring-brand-turquoise">
+          ${visualHtml}
+          <div class="absolute inset-x-0 bottom-0 p-3.5 pt-12 bg-gradient-to-t from-black/90 via-black/60 to-transparent text-white">
+            <span class="inline-block px-2 py-0.5 rounded-full bg-brand-orange/95 text-[9px] font-bold mb-1 leading-tight">${esc(catCategory)}</span>
+            <h3 class="font-heading font-bold text-sm leading-tight">${esc(cat.name)}</h3>
+            <p class="text-[11px] text-white/95 leading-snug mt-1">${esc(cat.description)}</p>
+          </div>
+        </article>
+      `;
+    }).join('');
+
+    if (!grid.dataset.sheetBound) {
+      grid.dataset.sheetBound = 'true';
+
+      grid.addEventListener('click', function (e) {
+        var card = e.target.closest('[data-cat-id]');
+        if (card) {
+          var id = card.getAttribute('data-cat-id');
+          var catObj = catsData.find(c => String(c.id) === String(id));
+          openCatSheet(catObj, card);
+        }
+      });
+
+      grid.addEventListener('keydown', function (e) {
+        if (e.key !== 'Enter' && e.key !== ' ') return;
+        var card = e.target.closest('[data-cat-id]');
+        if (!card) return;
+        e.preventDefault();
+        var id = card.getAttribute('data-cat-id');
+        var catObj = catsData.find(c => String(c.id) === String(id));
+        openCatSheet(catObj, card);
+      });
+    }
+  }
+
+  async function loadCatRoster() {
+    const client = (typeof supabaseClient !== 'undefined') ? supabaseClient : null;
+    if (!client) return;
 
     try {
       const { data, error } = await client
@@ -129,52 +172,23 @@
         .select('*')
         .order('created_at', { ascending: true });
 
-      if (error) {
-        console.error("Error fetching cats from Supabase:", error);
-        return;
-      }
+      if (error) throw error;
+      catsData = data || [];
+      renderRoster();
 
-      if (!data || data.length === 0) {
-        console.log("No cats found in Supabase table.");
-        return;
-      }
-
-      catsData = data;
-
-      grid.innerHTML = data.map((cat, i) => `
-        <article data-cat-index="${i}" role="button" tabindex="0" aria-label="View ${esc(cat.name)}'s profile"
-          class="group relative shrink-0 w-44 sm:w-52 md:w-auto snap-start aspect-[4/5] rounded-2xl overflow-hidden shadow-card border border-gray-100 cursor-pointer focus:outline-none focus-visible:ring-4 focus-visible:ring-brand-turquoise">
-          <img src="${esc(cat.image)}" alt="${esc(cat.name)}" loading="lazy"
-              class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
-          <div class="absolute inset-x-0 bottom-0 p-3 pt-10 bg-gradient-to-t from-black/75 via-black/40 to-transparent text-white">
-            <h3 class="font-heading font-bold text-sm leading-tight">${esc(cat.name)}</h3>
-            <p class="text-[11px] text-white/85 leading-snug mt-0.5">${esc(cat.description)}</p>
-            <div class="flex flex-wrap gap-1 mt-1.5">
-              <span class="px-2 py-0.5 rounded-full bg-white/20 backdrop-blur-sm text-[10px] font-semibold">Sweet</span>
-              <span class="px-2 py-0.5 rounded-full bg-brand-orange/80 text-[10px] font-semibold">Rescue</span>
-            </div>
-          </div>
-        </article>
-      `).join('');
-
-      if (!grid.dataset.sheetBound) {
-        grid.dataset.sheetBound = 'true';
-
-        grid.addEventListener('click', function (e) {
-          var card = e.target.closest('[data-cat-index]');
-          if (card) openCatSheet(Number(card.getAttribute('data-cat-index')), card);
-        });
-
-        grid.addEventListener('keydown', function (e) {
-          if (e.key !== 'Enter' && e.key !== ' ') return;
-          var card = e.target.closest('[data-cat-index]');
-          if (!card) return;
-          e.preventDefault();
-          openCatSheet(Number(card.getAttribute('data-cat-index')), card);
-        });
-      }
+      var filterButtons = document.querySelectorAll('.cat-filter-btn');
+      filterButtons.forEach(btn => {
+        btn.onclick = function () {
+          filterButtons.forEach(b => {
+            b.className = "cat-filter-btn px-4 py-2 rounded-full text-xs font-bold bg-gray-100 text-gray-600 hover:bg-gray-200 transition-all cursor-pointer";
+          });
+          btn.className = "cat-filter-btn px-4 py-2 rounded-full text-xs font-bold bg-brand-orange text-white shadow-sm transition-all cursor-pointer";
+          currentFilter = btn.getAttribute('data-filter');
+          renderRoster();
+        };
+      });
     } catch (err) {
-      console.error('Error loading cat roster:', err);
+      console.error('Error loading cat roster from Supabase:', err);
     }
   }
 
