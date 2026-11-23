@@ -255,3 +255,26 @@ nav a {
 
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+.menu-bubble {
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+              box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+              border-color 0.25s ease;
+}
+
+.menu-bubble:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 14px 28px -8px rgba(0, 168, 150, 0.18);
+}
+
+#catRosterGrid > div,
+#eventsGrid > div {
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+              box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#catRosterGrid > div:hover,
+#eventsGrid > div:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 32px -10px rgba(0, 107, 136, 0.16);
+}
