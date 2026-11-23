@@ -3,6 +3,9 @@ const SUPABASE_ANON_KEY = 'sb_publishable_8iF-UjYhlzFovpA7Ay1K5g_V5vyaRjg';
 
 const CLOUDINARY_CLOUD_NAME = 'tfk63bnl';
 const CLOUDINARY_UPLOAD_PRESET = 'hmc_cats';
+const SPONSOR_URL = 'https://www.facebook.com/hellomeowcafe';
+const DEFAULT_BANNER_URL = 'https://res.cloudinary.com/tfk63bnl/image/upload/f_auto,q_auto/hmc_banner';
+const DEFAULT_CAT_IMAGE = 'https://res.cloudinary.com/tfk63bnl/image/upload/f_auto,q_auto/hmc_logo';
 
 let supabaseClient = null;
 try {
@@ -22,28 +25,87 @@ function escapeHtml(str) {
     .replace(/'/g, '&#39;');
 }
 
+function safeUrl(url, fallback = '') {
+  const trimmed = String(url ?? '').trim();
+  if (!trimmed) return fallback;
+  try {
+    const parsed = new URL(trimmed);
+    if (parsed.protocol === 'https:') {
+      return parsed.href;
+    }
+  } catch (_) {
+    // Invalid URL falls back safely
+  }
+  return fallback;
+}
+
+function showLoginError(message) {
+  const errEl = document.getElementById("internalErrorMsg");
+  if (!errEl) return;
+  errEl.textContent = message;
+  errEl.classList.remove("hidden");
+}
+
+function hideLoginError() {
+  const errEl = document.getElementById("internalErrorMsg");
+  if (!errEl) return;
+  errEl.classList.add("hidden");
+}
+
 document.addEventListener("DOMContentLoaded", async () => {
-  const isAuth = sessionStorage.getItem("hmc_admin_auth");
-  if (isAuth !== "true") {
+  sessionStorage.removeItem("hmc_admin_auth");
+
+  if (!supabaseClient) {
+    showLoginError("Authentication service unavailable.");
     document.getElementById("adminLoginOverlay")?.classList.remove("hidden");
     return;
   }
+
+  const { data, error } = await supabaseClient.auth.getSession();
+  if (error || !data?.session) {
+    document.getElementById("adminLoginOverlay")?.classList.remove("hidden");
+    return;
+  }
+
+  document.getElementById("adminLoginOverlay")?.classList.add("hidden");
   initAdminDashboard();
 });
 
-function handleInternalLogin(e) {
+async function handleInternalLogin(e) {
   e.preventDefault();
-  const pass = document.getElementById("internalPassword").value;
-  if (pass === "hellomeow2026" || pass === "admin123" || pass === "hmcadmin") {
-    sessionStorage.setItem("hmc_admin_auth", "true");
-    document.getElementById("adminLoginOverlay")?.classList.add("hidden");
-    initAdminDashboard();
-  } else {
-    document.getElementById("internalErrorMsg")?.classList.remove("hidden");
+  hideLoginError();
+
+  if (!supabaseClient) {
+    showLoginError("Authentication service unavailable.");
+    return;
   }
+
+  const emailEl = document.getElementById("internalEmail");
+  const passEl = document.getElementById("internalPassword");
+  const email = (emailEl?.value || '').trim();
+  const password = passEl?.value || '';
+
+  if (!email || !password) {
+    showLoginError("Please enter both email and password.");
+    return;
+  }
+
+  const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+  if (error || !data?.session) {
+    console.error("Admin sign-in error:", error);
+    showLoginError("Invalid credentials. Please check your email and password.");
+    return;
+  }
+
+  if (passEl) passEl.value = "";
+  document.getElementById("adminLoginOverlay")?.classList.add("hidden");
+  initAdminDashboard();
 }
 
 async function adminLogout() {
+  if (supabaseClient) {
+    await supabaseClient.auth.signOut();
+  }
   sessionStorage.removeItem("hmc_admin_auth");
   location.reload();
 }
@@ -62,7 +124,7 @@ async function loadAdminAnalytics() {
   try {
     const { data, error } = await supabaseClient.from('analytics_logs').select('*');
     if (error) throw error;
-    
+
     const logs = data || [];
     const visits = logs.filter(l => l.event_type === 'page_view').length;
     const interactions = logs.filter(l => l.event_type !== 'page_view').length;
@@ -218,25 +280,25 @@ async function handleMenuSubmit(e) {
 
   const id = document.getElementById("editMenuId").value;
   const category = document.getElementById("menuFormCategory").value;
-  const name = document.getElementById("menuFormName").value;
-  const price = document.getElementById("menuFormPrice").value;
-  const description = document.getElementById("menuFormDesc").value;
+  const name = document.getElementById("menuFormName").value.trim();
+  const price = document.getElementById("menuFormPrice").value.trim();
+  const description = document.getElementById("menuFormDesc").value.trim();
 
   try {
     if (id) {
       const { error } = await supabaseClient.from('menu_items').update({ category, name, price, description }).eq('id', id);
       if (error) throw error;
-      alert("Menu item updated successfully!");
+      alert("Menu item updated successfully.");
     } else {
       const { error } = await supabaseClient.from('menu_items').insert([{ category, name, price, description }]);
       if (error) throw error;
-      alert("Menu item added to Supabase successfully!");
+      alert("Menu item saved successfully.");
     }
     resetMenuForm();
     loadAdminMenu();
   } catch (err) {
     console.error("Error saving menu item:", err);
-    alert("Error saving menu item: " + err.message);
+    alert("Could not save menu item. Please verify you are signed in and try again.");
   }
 }
 
@@ -273,7 +335,7 @@ async function deleteMenuItem(id) {
     loadAdminMenu();
   } catch (err) {
     console.error("Error deleting menu item:", err);
-    alert("Error deleting: " + err.message);
+    alert("Could not delete menu item. Please try again.");
   }
 }
 
@@ -302,7 +364,7 @@ function renderAdminEventsTable() {
   const tbody = document.getElementById("eventsTableBody");
   const navBadge = document.getElementById("navEventCountBadge");
   const tableBadge = document.getElementById("tableEventCountBadge");
-  
+
   if (navBadge) navBadge.textContent = adminEventsList.length;
   if (tableBadge) tableBadge.textContent = adminEventsList.length;
   if (!tbody) return;
@@ -317,10 +379,12 @@ function renderAdminEventsTable() {
     if (Array.isArray(ev.images)) imgCount = ev.images.length;
     else if (typeof ev.images === 'string' && ev.images.trim() !== '') imgCount = ev.images.split(',').length;
 
+    const thumbUrl = safeUrl(ev.image, DEFAULT_BANNER_URL);
+
     return `
       <tr class="hover:bg-gray-800/50 transition-colors">
         <td class="p-4 font-bold text-white flex items-center gap-3">
-          <img src="${escapeHtml(ev.image || 'https://res.cloudinary.com/tfk63bnl/image/upload/f_auto,q_auto/hmc_banner')}" class="w-10 h-10 rounded-lg object-cover">
+          <img src="${escapeHtml(thumbUrl)}" alt="${escapeHtml(ev.title || 'Event')}" class="w-10 h-10 rounded-lg object-cover">
           <div>
             <span>${escapeHtml(ev.title)}</span>
             ${imgCount > 0 ? `<span class="block text-[10px] text-brand-turquoise font-semibold">+${imgCount} gallery photos</span>` : ''}
@@ -340,13 +404,16 @@ function renderAdminEventsTable() {
 async function handleEventSubmit(e) {
   e.preventDefault();
   const index = document.getElementById("editEventIndex").value;
-  const title = document.getElementById("eventFormTitle").value;
-  const date = document.getElementById("eventFormDate").value;
-  const image = document.getElementById("eventFormImage").value || 'https://res.cloudinary.com/tfk63bnl/image/upload/f_auto,q_auto/hmc_banner';
+  const title = document.getElementById("eventFormTitle").value.trim();
+  const date = document.getElementById("eventFormDate").value.trim();
+  const rawImage = document.getElementById("eventFormImage").value.trim();
+  const image = safeUrl(rawImage, DEFAULT_BANNER_URL);
   const galleryInput = document.getElementById("eventFormGalleryUrls").value;
-  const description = document.getElementById("eventFormDesc").value;
+  const description = document.getElementById("eventFormDesc").value.trim();
 
-  const imagesArray = galleryInput ? galleryInput.split(',').map(url => url.trim()).filter(Boolean) : [];
+  const imagesArray = galleryInput
+    ? galleryInput.split(',').map(url => safeUrl(url, '')).filter(Boolean)
+    : [];
   const newEventObj = { title, date, image, description, images: imagesArray };
 
   if (supabaseClient) {
@@ -354,11 +421,11 @@ async function handleEventSubmit(e) {
       if (index !== "" && adminEventsList[index]?.id) {
         const { error } = await supabaseClient.from('events').update(newEventObj).eq('id', adminEventsList[index].id);
         if (error) throw error;
-        alert("Event updated successfully!");
+        alert("Event updated successfully.");
       } else {
         const { error } = await supabaseClient.from('events').insert([newEventObj]);
         if (error) throw error;
-        alert("Event saved successfully!");
+        alert("Event saved successfully.");
       }
       loadAdminEvents();
     } catch (err) {
@@ -375,7 +442,7 @@ function saveEventLocally(newEventObj, index) {
   if (index !== "") adminEventsList[index] = newEventObj;
   else adminEventsList.unshift(newEventObj);
   localStorage.setItem("hmc_local_events", JSON.stringify(adminEventsList));
-  alert("Event saved successfully!");
+  alert("Event saved locally.");
   renderAdminEventsTable();
   renderAdminChart();
 }
@@ -387,12 +454,12 @@ function editEventItem(index) {
   document.getElementById("editEventIndex").value = index;
   document.getElementById("eventFormTitle").value = ev.title || '';
   document.getElementById("eventFormDate").value = ev.date || '';
-  document.getElementById("eventFormImage").value = ev.image || '';
+  document.getElementById("eventFormImage").value = safeUrl(ev.image, '');
   document.getElementById("eventFormDesc").value = ev.description || '';
 
   let galleryUrlsStr = "";
-  if (Array.isArray(ev.images)) galleryUrlsStr = ev.images.join(', ');
-  else if (typeof ev.images === 'string') galleryUrlsStr = ev.images;
+  if (Array.isArray(ev.images)) galleryUrlsStr = ev.images.map(u => safeUrl(u, '')).filter(Boolean).join(', ');
+  else if (typeof ev.images === 'string') galleryUrlsStr = ev.images.split(',').map(u => safeUrl(u, '')).filter(Boolean).join(', ');
   document.getElementById("eventFormGalleryUrls").value = galleryUrlsStr;
 
   document.getElementById("eventFormTitleText").textContent = "✏️ Edit Event";
@@ -450,9 +517,9 @@ function renderAdminCatsTable() {
   }
 
   tbody.innerHTML = adminCatsList.map(cat => {
-    const hasPhoto = cat.image && cat.image.trim() !== '';
-    const thumbHtml = hasPhoto
-      ? `<img src="${escapeHtml(cat.image)}" alt="${escapeHtml(cat.name)}" class="w-12 h-14 rounded-lg object-cover bg-gray-800">`
+    const cleanImg = safeUrl(cat.image, '');
+    const thumbHtml = cleanImg
+      ? `<img src="${escapeHtml(cleanImg)}" alt="${escapeHtml(cat.name)}" class="w-12 h-14 rounded-lg object-cover bg-gray-800">`
       : `<div class="w-12 h-14 rounded-lg bg-gray-800 flex items-center justify-center text-xl">🐱</div>`;
 
     return `
@@ -479,8 +546,9 @@ function updateCatPhotoPreview(url) {
   const img = document.getElementById("catPhotoPreview");
   const placeholder = document.getElementById("catPhotoPlaceholder");
   if (!img || !placeholder) return;
-  if (url && url.trim() !== "") {
-    img.src = url.trim();
+  const cleanUrl = safeUrl(url, '');
+  if (cleanUrl) {
+    img.src = cleanUrl;
     img.classList.remove("hidden");
     placeholder.classList.add("hidden");
   } else {
@@ -492,7 +560,7 @@ function updateCatPhotoPreview(url) {
 
 function openCatUploadWidget() {
   if (!window.cloudinary) {
-    alert("Cloudinary widget failed to load.");
+    alert("Upload widget unavailable.");
     return;
   }
   if (!catUploadWidget) {
@@ -513,9 +581,11 @@ function openCatUploadWidget() {
       },
       (error, result) => {
         if (!error && result && result.event === "success") {
-          const url = result.info.secure_url;
-          document.getElementById("catFormImage").value = url;
-          updateCatPhotoPreview(url);
+          const url = safeUrl(result.info.secure_url, '');
+          if (url) {
+            document.getElementById("catFormImage").value = url;
+            updateCatPhotoPreview(url);
+          }
         }
       }
     );
@@ -531,23 +601,23 @@ async function handleCatSubmit(e) {
   const name = document.getElementById("catFormName").value.trim();
   const category = document.getElementById("catFormCategory").value;
   const description = document.getElementById("catFormDesc").value.trim();
-  const image = document.getElementById("catFormImage").value.trim();
+  const image = safeUrl(document.getElementById("catFormImage").value.trim(), '');
 
   try {
     if (id) {
       const { error } = await supabaseClient.from('cats').update({ name, category, description, image }).eq('id', id);
       if (error) throw error;
-      alert("Cat updated successfully!");
+      alert("Cat updated successfully.");
     } else {
       const { error } = await supabaseClient.from('cats').insert([{ name, category, description, image }]);
       if (error) throw error;
-      alert("Cat added to the roster!");
+      alert("Cat added to the roster.");
     }
     resetCatForm();
     loadAdminCats();
   } catch (err) {
     console.error("Error saving cat:", err);
-    alert("Error saving cat: " + err.message);
+    alert("Could not save cat. Please verify you are signed in and try again.");
   }
 }
 
@@ -555,12 +625,13 @@ function editCat(id) {
   const cat = adminCatsList.find(c => String(c.id) === String(id));
   if (!cat) return;
 
+  const cleanImg = safeUrl(cat.image, '');
   document.getElementById("editCatId").value = cat.id;
   document.getElementById("catFormName").value = cat.name || '';
   document.getElementById("catFormCategory").value = cat.category || 'The British Shorthair Family';
   document.getElementById("catFormDesc").value = cat.description || '';
-  document.getElementById("catFormImage").value = cat.image || '';
-  updateCatPhotoPreview(cat.image || '');
+  document.getElementById("catFormImage").value = cleanImg;
+  updateCatPhotoPreview(cleanImg);
 
   document.getElementById("catFormTitleText").textContent = "✏️ Edit Cat";
   document.getElementById("catSubmitBtn").textContent = "Update Cat";
@@ -586,10 +657,10 @@ async function deleteCat(id) {
     loadAdminCats();
   } catch (err) {
     console.error("Error deleting cat:", err);
+    alert("Could not remove cat. Please try again.");
   }
 }
 
-const SPONSOR_URL = 'https://www.facebook.com/hellomeowcafe';
 let previewLastTrigger = null;
 
 function previewCat(id) {
@@ -615,7 +686,7 @@ function openCatPreview(cat, trigger) {
   const body = document.getElementById("catSheetBody");
   if (!sheet || !body) return;
 
-  const displayImg = (cat.image && cat.image.trim() !== '') ? cat.image : 'https://res.cloudinary.com/tfk63bnl/image/upload/f_auto,q_auto/hmc_logo';
+  const displayImg = safeUrl(cat.image, DEFAULT_CAT_IMAGE);
   const displayCat = cat.category || 'The British Shorthair Family';
 
   body.innerHTML = `

@@ -1,5 +1,6 @@
 const SUPABASE_URL = 'https://uchlotinokpqhwpouczl.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_8iF-UjYhlzFovpA7Ay1K5g_V5vyaRjg';
+const DEFAULT_BANNER_URL = 'https://res.cloudinary.com/tfk63bnl/image/upload/f_auto,q_auto/hmc_banner';
 
 let supabaseClient = null;
 try {
@@ -10,11 +11,49 @@ try {
   console.error("Supabase initialization error:", e);
 }
 
+function escapeHtml(str) {
+  return String(str ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function safeUrl(url, fallback = '') {
+  const trimmed = String(url ?? '').trim();
+  if (!trimmed) return fallback;
+  try {
+    const parsed = new URL(trimmed);
+    if (parsed.protocol === 'https:') {
+      return parsed.href;
+    }
+  } catch (_) {
+    // Invalid URL falls back safely
+  }
+  return fallback;
+}
+
+function normalizeGalleryImages(images) {
+  if (Array.isArray(images)) {
+    return images.map(u => safeUrl(u, '')).filter(Boolean);
+  }
+  if (typeof images === 'string' && images.trim() !== '') {
+    return images.split(',').map(s => safeUrl(s, '')).filter(Boolean);
+  }
+  return [];
+}
+
+let renderedEvents = [];
+
 // Log visitor page views & interactions to Supabase
 async function logVisitorInteraction(eventType, details = '') {
   if (!supabaseClient) return;
   try {
-    await supabaseClient.from('analytics_logs').insert([{ event_type: eventType, details }]);
+    await supabaseClient.from('analytics_logs').insert([{
+      event_type: String(eventType).slice(0, 60),
+      details: String(details).slice(0, 200)
+    }]);
   } catch (err) {
     console.error("Error logging interaction:", err);
   }
@@ -28,12 +67,10 @@ function updateStoreStatus() {
   const mobileStatusDot = document.getElementById("mobileStatusDot");
 
   const now = new Date();
-  const currentHour = now.getHours();
-  const currentMinutes = now.getMinutes();
-  const currentTimeInMinutes = currentHour * 60 + currentMinutes;
+  const currentTimeInMinutes = now.getHours() * 60 + now.getMinutes();
 
-  const openTimeInMinutes = 9 * 60;  
-  const closeTimeInMinutes = 21 * 60; 
+  const openTimeInMinutes = 9 * 60;
+  const closeTimeInMinutes = 21 * 60;
 
   const isOpen = currentTimeInMinutes >= openTimeInMinutes && currentTimeInMinutes < closeTimeInMinutes;
 
@@ -65,7 +102,7 @@ async function loadFrontendMenu() {
   try {
     const { data, error } = await supabaseClient.from('menu_items').select('*');
     if (error) throw error;
-    allMenuData = data || [];
+    allMenuData = Array.isArray(data) ? data : [];
   } catch (err) {
     console.error("Error fetching menu items:", err);
   }
@@ -80,7 +117,7 @@ async function loadFrontendEvents() {
   if (supabaseClient) {
     try {
       const { data, error } = await supabaseClient.from('events').select('*');
-      if (!error && data && data.length > 0) {
+      if (!error && Array.isArray(data) && data.length > 0) {
         events = data;
       }
     } catch (err) {
@@ -89,40 +126,44 @@ async function loadFrontendEvents() {
   }
 
   if (events.length === 0) {
-    events = JSON.parse(localStorage.getItem("hmc_local_events") || "[]");
+    try {
+      const parsedLocal = JSON.parse(localStorage.getItem("hmc_local_events") || "[]");
+      if (Array.isArray(parsedLocal)) {
+        events = parsedLocal;
+      }
+    } catch (err) {
+      console.error("Error reading local events:", err);
+    }
   }
 
   function parseEventDate(dateStr) {
-    if (!dateStr) return new Date(8640000000000); 
-    let firstPart = dateStr.split(',')[0].trim();
+    if (!dateStr) return new Date(8640000000000);
+    let firstPart = String(dateStr).split(',')[0].trim();
     firstPart = firstPart.replace(/(\d+)\s*-\s*\d+/, '$1');
     const parsed = new Date(firstPart);
     return isNaN(parsed) ? new Date(8640000000000) : parsed;
   }
 
   events.sort((a, b) => parseEventDate(a.date) - parseEventDate(b.date));
+  renderedEvents = events;
 
   if (eventCountBadge) eventCountBadge.textContent = `${events.length} Upcoming Events`;
 
-  eventsContainer.innerHTML = events.map(ev => {
-    let galleryImages = [];
-    if (Array.isArray(ev.images)) {
-      galleryImages = ev.images;
-    } else if (typeof ev.images === 'string' && ev.images.trim() !== '') {
-      galleryImages = ev.images.split(',').map(s => s.trim()).filter(Boolean);
-    }
+  eventsContainer.innerHTML = events.map((ev, index) => {
+    const bannerUrl = safeUrl(ev.image, DEFAULT_BANNER_URL);
+    const galleryImages = normalizeGalleryImages(ev.images);
 
     return `
-      <div onclick='openEventModal(${JSON.stringify(ev).replace(/'/g, "&#39;")})' class="bg-white rounded-3xl overflow-hidden shadow-card border border-gray-100 hover:shadow-soft transition-all flex flex-col justify-between cursor-pointer group">
+      <div data-event-index="${index}" class="event-card bg-white rounded-3xl overflow-hidden shadow-card border border-gray-100 hover:shadow-soft transition-all flex flex-col justify-between cursor-pointer group">
         <div class="relative h-52 overflow-hidden">
-          <img src="${ev.image || 'https://res.cloudinary.com/tfk63bnl/image/upload/f_auto,q_auto/hmc_banner'}" alt="${ev.title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
-          <span class="absolute top-4 left-4 px-3.5 py-1 rounded-full text-xs font-bold bg-brand-orange text-white shadow-md uppercase tracking-wider">${ev.date}</span>
+          <img src="${escapeHtml(bannerUrl)}" alt="${escapeHtml(ev.title || 'Event')}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+          <span class="absolute top-4 left-4 px-3.5 py-1 rounded-full text-xs font-bold bg-brand-orange text-white shadow-md uppercase tracking-wider">${escapeHtml(ev.date || '')}</span>
           ${galleryImages.length > 0 ? `<span class="absolute bottom-4 right-4 px-2.5 py-1 bg-brand-turquoise text-white text-[10px] font-bold rounded-full shadow-md">+${galleryImages.length} Photos</span>` : ''}
         </div>
         <div class="p-6 flex flex-col justify-between flex-grow">
           <div>
-            <h3 class="font-heading font-bold text-xl text-gray-900 mb-2 group-hover:text-brand-turquoise transition-colors">${ev.title}</h3>
-            <p class="text-xs text-brand-muted leading-relaxed line-clamp-2">${ev.description || ''}</p>
+            <h3 class="font-heading font-bold text-xl text-gray-900 mb-2 group-hover:text-brand-turquoise transition-colors">${escapeHtml(ev.title || '')}</h3>
+            <p class="text-xs text-brand-muted leading-relaxed line-clamp-2">${escapeHtml(ev.description || '')}</p>
           </div>
           <div class="mt-4 pt-4 border-t border-gray-100 flex items-center justify-between text-xs font-bold text-brand-turquoise">
             <span>Click to view gallery & details →</span>
@@ -133,37 +174,36 @@ async function loadFrontendEvents() {
   }).join("");
 }
 
-window.openEventModal = function(ev) {
+window.openEventModal = function(evOrIndex) {
+  const ev = typeof evOrIndex === 'number' ? renderedEvents[evOrIndex] : evOrIndex;
+  if (!ev) return;
+
   logVisitorInteraction('event_view', ev.title || 'Event Modal');
   const modal = document.getElementById("eventDetailModal");
   const content = document.getElementById("modalEventContent");
   if (!modal || !content) return;
 
-  let galleryImages = [];
-  if (Array.isArray(ev.images)) {
-    galleryImages = ev.images;
-  } else if (typeof ev.images === 'string' && ev.images.trim() !== '') {
-    galleryImages = ev.images.split(',').map(s => s.trim()).filter(Boolean);
-  }
+  const bannerUrl = safeUrl(ev.image, DEFAULT_BANNER_URL);
+  const galleryImages = normalizeGalleryImages(ev.images);
 
   content.innerHTML = `
     <div class="text-center sm:text-left">
-      <span class="inline-block px-3 py-1 bg-brand-orange text-white text-xs font-bold rounded-full mb-3">${ev.date}</span>
-      <h2 class="font-heading font-extrabold text-2xl text-brand-dark mb-3">${ev.title}</h2>
-      <p class="text-brand-muted text-sm leading-relaxed mb-6">${ev.description || ''}</p>
+      <span class="inline-block px-3 py-1 bg-brand-orange text-white text-xs font-bold rounded-full mb-3">${escapeHtml(ev.date || '')}</span>
+      <h2 class="font-heading font-extrabold text-2xl text-brand-dark mb-3">${escapeHtml(ev.title || '')}</h2>
+      <p class="text-brand-muted text-sm leading-relaxed mb-6">${escapeHtml(ev.description || '')}</p>
     </div>
 
     <div class="space-y-4">
       <h4 class="font-heading font-bold text-sm text-brand-dark uppercase tracking-wider">Event Banner & Gallery Photos</h4>
       <div class="rounded-2xl overflow-hidden border border-gray-200 shadow-md">
-        <img src="${ev.image || 'https://res.cloudinary.com/tfk63bnl/image/upload/f_auto,q_auto/hmc_banner'}" class="w-full h-64 object-cover cursor-pointer" onclick="openLightbox('${ev.image || 'https://res.cloudinary.com/tfk63bnl/image/upload/f_auto,q_auto/hmc_banner'}')">
+        <img src="${escapeHtml(bannerUrl)}" alt="${escapeHtml(ev.title || 'Event Banner')}" data-lightbox-url="${escapeHtml(bannerUrl)}" class="lightbox-trigger w-full h-64 object-cover cursor-pointer">
       </div>
-      
+
       ${galleryImages.length > 0 ? `
         <div class="grid grid-cols-3 sm:grid-cols-4 gap-3 pt-2">
           ${galleryImages.map(imgUrl => `
-            <div onclick="openLightbox('${imgUrl}')" class="block rounded-xl overflow-hidden border border-gray-200 shadow-sm hover:opacity-90 transition-opacity aspect-square cursor-pointer">
-              <img src="${imgUrl}" class="w-full h-full object-cover">
+            <div data-lightbox-url="${escapeHtml(imgUrl)}" class="lightbox-trigger block rounded-xl overflow-hidden border border-gray-200 shadow-sm hover:opacity-90 transition-opacity aspect-square cursor-pointer">
+              <img src="${escapeHtml(imgUrl)}" alt="${escapeHtml(ev.title || 'Event Photo')}" class="w-full h-full object-cover">
             </div>
           `).join('')}
         </div>
@@ -181,7 +221,6 @@ window.closeEventModal = function() {
 };
 
 document.addEventListener("DOMContentLoaded", () => {
-  // Log the initial page visit
   logVisitorInteraction('page_view', window.location.pathname);
 
   updateStoreStatus();
@@ -189,6 +228,24 @@ document.addEventListener("DOMContentLoaded", () => {
 
   loadFrontendMenu();
   loadFrontendEvents();
+
+  const eventsGrid = document.getElementById("eventsGrid");
+  eventsGrid?.addEventListener("click", (e) => {
+    const card = e.target.closest("[data-event-index]");
+    if (!card) return;
+    const idx = Number(card.getAttribute("data-event-index"));
+    if (!Number.isNaN(idx)) {
+      window.openEventModal(idx);
+    }
+  });
+
+  const modalEventContent = document.getElementById("modalEventContent");
+  modalEventContent?.addEventListener("click", (e) => {
+    const trigger = e.target.closest("[data-lightbox-url]");
+    if (!trigger) return;
+    const url = trigger.getAttribute("data-lightbox-url");
+    if (url) window.openLightbox(url);
+  });
 
   const header = document.getElementById("mainHeader");
   const handleScroll = () => {
@@ -298,12 +355,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function renderDrawerItems(items, sortOrder = "default") {
     if (!drawerItemsGrid) return;
-    
-    let sorted = [...items];
+
+    const sorted = [...items];
     if (sortOrder === "low-high") {
-      sorted.sort((a, b) => parseFloat(a.price.replace(/[^0-9.]/g, '')) - parseFloat(b.price.replace(/[^0-9.]/g, '')));
+      sorted.sort((a, b) => parseFloat(String(a.price ?? '').replace(/[^0-9.]/g, '')) - parseFloat(String(b.price ?? '').replace(/[^0-9.]/g, '')));
     } else if (sortOrder === "high-low") {
-      sorted.sort((a, b) => parseFloat(b.price.replace(/[^0-9.]/g, '')) - parseFloat(a.price.replace(/[^0-9.]/g, '')));
+      sorted.sort((a, b) => parseFloat(String(b.price ?? '').replace(/[^0-9.]/g, '')) - parseFloat(String(a.price ?? '').replace(/[^0-9.]/g, '')));
     }
 
     if (sorted.length === 0) {
@@ -314,10 +371,10 @@ document.addEventListener("DOMContentLoaded", () => {
     drawerItemsGrid.innerHTML = sorted.map(item => `
       <div class="bg-brand-cream/60 p-4 rounded-2xl border border-gray-100 flex flex-col justify-between hover:border-brand-turquoise transition-all">
         <div class="flex justify-between items-start gap-2 mb-1">
-          <h4 class="font-heading font-bold text-gray-900 text-sm">${item.name}</h4>
-          <span class="font-heading font-extrabold text-brand-orange text-sm whitespace-nowrap">${item.price}</span>
+          <h4 class="font-heading font-bold text-gray-900 text-sm">${escapeHtml(item.name || '')}</h4>
+          <span class="font-heading font-extrabold text-brand-orange text-sm whitespace-nowrap">${escapeHtml(item.price || '')}</span>
         </div>
-        <p class="text-xs text-brand-muted leading-relaxed">${item.description || ''}</p>
+        <p class="text-xs text-brand-muted leading-relaxed">${escapeHtml(item.description || '')}</p>
       </div>
     `).join("");
   }
@@ -327,7 +384,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const category = bubble.getAttribute("data-category");
       activeCategory = category;
       logVisitorInteraction('menu_click', category);
-      
+
       if (drawerCategoryTitle) drawerCategoryTitle.textContent = category;
       if (drawerCategoryIcon) drawerCategoryIcon.textContent = categoryIcons[category] || "🍽️";
 
@@ -367,16 +424,17 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 window.openLightbox = function(imgUrl) {
+  const cleanUrl = safeUrl(imgUrl, DEFAULT_BANNER_URL);
   let lb = document.getElementById("imgLightboxModal");
   if (!lb) {
     lb = document.createElement("div");
     lb.id = "imgLightboxModal";
     lb.className = "fixed inset-0 bg-black/90 backdrop-blur-md z-[150] flex items-center justify-center p-4 cursor-pointer";
-    lb.innerHTML = `<div class="relative max-w-4xl max-h-[90vh]"><button onclick="closeLightbox()" class="absolute -top-10 right-0 text-white font-bold text-2xl cursor-pointer">✕</button><img id="lightboxImg" src="" class="max-w-full max-h-[85vh] object-contain rounded-2xl shadow-2xl"></div>`;
+    lb.innerHTML = `<div class="relative max-w-4xl max-h-[90vh]"><button type="button" onclick="closeLightbox()" class="absolute -top-10 right-0 text-white font-bold text-2xl cursor-pointer">✕</button><img id="lightboxImg" src="" alt="Full size preview" class="max-w-full max-h-[85vh] object-contain rounded-2xl shadow-2xl"></div>`;
     lb.onclick = (e) => { if (e.target === lb) closeLightbox(); };
     document.body.appendChild(lb);
   }
-  document.getElementById("lightboxImg").src = imgUrl;
+  document.getElementById("lightboxImg").src = cleanUrl;
   lb.classList.remove("hidden");
 };
 
