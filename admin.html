@@ -457,6 +457,26 @@
     </div>
   </div>
 
+  <div id="adminConfirmModal" role="dialog" aria-modal="true" aria-labelledby="adminConfirmTitle" class="fixed inset-0 z-[130] hidden flex items-center justify-center p-4">
+    <div id="adminConfirmBackdrop" onclick="closeConfirmModal(false)" class="absolute inset-0 bg-black/75 backdrop-blur-sm"></div>
+    <div class="relative w-full max-w-sm bg-gray-900 border border-gray-800 rounded-3xl p-6 shadow-2xl space-y-5">
+      <div class="space-y-1.5">
+        <h3 id="adminConfirmTitle" class="font-heading font-bold text-lg text-white">Confirm Action</h3>
+        <p id="adminConfirmMessage" class="text-xs text-gray-400 leading-relaxed">Are you sure you want to continue?</p>
+      </div>
+      <div class="flex items-center justify-end gap-3 pt-1">
+        <button type="button" id="adminConfirmCancelBtn" onclick="closeConfirmModal(false)" class="px-4 py-2.5 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-300 font-heading font-bold text-xs uppercase tracking-wider transition-colors cursor-pointer">
+          Cancel
+        </button>
+        <button type="button" id="adminConfirmOkBtn" onclick="closeConfirmModal(true)" class="px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-heading font-bold text-xs uppercase tracking-wider shadow-lg shadow-rose-600/20 transition-colors cursor-pointer">
+          Delete
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div id="adminToast" role="status" aria-live="polite" class="fixed bottom-5 right-5 z-[140] hidden max-w-sm px-4 py-3 rounded-2xl border text-xs font-bold shadow-2xl transition-all"></div>
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="admin.js"></script>
 </body>

@@ -39,6 +39,73 @@ function safeUrl(url, fallback = '') {
   return fallback;
 }
 
+let toastTimeoutId = null;
+
+function showToast(message, type = 'success') {
+  const toast = document.getElementById("adminToast");
+  if (!toast) return;
+
+  if (toastTimeoutId) clearTimeout(toastTimeoutId);
+
+  const styles = {
+    success: "bg-gray-900 border-emerald-500/40 text-emerald-300",
+    error:   "bg-gray-900 border-rose-500/40 text-rose-300",
+    info:    "bg-gray-900 border-brand-turquoise/40 text-brand-turquoise"
+  };
+
+  toast.textContent = message;
+  toast.className = `fixed bottom-5 right-5 z-[140] max-w-sm px-4 py-3 rounded-2xl border text-xs font-bold shadow-2xl transition-all ${styles[type] || styles.info}`;
+  toast.classList.remove("hidden");
+
+  toastTimeoutId = setTimeout(() => {
+    toast.classList.add("hidden");
+  }, 3200);
+}
+
+let confirmResolver = null;
+let confirmLastTrigger = null;
+
+function openConfirmModal({ title = "Confirm Action", message = "Are you sure?", confirmText = "Delete" } = {}) {
+  const modal = document.getElementById("adminConfirmModal");
+  const titleEl = document.getElementById("adminConfirmTitle");
+  const msgEl = document.getElementById("adminConfirmMessage");
+  const okBtn = document.getElementById("adminConfirmOkBtn");
+
+  if (!modal || !titleEl || !msgEl || !okBtn) {
+    return Promise.resolve(false);
+  }
+
+  confirmLastTrigger = document.activeElement;
+  titleEl.textContent = title;
+  msgEl.textContent = message;
+  okBtn.textContent = confirmText;
+
+  modal.classList.remove("hidden");
+  okBtn.focus();
+
+  return new Promise((resolve) => {
+    confirmResolver = resolve;
+  });
+}
+
+function closeConfirmModal(confirmed) {
+  const modal = document.getElementById("adminConfirmModal");
+  if (!modal || modal.classList.contains("hidden")) return;
+
+  modal.classList.add("hidden");
+  const resolve = confirmResolver;
+  confirmResolver = null;
+
+  if (confirmLastTrigger && typeof confirmLastTrigger.focus === "function") {
+    confirmLastTrigger.focus();
+  }
+  confirmLastTrigger = null;
+
+  if (typeof resolve === "function") {
+    resolve(Boolean(confirmed));
+  }
+}
+
 function showLoginError(message) {
   const errEl = document.getElementById("internalErrorMsg");
   if (!errEl) return;
@@ -288,17 +355,17 @@ async function handleMenuSubmit(e) {
     if (id) {
       const { error } = await supabaseClient.from('menu_items').update({ category, name, price, description }).eq('id', id);
       if (error) throw error;
-      alert("Menu item updated successfully.");
+      showToast("Menu item updated successfully.", "success");
     } else {
       const { error } = await supabaseClient.from('menu_items').insert([{ category, name, price, description }]);
       if (error) throw error;
-      alert("Menu item saved successfully.");
+      showToast("Menu item saved to Supabase.", "success");
     }
     resetMenuForm();
     loadAdminMenu();
   } catch (err) {
     console.error("Error saving menu item:", err);
-    alert("Could not save menu item. Please verify you are signed in and try again.");
+    showToast("Could not save menu item. Please try again.", "error");
   }
 }
 
@@ -327,19 +394,38 @@ function resetMenuForm() {
 }
 
 async function deleteMenuItem(id) {
-  if (!confirm("Are you sure you want to delete this menu item from Supabase?")) return;
+  const confirmed = await openConfirmModal({
+    title: "Delete Menu Item",
+    message: "Are you sure you want to delete this menu item from Supabase?",
+    confirmText: "Delete"
+  });
+  if (!confirmed) return;
+
   try {
     const { error } = await supabaseClient.from('menu_items').delete().eq('id', id);
     if (error) throw error;
-    alert("Menu item deleted.");
+    showToast("Menu item deleted.", "success");
     loadAdminMenu();
   } catch (err) {
     console.error("Error deleting menu item:", err);
-    alert("Could not delete menu item. Please try again.");
+    showToast("Could not delete menu item. Please try again.", "error");
   }
 }
 
 let adminEventsList = [];
+
+function getEventKey(ev, fallbackIndex) {
+  if (ev && ev.id !== undefined && ev.id !== null && String(ev.id) !== '') {
+    return String(ev.id);
+  }
+  return `local-${fallbackIndex}`;
+}
+
+function findEventByKey(key) {
+  const strKey = String(key);
+  const idx = adminEventsList.findIndex((ev, i) => getEventKey(ev, i) === strKey);
+  return { ev: idx >= 0 ? adminEventsList[idx] : null, idx };
+}
 
 async function loadAdminEvents() {
   if (!supabaseClient) return;
@@ -380,6 +466,7 @@ function renderAdminEventsTable() {
     else if (typeof ev.images === 'string' && ev.images.trim() !== '') imgCount = ev.images.split(',').length;
 
     const thumbUrl = safeUrl(ev.image, DEFAULT_BANNER_URL);
+    const eventKey = getEventKey(ev, index);
 
     return `
       <tr class="hover:bg-gray-800/50 transition-colors">
@@ -393,8 +480,8 @@ function renderAdminEventsTable() {
         <td class="p-4 text-brand-orange font-semibold text-xs">${escapeHtml(ev.date)}</td>
         <td class="p-4 text-gray-400 text-xs max-w-xs truncate">${escapeHtml(ev.description || '')}</td>
         <td class="p-4 text-right space-x-2">
-          <button onclick="editEventItem(${index})" class="px-3 py-1.5 rounded-lg bg-brand/20 text-brand-turquoise hover:bg-brand/40 text-xs font-bold transition-colors cursor-pointer">Edit</button>
-          <button onclick="deleteEventItem(${index})" class="px-3 py-1.5 rounded-lg bg-rose-500/20 text-rose-300 hover:bg-rose-500/30 text-xs font-bold transition-colors cursor-pointer">Delete</button>
+          <button onclick="editEventItem('${escapeHtml(eventKey)}')" class="px-3 py-1.5 rounded-lg bg-brand/20 text-brand-turquoise hover:bg-brand/40 text-xs font-bold transition-colors cursor-pointer">Edit</button>
+          <button onclick="deleteEventItem('${escapeHtml(eventKey)}')" class="px-3 py-1.5 rounded-lg bg-rose-500/20 text-rose-300 hover:bg-rose-500/30 text-xs font-bold transition-colors cursor-pointer">Delete</button>
         </td>
       </tr>
     `;
@@ -403,7 +490,7 @@ function renderAdminEventsTable() {
 
 async function handleEventSubmit(e) {
   e.preventDefault();
-  const index = document.getElementById("editEventIndex").value;
+  const editKey = document.getElementById("editEventIndex").value;
   const title = document.getElementById("eventFormTitle").value.trim();
   const date = document.getElementById("eventFormDate").value.trim();
   const rawImage = document.getElementById("eventFormImage").value.trim();
@@ -415,43 +502,48 @@ async function handleEventSubmit(e) {
     ? galleryInput.split(',').map(url => safeUrl(url, '')).filter(Boolean)
     : [];
   const newEventObj = { title, date, image, description, images: imagesArray };
+  const { ev: existingEv, idx: existingIdx } = editKey ? findEventByKey(editKey) : { ev: null, idx: -1 };
 
   if (supabaseClient) {
     try {
-      if (index !== "" && adminEventsList[index]?.id) {
-        const { error } = await supabaseClient.from('events').update(newEventObj).eq('id', adminEventsList[index].id);
+      if (existingEv?.id) {
+        const { error } = await supabaseClient.from('events').update(newEventObj).eq('id', existingEv.id);
         if (error) throw error;
-        alert("Event updated successfully.");
+        showToast("Event updated successfully.", "success");
       } else {
         const { error } = await supabaseClient.from('events').insert([newEventObj]);
         if (error) throw error;
-        alert("Event saved successfully.");
+        showToast("Event saved successfully.", "success");
       }
+      resetEventForm();
       loadAdminEvents();
+      return;
     } catch (err) {
       console.error("Supabase events error, saving locally:", err);
-      saveEventLocally(newEventObj, index);
+      saveEventLocally(newEventObj, existingIdx, "Event saved locally.");
+      resetEventForm();
+      return;
     }
-  } else {
-    saveEventLocally(newEventObj, index);
   }
+
+  saveEventLocally(newEventObj, existingIdx, "Event saved locally.");
   resetEventForm();
 }
 
-function saveEventLocally(newEventObj, index) {
-  if (index !== "") adminEventsList[index] = newEventObj;
+function saveEventLocally(newEventObj, idx, message) {
+  if (idx >= 0) adminEventsList[idx] = { ...adminEventsList[idx], ...newEventObj };
   else adminEventsList.unshift(newEventObj);
   localStorage.setItem("hmc_local_events", JSON.stringify(adminEventsList));
-  alert("Event saved locally.");
+  showToast(message, "info");
   renderAdminEventsTable();
   renderAdminChart();
 }
 
-function editEventItem(index) {
-  const ev = adminEventsList[index];
+function editEventItem(key) {
+  const { ev, idx } = findEventByKey(key);
   if (!ev) return;
 
-  document.getElementById("editEventIndex").value = index;
+  document.getElementById("editEventIndex").value = getEventKey(ev, idx);
   document.getElementById("eventFormTitle").value = ev.title || '';
   document.getElementById("eventFormDate").value = ev.date || '';
   document.getElementById("eventFormImage").value = safeUrl(ev.image, '');
@@ -476,17 +568,36 @@ function resetEventForm() {
   document.getElementById("eventCancelEditBtn").classList.add("hidden");
 }
 
-async function deleteEventItem(index) {
-  if (!confirm("Are you sure you want to delete this event?")) return;
-  const ev = adminEventsList[index];
-  if (supabaseClient && ev?.id) {
-    try { await supabaseClient.from('events').delete().eq('id', ev.id); } catch (err) { console.error(err); }
+async function deleteEventItem(key) {
+  const confirmed = await openConfirmModal({
+    title: "Delete Event",
+    message: "Are you sure you want to delete this event?",
+    confirmText: "Delete"
+  });
+  if (!confirmed) return;
+
+  const { ev, idx } = findEventByKey(key);
+  if (!ev || idx < 0) return;
+
+  if (supabaseClient && ev.id) {
+    try {
+      const { error } = await supabaseClient.from('events').delete().eq('id', ev.id);
+      if (error) throw error;
+      showToast("Event deleted.", "success");
+      loadAdminEvents();
+      return;
+    } catch (err) {
+      console.error("Error deleting event from Supabase:", err);
+      showToast("Could not delete event from Supabase.", "error");
+      return;
+    }
   }
-  adminEventsList.splice(index, 1);
+
+  adminEventsList.splice(idx, 1);
   localStorage.setItem("hmc_local_events", JSON.stringify(adminEventsList));
   renderAdminEventsTable();
   renderAdminChart();
-  alert("Event deleted.");
+  showToast("Event removed locally.", "info");
 }
 
 let adminCatsList = [];
@@ -560,7 +671,7 @@ function updateCatPhotoPreview(url) {
 
 function openCatUploadWidget() {
   if (!window.cloudinary) {
-    alert("Upload widget unavailable.");
+    showToast("Upload widget unavailable.", "error");
     return;
   }
   if (!catUploadWidget) {
@@ -585,6 +696,7 @@ function openCatUploadWidget() {
           if (url) {
             document.getElementById("catFormImage").value = url;
             updateCatPhotoPreview(url);
+            showToast("Photo uploaded.", "success");
           }
         }
       }
@@ -607,17 +719,17 @@ async function handleCatSubmit(e) {
     if (id) {
       const { error } = await supabaseClient.from('cats').update({ name, category, description, image }).eq('id', id);
       if (error) throw error;
-      alert("Cat updated successfully.");
+      showToast("Cat updated successfully.", "success");
     } else {
       const { error } = await supabaseClient.from('cats').insert([{ name, category, description, image }]);
       if (error) throw error;
-      alert("Cat added to the roster.");
+      showToast("Cat added to the roster.", "success");
     }
     resetCatForm();
     loadAdminCats();
   } catch (err) {
     console.error("Error saving cat:", err);
-    alert("Could not save cat. Please verify you are signed in and try again.");
+    showToast("Could not save cat. Please try again.", "error");
   }
 }
 
@@ -649,15 +761,21 @@ function resetCatForm() {
 }
 
 async function deleteCat(id) {
-  if (!confirm("Remove this cat from the roster?")) return;
+  const confirmed = await openConfirmModal({
+    title: "Remove Cat",
+    message: "Remove this cat from the roster?",
+    confirmText: "Remove"
+  });
+  if (!confirmed) return;
+
   try {
     const { error } = await supabaseClient.from('cats').delete().eq('id', id);
     if (error) throw error;
-    alert("Cat removed.");
+    showToast("Cat removed from roster.", "success");
     loadAdminCats();
   } catch (err) {
     console.error("Error deleting cat:", err);
-    alert("Could not remove cat. Please try again.");
+    showToast("Could not remove cat. Please try again.", "error");
   }
 }
 
@@ -675,7 +793,7 @@ function previewCatFromForm() {
   const description = document.getElementById("catFormDesc").value.trim();
   const image = document.getElementById("catFormImage").value.trim();
   if (!name) {
-    alert("Add a name first.");
+    showToast("Add a cat name first to preview.", "info");
     return;
   }
   openCatPreview({ name, category, description, image }, document.activeElement);
@@ -722,5 +840,11 @@ document.addEventListener("click", (e) => {
   if (e.target.closest("[data-sheet-close]") || e.target.hasAttribute("data-sheet-backdrop")) closeCatPreview();
 });
 document.addEventListener("keydown", (e) => {
-  if (e.key === "Escape") closeCatPreview();
+  if (e.key !== "Escape") return;
+  const confirmModal = document.getElementById("adminConfirmModal");
+  if (confirmModal && !confirmModal.classList.contains("hidden")) {
+    closeConfirmModal(false);
+    return;
+  }
+  closeCatPreview();
 });
