@@ -3,9 +3,21 @@ const SUPABASE_ANON_KEY = 'sb_publishable_8iF-UjYhlzFovpA7Ay1K5g_V5vyaRjg';
 
 const CLOUDINARY_CLOUD_NAME = 'tfk63bnl';
 const CLOUDINARY_UPLOAD_PRESET = 'hmc_cats';
-const SPONSOR_URL = 'https://www.facebook.com/hellomeowcafe';
 const DEFAULT_BANNER_URL = 'https://res.cloudinary.com/tfk63bnl/image/upload/f_auto,q_auto/hmc_banner';
 const DEFAULT_CAT_IMAGE = 'https://res.cloudinary.com/tfk63bnl/image/upload/f_auto,q_auto/hmc_logo';
+
+const CAT_CATEGORY_ORDER = [
+  'The British Shorthair Family',
+  'British Shorthair Gang',
+  'The Mama Cats!',
+  'The Ragdoll Family',
+  'The Ninja Tag Team',
+  'Our Spayed Single Ladies',
+  'The Youngsters',
+  'The Juniors',
+  'The Escape Artist',
+  'The Legit Cuddle Bugs'
+];
 
 let supabaseClient = null;
 try {
@@ -37,6 +49,22 @@ function safeUrl(url, fallback = '') {
     // Invalid URL falls back safely
   }
   return fallback;
+}
+
+function getCatCategoryRank(category) {
+  const normalized = String(category ?? '').trim().toLowerCase();
+  const idx = CAT_CATEGORY_ORDER.findIndex(c => c.toLowerCase() === normalized);
+  return idx === -1 ? CAT_CATEGORY_ORDER.length : idx;
+}
+
+function sortAdminCatsByCategoryOrder(list) {
+  return list.slice().sort((a, b) => {
+    const rankDiff = getCatCategoryRank(a.category) - getCatCategoryRank(b.category);
+    if (rankDiff !== 0) return rankDiff;
+    const timeA = a.created_at ? new Date(a.created_at).getTime() : 0;
+    const timeB = b.created_at ? new Date(b.created_at).getTime() : 0;
+    return timeA - timeB;
+  });
 }
 
 let toastTimeoutId = null;
@@ -608,7 +636,7 @@ async function loadAdminCats() {
   try {
     const { data, error } = await supabaseClient.from('cats').select('*').order('created_at', { ascending: true });
     if (error) throw error;
-    adminCatsList = data || [];
+    adminCatsList = sortAdminCatsByCategoryOrder(data || []);
     renderAdminCatsTable();
     renderAdminChart();
   } catch (err) {
@@ -780,11 +808,16 @@ async function deleteCat(id) {
 }
 
 let previewLastTrigger = null;
+let previewCatsList = [];
+let previewCatIndex = -1;
 
 function previewCat(id) {
-  const cat = adminCatsList.find(c => String(c.id) === String(id));
-  if (!cat) return;
-  openCatPreview(cat, document.activeElement);
+  if (!adminCatsList.length) return;
+  const idx = adminCatsList.findIndex(c => String(c.id) === String(id));
+  if (idx === -1) return;
+  previewCatsList = adminCatsList;
+  previewCatIndex = idx;
+  openCatPreview(previewCatsList[previewCatIndex], document.activeElement);
 }
 
 function previewCatFromForm() {
@@ -796,7 +829,62 @@ function previewCatFromForm() {
     showToast("Add a cat name first to preview.", "info");
     return;
   }
-  openCatPreview({ name, category, description, image }, document.activeElement);
+  previewCatsList = [{ name, category, description, image }];
+  previewCatIndex = 0;
+  openCatPreview(previewCatsList[0], document.activeElement);
+}
+
+function stepCatPreview(step) {
+  if (!previewCatsList.length || previewCatIndex < 0) return;
+  previewCatIndex = (previewCatIndex + step + previewCatsList.length) % previewCatsList.length;
+  renderCatPreviewBody(previewCatsList[previewCatIndex], previewCatIndex, previewCatsList.length);
+}
+
+function renderCatPreviewBody(cat, index, total) {
+  const body = document.getElementById("catSheetBody");
+  if (!body || !cat) return;
+
+  const displayImg = safeUrl(cat.image, DEFAULT_CAT_IMAGE);
+  const displayCat = cat.category || 'The British Shorthair Family';
+  const canNavigate = total > 1;
+  const prevIndex = (index - 1 + total) % total;
+  const nextIndex = (index + 1) % total;
+
+  const navHtml = canNavigate
+    ? `
+      <div class="mt-5 pt-4 border-t border-gray-100 flex items-center justify-between gap-3">
+        <button type="button" data-preview-nav="-1" aria-label="Previous cat: ${escapeHtml(previewCatsList[prevIndex]?.name || 'Previous')}" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 font-heading font-bold text-xs cursor-pointer transition-colors">
+          <span aria-hidden="true">‹</span>
+          <span>Prev</span>
+        </button>
+        <span class="text-xs font-semibold text-gray-400">${index + 1} / ${total}</span>
+        <button type="button" data-preview-nav="1" aria-label="Next cat: ${escapeHtml(previewCatsList[nextIndex]?.name || 'Next')}" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 font-heading font-bold text-xs cursor-pointer transition-colors">
+          <span>Next</span>
+          <span aria-hidden="true">›</span>
+        </button>
+      </div>
+    `
+    : '';
+
+  body.innerHTML = `
+    <div class="relative overflow-hidden pt-2">
+      <span aria-hidden="true" class="pointer-events-none select-none absolute -top-2 left-2 text-5xl opacity-10 -rotate-12">🐾</span>
+      <span aria-hidden="true" class="pointer-events-none select-none absolute bottom-10 right-2 text-6xl opacity-10 rotate-12">🐾</span>
+      <p class="relative z-10 text-xs font-semibold text-gray-500 mb-3 text-center">Preview: how visitors see ${escapeHtml(cat.name)}</p>
+      <div class="relative z-10 flex items-center justify-center">
+        <div class="relative w-56 sm:w-64 aspect-[4/5] rounded-2xl overflow-hidden bg-white ring-4 ring-white shadow-xl -rotate-1">
+          <span aria-hidden="true" class="absolute top-2.5 left-2.5 z-10 w-8 h-8 rounded-full bg-white/95 text-gray-900 shadow flex items-center justify-center text-sm">🐾</span>
+          <img src="${escapeHtml(displayImg)}" alt="${escapeHtml(cat.name)}" class="w-full h-full object-cover">
+        </div>
+      </div>
+      <div class="relative z-10 mt-5 text-left">
+        <h3 class="font-bold text-2xl text-gray-900 leading-tight break-words">${escapeHtml(cat.name)}</h3>
+        <span class="mt-2 inline-block px-3 py-1 rounded-full bg-brand-turquoise-light text-brand-dark text-xs font-bold">${escapeHtml(displayCat)}</span>
+        <p class="mt-3 text-base text-gray-700 leading-relaxed">${escapeHtml(cat.description)}</p>
+      </div>
+      ${navHtml}
+    </div>
+  `;
 }
 
 function openCatPreview(cat, trigger) {
@@ -804,23 +892,7 @@ function openCatPreview(cat, trigger) {
   const body = document.getElementById("catSheetBody");
   if (!sheet || !body) return;
 
-  const displayImg = safeUrl(cat.image, DEFAULT_CAT_IMAGE);
-  const displayCat = cat.category || 'The British Shorthair Family';
-
-  body.innerHTML = `
-    <p class="text-xs font-semibold text-gray-500 mb-4 pr-12">Preview: how visitors see ${escapeHtml(cat.name)}</p>
-    <div class="flex gap-4 items-start">
-      <img src="${escapeHtml(displayImg)}" alt="${escapeHtml(cat.name)}" class="w-32 shrink-0 aspect-[4/5] object-cover rounded-2xl bg-gray-100">
-      <div class="pt-2 pr-2 min-w-0">
-        <span class="inline-block px-2.5 py-0.5 rounded-full bg-brand-turquoise-light text-brand-dark text-xs font-bold mb-1.5">${escapeHtml(displayCat)}</span>
-        <h3 class="font-bold text-2xl text-gray-900 leading-tight break-words">${escapeHtml(cat.name)}</h3>
-      </div>
-    </div>
-    <p class="mt-5 text-base text-gray-700 leading-relaxed">${escapeHtml(cat.description)}</p>
-    <a href="${SPONSOR_URL}" target="_blank" rel="noopener noreferrer" class="mt-6 flex items-center justify-center py-3.5 rounded-2xl bg-brand-orange text-white font-bold text-base hover:bg-orange-600 transition-colors">
-      Sponsor ${escapeHtml(cat.name)}
-    </a>
-  `;
+  renderCatPreviewBody(cat, previewCatIndex >= 0 ? previewCatIndex : 0, previewCatsList.length || 1);
 
   previewLastTrigger = trigger || null;
   sheet.classList.remove("hidden");
@@ -832,19 +904,38 @@ function closeCatPreview() {
   if (!sheet || sheet.classList.contains("hidden")) return;
   sheet.classList.add("hidden");
   document.body.style.overflow = "";
+  previewCatIndex = -1;
   if (previewLastTrigger) previewLastTrigger.focus();
   previewLastTrigger = null;
 }
 
 document.addEventListener("click", (e) => {
+  const previewNavBtn = e.target.closest("[data-preview-nav]");
+  if (previewNavBtn) {
+    const step = Number(previewNavBtn.getAttribute("data-preview-nav"));
+    if (!Number.isNaN(step)) stepCatPreview(step);
+    return;
+  }
   if (e.target.closest("[data-sheet-close]") || e.target.hasAttribute("data-sheet-backdrop")) closeCatPreview();
 });
 document.addEventListener("keydown", (e) => {
-  if (e.key !== "Escape") return;
   const confirmModal = document.getElementById("adminConfirmModal");
   if (confirmModal && !confirmModal.classList.contains("hidden")) {
-    closeConfirmModal(false);
+    if (e.key === "Escape") closeConfirmModal(false);
     return;
   }
-  closeCatPreview();
+  const sheet = document.getElementById("catProfileSheet");
+  const isSheetOpen = sheet && !sheet.classList.contains("hidden");
+  if (e.key === "Escape") {
+    closeCatPreview();
+    return;
+  }
+  if (!isSheetOpen) return;
+  if (e.key === "ArrowLeft") {
+    e.preventDefault();
+    stepCatPreview(-1);
+  } else if (e.key === "ArrowRight") {
+    e.preventDefault();
+    stepCatPreview(1);
+  }
 });

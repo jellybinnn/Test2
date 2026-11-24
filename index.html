@@ -548,14 +548,14 @@
   <div id="catProfileSheet" class="fixed inset-0 z-[120] hidden">
     <div data-sheet-backdrop class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
     <div class="absolute inset-x-0 bottom-0 md:inset-0 md:flex md:items-center md:justify-center pointer-events-none">
-      <div id="catSheetDialog" role="dialog" aria-modal="true" aria-labelledby="catSheetName" tabindex="-1" class="pointer-events-auto relative w-full md:max-w-md max-h-[88vh] overflow-y-auto bg-white rounded-t-3xl md:rounded-3xl shadow-2xl outline-none">
-        <div class="flex justify-center pt-2.5 md:hidden"><div class="w-11 h-1.5 rounded-full bg-gray-300"></div></div>
-        <button type="button" data-sheet-close aria-label="Close profile" class="absolute top-3 right-3 w-11 h-11 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 flex items-center justify-center cursor-pointer">
+      <div id="catSheetDialog" role="dialog" aria-modal="true" aria-labelledby="catSheetName" tabindex="-1" class="pointer-events-auto relative w-full md:max-w-md max-h-[90vh] flex flex-col bg-white rounded-t-3xl md:rounded-3xl shadow-2xl outline-none overflow-hidden">
+        <div class="flex justify-center pt-2.5 md:hidden shrink-0"><div class="w-11 h-1.5 rounded-full bg-[#1D8A99]/45"></div></div>
+        <button type="button" data-sheet-close aria-label="Close profile" class="pointer-events-auto absolute top-3 right-3 sm:top-4 sm:right-4 z-40 w-10 h-10 sm:w-11 sm:h-11 shrink-0 rounded-full bg-white/95 hover:bg-[#1D8A99]/15 text-[#1D8A99] border border-[#1D8A99]/30 shadow-md flex items-center justify-center cursor-pointer transition-colors">
           <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
-        <div id="catSheetBody" class="p-5 pt-6 md:p-7"></div>
+        <div id="catSheetBody" class="flex-1 overflow-hidden no-scrollbar p-5 pt-6 md:p-7"></div>
       </div>
     </div>
   </div>

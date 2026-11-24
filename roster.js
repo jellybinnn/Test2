@@ -1,7 +1,20 @@
 (function () {
-  var SPONSOR_URL = 'https://www.facebook.com/hellomeowcafe';
   var DEFAULT_CAT_IMAGE = 'https://res.cloudinary.com/tfk63bnl/image/upload/f_auto,q_auto/hmc_logo';
+  var CATEGORY_ORDER = [
+    'The British Shorthair Family',
+    'British Shorthair Gang',
+    'The Mama Cats!',
+    'The Ragdoll Family',
+    'The Ninja Tag Team',
+    'Our Spayed Single Ladies',
+    'The Youngsters',
+    'The Juniors',
+    'The Escape Artist',
+    'The Legit Cuddle Bugs'
+  ];
   var catsData = [];
+  var visibleCats = [];
+  var activeCatIndex = -1;
   var lastTrigger = null;
   var currentFilter = 'All';
 
@@ -14,10 +27,42 @@
       .replace(/'/g, '&#39;');
   }
 
+  function getCategoryRank(category) {
+    var normalized = String(category ?? '').trim().toLowerCase();
+    var idx = CATEGORY_ORDER.findIndex(function (c) {
+      return c.toLowerCase() === normalized;
+    });
+    return idx === -1 ? CATEGORY_ORDER.length : idx;
+  }
+
+  function sortCatsByCategoryOrder(list) {
+    return list.slice().sort(function (a, b) {
+      var rankDiff = getCategoryRank(a.category) - getCategoryRank(b.category);
+      if (rankDiff !== 0) return rankDiff;
+      var timeA = a.created_at ? new Date(a.created_at).getTime() : 0;
+      var timeB = b.created_at ? new Date(b.created_at).getTime() : 0;
+      return timeA - timeB;
+    });
+  }
+
+  function getFilteredCats() {
+    var sortedCats = sortCatsByCategoryOrder(catsData);
+    return sortedCats.filter(function (cat) {
+      if (currentFilter === 'All') return true;
+      return (cat.category || '').toLowerCase() === currentFilter.toLowerCase();
+    });
+  }
+
   function bindSheet(el) {
     if (el.dataset.bound) return;
     el.dataset.bound = 'true';
     el.addEventListener('click', function (e) {
+      var navBtn = e.target.closest('[data-cat-nav]');
+      if (navBtn) {
+        var step = Number(navBtn.getAttribute('data-cat-nav'));
+        if (!Number.isNaN(step)) stepCatSheet(step);
+        return;
+      }
       if (e.target.closest('[data-sheet-close]') || e.target.hasAttribute('data-sheet-backdrop')) {
         closeCatSheet();
       }
@@ -33,17 +78,17 @@
     el.className = 'fixed inset-0 z-[120] hidden';
     el.innerHTML =
       '<div data-sheet-backdrop class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>' +
-      '<div class="absolute inset-x-0 bottom-0 md:inset-0 md:flex md:items-center md:justify-center pointer-events-none">' +
+      '<div class="absolute inset-x-0 bottom-0 md:inset-0 md:flex md:items-center md:justify-center p-6 pointer-events-none">' +
         '<div id="catSheetDialog" role="dialog" aria-modal="true" aria-labelledby="catSheetName" tabindex="-1" ' +
-             'class="pointer-events-auto relative w-full md:max-w-md max-h-[88vh] overflow-y-auto bg-white rounded-t-3xl md:rounded-3xl shadow-2xl outline-none">' +
-          '<div class="flex justify-center pt-2.5 md:hidden"><div class="w-11 h-1.5 rounded-full bg-gray-300"></div></div>' +
+             'class="pointer-events-auto relative w-full md:max-w-md min-h-[640px] max-h-[96vh] flex flex-col justify-between bg-white rounded-[40px] shadow-2xl outline-none overflow-hidden">' +
+          '<div class="flex justify-center pt-2 md:hidden shrink-0"><div class="w-12 h-2 rounded-full bg-[#1D8A99]/45"></div></div>' +
           '<button type="button" data-sheet-close aria-label="Close profile" ' +
-                  'class="absolute top-3 right-3 w-11 h-11 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 flex items-center justify-center cursor-pointer">' +
-            '<svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">' +
+                  'class="pointer-events-auto absolute top-4 right-4 z-40 w-12 h-12 shrink-0 rounded-2xl bg-white/95 hover:bg-[#1D8A99]/15 text-[#1D8A99] border border-[#1D8A99]/30 shadow-md flex items-center justify-center cursor-pointer transition-colors">' +
+            '<svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">' +
               '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M6 18L18 6M6 6l12 12" />' +
             '</svg>' +
           '</button>' +
-          '<div id="catSheetBody" class="p-5 pt-6 md:p-7"></div>' +
+          '<div id="catSheetBody" class="flex-1 flex flex-col justify-between overflow-hidden no-scrollbar p-6"></div>' +
         '</div>' +
       '</div>';
 
@@ -52,34 +97,82 @@
     return el;
   }
 
+  function renderCatSheetContent(cat, index, total) {
+    var body = document.getElementById('catSheetBody');
+    if (!body || !cat) return;
+
+    var hasPhoto = cat.image && cat.image.trim() !== '';
+    var catCategory = cat.category || 'Resident';
+    var canNavigate = total > 1;
+    var prevIndex = (index - 1 + total) % total;
+    var nextIndex = (index + 1) % total;
+
+    var avatarMedia = hasPhoto
+      ? '<img src="' + esc(cat.image) + '" alt="' + esc(cat.name) + '" class="w-full h-full object-cover">'
+      : '<div class="w-full h-full bg-gradient-to-br from-[#1D8A99] to-[#156975] flex flex-col items-center justify-center text-white p-6 text-center">' +
+          '<span class="text-5xl mb-2">🐱</span>' +
+          '<span class="text-xs font-bold uppercase tracking-wider opacity-90">No Photo Yet</span>' +
+        '</div>';
+
+    var navHtml = canNavigate
+      ? '<div class="mt-4 pt-4 border-t border-[#1D8A99]/20 flex items-center justify-between gap-4 shrink-0">' +
+          '<button type="button" data-cat-nav="-1" aria-label="Previous cat: ' + esc(visibleCats[prevIndex]?.name || 'Previous') + '" ' +
+                  'class="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-white hover:bg-[#1D8A99]/15 text-[#1D8A99] border border-[#1D8A99]/35 font-heading font-bold text-xs cursor-pointer transition-colors">' +
+            '<span aria-hidden="true">‹</span>' +
+            '<span>Prev</span>' +
+          '</button>' +
+          '<span class="text-xs font-bold text-[#1D8A99] font-sans">' + (index + 1) + ' / ' + total + '</span>' +
+          '<button type="button" data-cat-nav="1" aria-label="Next cat: ' + esc(visibleCats[nextIndex]?.name || 'Next') + '" ' +
+                  'class="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-[#C85A32] hover:bg-[#AE4B28] text-white shadow-sm font-heading font-bold text-xs cursor-pointer transition-colors">' +
+            '<span>Next</span>' +
+            '<span aria-hidden="true">›</span>' +
+          '</button>' +
+        '</div>'
+      : '';
+
+    body.innerHTML =
+      '<div class="relative flex-1 flex flex-col justify-between overflow-hidden rounded-2xl p-4">' +
+        '<div aria-hidden="true" class="pointer-events-none absolute inset-x-0 top-0 h-40 rounded-2xl bg-gradient-to-b from-[#1D8A99]/35 via-[#1D8A99]/15 to-transparent"></div>' +
+        '<span aria-hidden="true" style="color: transparent; text-shadow: 0 1px 1px rgba(255,255,255,0.85), 0 -1px 1px rgba(29,138,153,0.22); -webkit-text-stroke: 1px rgba(29,138,153,0.14);" class="pointer-events-none select-none absolute top-2 left-2 text-5xl -rotate-12">🐾</span>' +
+        '<span aria-hidden="true" style="color: transparent; text-shadow: 0 1px 1px rgba(255,255,255,0.9), 0 -1px 1px rgba(15,23,42,0.14); -webkit-text-stroke: 1px rgba(15,23,42,0.08);" class="pointer-events-none select-none absolute bottom-16 right-2 text-6xl rotate-12">🐾</span>' +
+        '<div class="relative z-10 flex items-center justify-center shrink-0">' +
+          '<div class="relative w-56 sm:w-60 aspect-[4/5] rounded-2xl overflow-hidden bg-white ring-4 ring-white shadow-xl -rotate-1">' +
+            '<span aria-hidden="true" class="absolute top-2 left-2 z-10 w-8 h-8 rounded-lg bg-[#C85A32] text-white shadow flex items-center justify-center text-sm">🐾</span>' +
+            avatarMedia +
+          '</div>' +
+        '</div>' +
+        '<div class="relative z-10 mt-4 text-left shrink-0">' +
+          '<h3 id="catSheetName" class="font-heading font-bold text-2xl text-gray-900 leading-tight break-words">' + esc(cat.name) + '</h3>' +
+          '<span class="mt-2 inline-block px-4 py-2 rounded-2xl bg-[#1D8A99] text-white text-xs font-bold font-sans shadow-xs">' + esc(catCategory) + '</span>' +
+          '<div class="mt-4 p-4 rounded-2xl bg-[#C85A32]/12 border border-[#C85A32]/25 border-l-4 border-l-[#C85A32]">' +
+            '<p class="text-sm text-gray-800 leading-relaxed font-sans">' + esc(cat.description) + '</p>' +
+          '</div>' +
+        '</div>' +
+        navHtml +
+      '</div>';
+  }
+
+  function stepCatSheet(step) {
+    if (!visibleCats.length || activeCatIndex < 0) return;
+    activeCatIndex = (activeCatIndex + step + visibleCats.length) % visibleCats.length;
+    renderCatSheetContent(visibleCats[activeCatIndex], activeCatIndex, visibleCats.length);
+  }
+
   function openCatSheet(cat, trigger) {
     if (!cat) return;
 
+    visibleCats = getFilteredCats();
+    var foundIdx = visibleCats.findIndex(function (c) {
+      return String(c.id) === String(cat.id);
+    });
+    if (foundIdx === -1) {
+      visibleCats = [cat];
+      foundIdx = 0;
+    }
+    activeCatIndex = foundIdx;
+
     var sheet = ensureSheet();
-    var body = document.getElementById('catSheetBody');
-    var hasPhoto = cat.image && cat.image.trim() !== '';
-    var catCategory = cat.category || 'Resident';
-
-    var avatarHtml = hasPhoto
-      ? '<img src="' + esc(cat.image) + '" alt="' + esc(cat.name) + '" class="w-32 shrink-0 aspect-[4/5] object-cover rounded-2xl bg-brand-turquoise-light/40">'
-      : '<div class="w-32 shrink-0 aspect-[4/5] rounded-2xl bg-gradient-to-br from-brand-dark to-brand-turquoise flex flex-col items-center justify-center text-white p-3 text-center">' +
-          '<span class="text-4xl mb-1">🐱</span>' +
-          '<span class="text-[10px] font-bold uppercase tracking-wider opacity-85">No Photo Yet</span>' +
-        '</div>';
-
-    body.innerHTML =
-      '<div class="flex gap-4 items-start">' +
-        avatarHtml +
-        '<div class="pt-2 pr-10 min-w-0">' +
-          '<span class="inline-block px-3 py-1 rounded-full bg-brand-turquoise-light text-brand-dark text-xs font-bold mb-2 font-sans">' + esc(catCategory) + '</span>' +
-          '<h3 id="catSheetName" class="font-heading font-bold text-2xl text-gray-900 leading-tight break-words">' + esc(cat.name) + '</h3>' +
-        '</div>' +
-      '</div>' +
-      '<p class="mt-5 text-base text-gray-700 leading-relaxed font-sans">' + esc(cat.description) + '</p>' +
-      '<a href="' + SPONSOR_URL + '" target="_blank" rel="noopener noreferrer" ' +
-         'class="mt-6 flex items-center justify-center py-3.5 rounded-2xl bg-brand-orange text-white font-heading font-bold text-base hover:bg-brand-orange-hover transition-colors">' +
-        'Sponsor ' + esc(cat.name) +
-      '</a>';
+    renderCatSheetContent(visibleCats[activeCatIndex], activeCatIndex, visibleCats.length);
 
     lastTrigger = trigger || null;
     sheet.classList.remove('hidden');
@@ -92,25 +185,36 @@
     if (!sheet || sheet.classList.contains('hidden')) return;
     sheet.classList.add('hidden');
     document.body.style.overflow = '';
+    activeCatIndex = -1;
     if (lastTrigger && typeof lastTrigger.focus === 'function') lastTrigger.focus();
     lastTrigger = null;
   }
 
   document.addEventListener('keydown', function (e) {
-    if (e.key === 'Escape') closeCatSheet();
+    var sheet = document.getElementById('catProfileSheet');
+    var isOpen = sheet && !sheet.classList.contains('hidden');
+    if (e.key === 'Escape') {
+      closeCatSheet();
+      return;
+    }
+    if (!isOpen) return;
+    if (e.key === 'ArrowLeft') {
+      e.preventDefault();
+      stepCatSheet(-1);
+    } else if (e.key === 'ArrowRight') {
+      e.preventDefault();
+      stepCatSheet(1);
+    }
   });
 
   function renderRoster() {
     const grid = document.getElementById('catRosterGrid');
     if (!grid) return;
 
-    var filtered = catsData.filter(function (cat) {
-      if (currentFilter === 'All') return true;
-      return (cat.category || '').toLowerCase() === currentFilter.toLowerCase();
-    });
+    var filtered = getFilteredCats();
 
     if (filtered.length === 0) {
-      grid.innerHTML = '<div class="col-span-5 text-center text-gray-400 py-10 text-sm">No cats found in this category yet.</div>';
+      grid.innerHTML = '<div class="col-span-5 text-center text-gray-400 py-8 text-sm">No cats found in this category yet.</div>';
       return;
     }
 
@@ -120,19 +224,20 @@
 
       var visualHtml = hasPhoto
         ? `<img src="${esc(cat.image)}" alt="${esc(cat.name)}" loading="lazy" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">`
-        : `<div class="absolute inset-0 bg-gradient-to-br from-brand-dark to-brand-turquoise flex flex-col items-center justify-start pt-8 p-4 text-center">
-             <span class="text-5xl mb-1.5 opacity-85">🐱</span>
+        : `<div class="absolute inset-0 bg-gradient-to-br from-[#1D8A99] to-[#156975] flex flex-col items-center justify-start pt-8 p-6 text-center">
+             <span class="text-5xl mb-2 opacity-85">🐱</span>
              <span class="text-[10px] uppercase tracking-widest text-white/75 font-bold">Photo Coming Soon</span>
            </div>`;
 
       return `
         <article data-cat-id="${esc(cat.id)}" role="button" tabindex="0" aria-label="View ${esc(cat.name)}'s profile"
-          class="group relative shrink-0 w-48 sm:w-56 md:w-auto snap-start aspect-[4/5] rounded-2xl overflow-hidden shadow-card border border-gray-100 cursor-pointer focus:outline-none focus-visible:ring-4 focus-visible:ring-brand-turquoise">
+          class="group relative shrink-0 w-48 sm:w-56 md:w-auto snap-start aspect-[4/5] rounded-2xl overflow-hidden shadow-card border border-gray-100 cursor-pointer focus:outline-none focus-visible:ring-4 focus-visible:ring-[#1D8A99]">
+          <span aria-hidden="true" class="absolute top-2 left-2 z-10 w-8 h-8 rounded-lg bg-[#C85A32] text-white flex items-center justify-center text-xs shadow">🐾</span>
           ${visualHtml}
-          <div class="absolute inset-x-0 bottom-0 p-3.5 pt-12 bg-gradient-to-t from-black/90 via-black/60 to-transparent text-white">
-            <span class="inline-block px-2 py-0.5 rounded-full bg-brand-orange/95 text-[9px] font-bold mb-1 leading-tight">${esc(catCategory)}</span>
+          <div class="absolute inset-x-0 bottom-0 p-4 pt-12 bg-gradient-to-t from-black/90 via-black/60 to-transparent text-white">
+            <span class="inline-block px-2 py-1 rounded-lg bg-[#1D8A99] text-[10px] font-bold mb-1 leading-tight">${esc(catCategory)}</span>
             <h3 class="font-heading font-bold text-sm leading-tight">${esc(cat.name)}</h3>
-            <p class="text-[11px] text-white/95 leading-snug mt-1">${esc(cat.description)}</p>
+            <p class="text-xs text-white/95 leading-snug mt-1">${esc(cat.description)}</p>
           </div>
         </article>
       `;
@@ -180,9 +285,9 @@
       filterButtons.forEach(btn => {
         btn.onclick = function () {
           filterButtons.forEach(b => {
-            b.className = "cat-filter-btn px-4 py-2 rounded-full text-xs font-bold bg-gray-100 text-gray-600 hover:bg-gray-200 transition-all cursor-pointer";
+            b.className = "cat-filter-btn px-4 py-2 rounded-2xl text-xs font-bold bg-gray-100 text-gray-600 hover:bg-gray-200 transition-all cursor-pointer";
           });
-          btn.className = "cat-filter-btn px-4 py-2 rounded-full text-xs font-bold bg-brand-orange text-white shadow-sm transition-all cursor-pointer";
+          btn.className = "cat-filter-btn px-4 py-2 rounded-2xl text-xs font-bold bg-[#C85A32] text-white shadow-sm transition-all cursor-pointer";
           currentFilter = btn.getAttribute('data-filter');
           renderRoster();
         };
