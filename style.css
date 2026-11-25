@@ -1,4 +1,4 @@
-@font-face {
+font-face {
   font-family: "Lucidity Condensed";
   src: url("fonts/LucidityCondensed.woff2") format("woff2"),
        url("fonts/LucidityCondensed.ttf") format("truetype");
@@ -286,4 +286,90 @@ nav a {
 #eventsGrid > div:hover {
   transform: translateY(-4px);
   box-shadow: 0 16px 32px -10px rgba(0, 107, 136, 0.16);
+}
+
+/* Walking Orange Cat Loader */
+.hmc-cat-loader {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+}
+
+.hmc-cat-walk-svg {
+  width: 80px;
+  height: 54px;
+  overflow: visible;
+}
+
+.hmc-cat-body {
+  animation: hmc-cat-bob 0.6s ease-in-out infinite;
+  transform-origin: center;
+}
+
+.hmc-cat-tail {
+  animation: hmc-tail-sway 0.9s ease-in-out infinite alternate;
+  transform-origin: 22px 24px;
+}
+
+.hmc-leg-front-a {
+  animation: hmc-leg-swing 0.6s ease-in-out infinite;
+  transform-origin: 54px 31px;
+}
+
+.hmc-leg-front-b {
+  animation: hmc-leg-swing 0.6s ease-in-out infinite reverse;
+  transform-origin: 50px 31px;
+}
+
+.hmc-leg-back-a {
+  animation: hmc-leg-swing 0.6s ease-in-out infinite reverse;
+  transform-origin: 30px 31px;
+}
+
+.hmc-leg-back-b {
+  animation: hmc-leg-swing 0.6s ease-in-out infinite;
+  transform-origin: 26px 31px;
+}
+
+.hmc-paw-trail span {
+  display: inline-block;
+  font-size: 0.72rem;
+  opacity: 0.25;
+  animation: hmc-paw-step 1.2s ease-in-out infinite;
+}
+.hmc-paw-trail span:nth-child(2) { animation-delay: 0.3s; }
+.hmc-paw-trail span:nth-child(3) { animation-delay: 0.6s; }
+
+@keyframes hmc-cat-bob {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-2px); }
+}
+
+@keyframes hmc-tail-sway {
+  0% { transform: rotate(-10deg); }
+  100% { transform: rotate(14deg); }
+}
+
+@keyframes hmc-leg-swing {
+  0%, 100% { transform: rotate(-22deg); }
+  50% { transform: rotate(22deg); }
+}
+
+@keyframes hmc-paw-step {
+  0%, 100% { opacity: 0.2; transform: translateY(0); }
+  50% { opacity: 0.95; transform: translateY(-2px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hmc-cat-body,
+  .hmc-cat-tail,
+  .hmc-leg-front-a,
+  .hmc-leg-front-b,
+  .hmc-leg-back-a,
+  .hmc-leg-back-b,
+  .hmc-paw-trail span {
+    animation: none;
+  }
 }

@@ -31,6 +31,60 @@
       .replace(/'/g, '&#39;');
   }
 
+  function getRosterWalkingCatHtml(message) {
+    return (
+      '<div role="status" aria-live="polite" class="hmc-cat-loader py-4">' +
+        '<svg class="hmc-cat-walk-svg" viewBox="0 0 84 54" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
+          '<rect class="hmc-leg-back-b" x="24" y="30" width="5" height="15" rx="2.5" fill="#D97724"/>' +
+          '<rect class="hmc-leg-front-b" x="48" y="30" width="5" height="15" rx="2.5" fill="#D97724"/>' +
+          '<path class="hmc-cat-tail" d="M22 25C13 23 10 13 15 9" stroke="#F59E0B" stroke-width="5" stroke-linecap="round"/>' +
+          '<g class="hmc-cat-body">' +
+            '<rect x="21" y="20" width="35" height="15" rx="7.5" fill="#F59E0B"/>' +
+            '<path d="M33 20.5V25M39 20.5V25.5M45 20.5V25" stroke="#B45309" stroke-width="2" stroke-linecap="round"/>' +
+            '<circle cx="58" cy="20" r="10" fill="#F59E0B"/>' +
+            '<polygon points="50,13 52,5 57,11" fill="#F59E0B"/>' +
+            '<polygon points="60,11 65,5 66,13" fill="#F59E0B"/>' +
+            '<polygon points="51.5,12 52.5,7.5 55.5,11" fill="#FDBA74"/>' +
+            '<polygon points="61,11 64,7.5 64.5,12" fill="#FDBA74"/>' +
+            '<circle cx="61.5" cy="19" r="1.4" fill="#1F2937"/>' +
+            '<circle cx="66.5" cy="21.5" r="1.3" fill="#FB7185"/>' +
+            '<path d="M62 23.5C63.5 24.8 65.5 24.8 67 23.5" stroke="#78350F" stroke-width="1.4" stroke-linecap="round"/>' +
+            '<rect x="49" y="24" width="11" height="2.6" rx="1.3" fill="#00A896"/>' +
+          '</g>' +
+          '<rect class="hmc-leg-back-a" x="28" y="30" width="5.5" height="16" rx="2.75" fill="#FBBF24"/>' +
+          '<rect class="hmc-leg-front-a" x="52" y="30" width="5.5" height="16" rx="2.75" fill="#FBBF24"/>' +
+        '</svg>' +
+        '<div class="hmc-paw-trail flex items-center gap-1.5" aria-hidden="true">' +
+          '<span>🐾</span><span>🐾</span><span>🐾</span>' +
+        '</div>' +
+        '<p class="text-xs font-semibold text-brand-muted">' + esc(message) + '</p>' +
+      '</div>'
+    );
+  }
+
+  function renderRosterLoading() {
+    var grid = document.getElementById('catRosterGrid');
+    if (!grid) return;
+    grid.innerHTML = '<div class="col-span-full w-full flex justify-center py-8">' + getRosterWalkingCatHtml('Calling the kitties...') + '</div>';
+  }
+
+  function renderRosterError() {
+    var grid = document.getElementById('catRosterGrid');
+    if (!grid) return;
+    grid.innerHTML =
+      '<div class="col-span-full w-full text-center py-8 px-4 rounded-2xl bg-gray-50 border border-gray-200">' +
+        '<p class="text-xs font-semibold text-gray-700 mb-3">Could not load our cat roster right now.</p>' +
+        '<button type="button" id="retryCatRosterBtn" class="px-4 py-2 rounded-xl bg-[#C85A32] hover:bg-[#AE4B28] text-white text-xs font-bold cursor-pointer transition-colors">Try Again</button>' +
+      '</div>';
+
+    var retryBtn = document.getElementById('retryCatRosterBtn');
+    if (retryBtn) {
+      retryBtn.addEventListener('click', function () {
+        loadCatRoster();
+      });
+    }
+  }
+
   function getCategoryRank(category) {
     var normalized = String(category ?? '').trim().toLowerCase();
     var idx = CATEGORY_ORDER.findIndex(function (c) {
@@ -403,7 +457,12 @@
 
   async function loadCatRoster() {
     const client = (typeof supabaseClient !== 'undefined') ? supabaseClient : null;
-    if (!client) return;
+    if (!client) {
+      renderRosterError();
+      return;
+    }
+
+    renderRosterLoading();
 
     try {
       const { data, error } = await client
@@ -428,6 +487,7 @@
       });
     } catch (err) {
       console.error('Error loading cat roster from Supabase:', err);
+      renderRosterError();
     }
   }
 

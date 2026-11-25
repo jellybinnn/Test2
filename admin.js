@@ -51,6 +51,72 @@ function safeUrl(url, fallback = '') {
   return fallback;
 }
 
+function getWalkingCatLoaderHtml(message = 'Loading...', { compact = false, dark = true } = {}) {
+  const sizeStyle = compact ? 'style="width:52px;height:36px;"' : '';
+  const textClass = dark ? 'text-gray-300' : 'text-brand-muted';
+
+  return `
+    <div role="status" aria-live="polite" class="hmc-cat-loader py-3">
+      <svg class="hmc-cat-walk-svg" ${sizeStyle} viewBox="0 0 84 54" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <rect class="hmc-leg-back-b" x="24" y="30" width="5" height="15" rx="2.5" fill="#D97724"/>
+        <rect class="hmc-leg-front-b" x="48" y="30" width="5" height="15" rx="2.5" fill="#D97724"/>
+        <path class="hmc-cat-tail" d="M22 25C13 23 10 13 15 9" stroke="#F59E0B" stroke-width="5" stroke-linecap="round"/>
+        <g class="hmc-cat-body">
+          <rect x="21" y="20" width="35" height="15" rx="7.5" fill="#F59E0B"/>
+          <path d="M33 20.5V25M39 20.5V25.5M45 20.5V25" stroke="#B45309" stroke-width="2" stroke-linecap="round"/>
+          <circle cx="58" cy="20" r="10" fill="#F59E0B"/>
+          <polygon points="50,13 52,5 57,11" fill="#F59E0B"/>
+          <polygon points="60,11 65,5 66,13" fill="#F59E0B"/>
+          <polygon points="51.5,12 52.5,7.5 55.5,11" fill="#FDBA74"/>
+          <polygon points="61,11 64,7.5 64.5,12" fill="#FDBA74"/>
+          <circle cx="61.5" cy="19" r="1.4" fill="#1F2937"/>
+          <circle cx="66.5" cy="21.5" r="1.3" fill="#FB7185"/>
+          <path d="M62 23.5C63.5 24.8 65.5 24.8 67 23.5" stroke="#78350F" stroke-width="1.4" stroke-linecap="round"/>
+          <rect x="49" y="24" width="11" height="2.6" rx="1.3" fill="#00A896"/>
+        </g>
+        <rect class="hmc-leg-back-a" x="28" y="30" width="5.5" height="16" rx="2.75" fill="#FBBF24"/>
+        <rect class="hmc-leg-front-a" x="52" y="30" width="5.5" height="16" rx="2.75" fill="#FBBF24"/>
+      </svg>
+      <div class="hmc-paw-trail flex items-center gap-1.5" aria-hidden="true">
+        <span>🐾</span><span>🐾</span><span>🐾</span>
+      </div>
+      <p class="text-xs font-semibold ${textClass}">${escapeHtml(message)}</p>
+    </div>
+  `;
+}
+
+function renderTableLoading(tbodyId, colSpan, message = 'Loading records...') {
+  const tbody = document.getElementById(tbodyId);
+  if (!tbody) return;
+  tbody.innerHTML = `<tr><td colspan="${colSpan}" class="p-6 text-center">${getWalkingCatLoaderHtml(message, { compact: true, dark: true })}</td></tr>`;
+}
+
+function setButtonLoading(btn, isLoading, loadingText) {
+  if (!btn) return;
+  if (isLoading) {
+    if (!btn.dataset.originalText) {
+      btn.dataset.originalText = btn.textContent;
+    }
+    btn.disabled = true;
+    btn.classList.add("opacity-60", "cursor-not-allowed");
+    btn.textContent = loadingText;
+  } else {
+    btn.disabled = false;
+    btn.classList.remove("opacity-60", "cursor-not-allowed");
+    if (btn.dataset.originalText) {
+      btn.textContent = btn.dataset.originalText;
+      delete btn.dataset.originalText;
+    }
+  }
+}
+
+function setLoginCheckingState(isChecking) {
+  const sessionLoader = document.getElementById("adminSessionLoader");
+  const loginForm = document.getElementById("internalLoginForm");
+  if (sessionLoader) sessionLoader.classList.toggle("hidden", !isChecking);
+  if (loginForm) loginForm.classList.toggle("hidden", isChecking);
+}
+
 function getCatCategoryRank(category) {
   const normalized = String(category ?? '').trim().toLowerCase();
   const idx = CAT_CATEGORY_ORDER.findIndex(c => c.toLowerCase() === normalized);
@@ -149,21 +215,29 @@ function hideLoginError() {
 
 document.addEventListener("DOMContentLoaded", async () => {
   sessionStorage.removeItem("hmc_admin_auth");
+  setLoginCheckingState(true);
+  document.getElementById("adminLoginOverlay")?.classList.remove("hidden");
 
   if (!supabaseClient) {
+    setLoginCheckingState(false);
     showLoginError("Authentication service unavailable.");
-    document.getElementById("adminLoginOverlay")?.classList.remove("hidden");
     return;
   }
 
-  const { data, error } = await supabaseClient.auth.getSession();
-  if (error || !data?.session) {
-    document.getElementById("adminLoginOverlay")?.classList.remove("hidden");
-    return;
-  }
+  try {
+    const { data, error } = await supabaseClient.auth.getSession();
+    if (error || !data?.session) {
+      setLoginCheckingState(false);
+      return;
+    }
 
-  document.getElementById("adminLoginOverlay")?.classList.add("hidden");
-  initAdminDashboard();
+    document.getElementById("adminLoginOverlay")?.classList.add("hidden");
+    initAdminDashboard();
+  } catch (err) {
+    console.error("Session check error:", err);
+    setLoginCheckingState(false);
+    showLoginError("Could not verify session. Please sign in.");
+  }
 });
 
 async function handleInternalLogin(e) {
@@ -177,6 +251,7 @@ async function handleInternalLogin(e) {
 
   const emailEl = document.getElementById("internalEmail");
   const passEl = document.getElementById("internalPassword");
+  const loginBtn = document.getElementById("internalLoginBtn");
   const email = (emailEl?.value || '').trim();
   const password = passEl?.value || '';
 
@@ -185,24 +260,72 @@ async function handleInternalLogin(e) {
     return;
   }
 
-  const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
-  if (error || !data?.session) {
-    console.error("Admin sign-in error:", error);
-    showLoginError("Invalid credentials. Please check your email and password.");
-    return;
-  }
+  setButtonLoading(loginBtn, true, "Signing in...");
+  try {
+    const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+    if (error || !data?.session) {
+      console.error("Admin sign-in error:", error);
+      showLoginError("Invalid credentials. Please check your email and password.");
+      return;
+    }
 
-  if (passEl) passEl.value = "";
-  document.getElementById("adminLoginOverlay")?.classList.add("hidden");
-  initAdminDashboard();
+    if (passEl) passEl.value = "";
+    document.getElementById("adminLoginOverlay")?.classList.add("hidden");
+    initAdminDashboard();
+  } finally {
+    setButtonLoading(loginBtn, false);
+  }
 }
 
 async function adminLogout() {
-  if (supabaseClient) {
-    await supabaseClient.auth.signOut();
+  const logoutBtn = document.getElementById("adminLogoutBtn");
+  setButtonLoading(logoutBtn, true, "Signing out...");
+  try {
+    if (supabaseClient) {
+      await supabaseClient.auth.signOut();
+    }
+  } catch (err) {
+    console.error("Sign-out error:", err);
+  } finally {
+    setButtonLoading(logoutBtn, false);
   }
+
   sessionStorage.removeItem("hmc_admin_auth");
-  location.reload();
+
+  // Clear in-memory dashboard state without reloading the page
+  adminMenuList = [];
+  adminEventsList = [];
+  adminCatsList = [];
+  adminAnalyticsData = { visits: 0, interactions: 0 };
+
+  if (adminStatsChart) {
+    adminStatsChart.destroy();
+    adminStatsChart = null;
+  }
+
+  const menuSearch = document.getElementById("menuSearchInput");
+  const menuCatFilter = document.getElementById("menuFilterCategory");
+  const catSearch = document.getElementById("catSearchInput");
+  const catFilter = document.getElementById("catFilterCategory");
+  if (menuSearch) menuSearch.value = "";
+  if (menuCatFilter) menuCatFilter.value = "All";
+  if (catSearch) catSearch.value = "";
+  if (catFilter) catFilter.value = "All";
+
+  resetMenuForm();
+  resetEventForm();
+  resetCatForm();
+  closeCatPreview();
+  renderAdminMenuTable();
+  renderAdminEventsTable();
+  renderAdminCatsTable();
+  renderAdminChart();
+  switchTab("menu");
+
+  hideLoginError();
+  setLoginCheckingState(false);
+  document.getElementById("adminLoginOverlay")?.classList.remove("hidden");
+  document.getElementById("internalEmail")?.focus();
 }
 
 function initAdminDashboard() {
@@ -217,14 +340,24 @@ let adminAnalyticsData = { visits: 0, interactions: 0 };
 async function loadAdminAnalytics() {
   if (!supabaseClient) return;
   try {
-    const { data, error } = await supabaseClient.from('analytics_logs').select('*');
-    if (error) throw error;
+    const [visitsRes, interactionsRes] = await Promise.all([
+      supabaseClient
+        .from('analytics_logs')
+        .select('*', { count: 'exact', head: true })
+        .eq('event_type', 'page_view'),
+      supabaseClient
+        .from('analytics_logs')
+        .select('*', { count: 'exact', head: true })
+        .neq('event_type', 'page_view')
+    ]);
 
-    const logs = data || [];
-    const visits = logs.filter(l => l.event_type === 'page_view').length;
-    const interactions = logs.filter(l => l.event_type !== 'page_view').length;
+    if (visitsRes.error) throw visitsRes.error;
+    if (interactionsRes.error) throw interactionsRes.error;
 
-    adminAnalyticsData = { visits, interactions };
+    adminAnalyticsData = {
+      visits: visitsRes.count || 0,
+      interactions: interactionsRes.count || 0
+    };
     renderAdminChart();
   } catch (err) {
     console.error("Error loading analytics:", err);
@@ -333,6 +466,7 @@ let adminMenuList = [];
 
 async function loadAdminMenu() {
   if (!supabaseClient) return;
+  renderTableLoading("menuTableBody", 5, "Loading menu items...");
   try {
     const { data, error } = await supabaseClient.from('menu_items').select('*').order('category');
     if (error) throw error;
@@ -341,6 +475,7 @@ async function loadAdminMenu() {
     renderAdminChart();
   } catch (err) {
     console.error("Error loading menu:", err);
+    renderAdminMenuTable();
   }
 }
 
@@ -355,7 +490,23 @@ function renderAdminMenuTable() {
     return;
   }
 
-  tbody.innerHTML = adminMenuList.map(item => `
+  const query = (document.getElementById("menuSearchInput")?.value || "").trim().toLowerCase();
+  const categoryFilter = document.getElementById("menuFilterCategory")?.value || "All";
+
+  const filteredMenu = adminMenuList.filter(item => {
+    const matchesCategory = categoryFilter === "All" || (item.category || "") === categoryFilter;
+    if (!matchesCategory) return false;
+    if (!query) return true;
+    const haystack = `${item.name || ""} ${item.category || ""} ${item.description || ""} ${item.price || ""}`.toLowerCase();
+    return haystack.includes(query);
+  });
+
+  if (filteredMenu.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-gray-500 text-xs">No menu items match your search or category filter.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = filteredMenu.map(item => `
     <tr class="hover:bg-gray-800/50 transition-colors">
       <td class="p-4 font-semibold text-brand-turquoise text-xs">${escapeHtml(item.category)}</td>
       <td class="p-4 font-bold text-white">${escapeHtml(item.name)}</td>
@@ -373,12 +524,14 @@ async function handleMenuSubmit(e) {
   e.preventDefault();
   if (!supabaseClient) return;
 
+  const submitBtn = document.getElementById("menuSubmitBtn");
   const id = document.getElementById("editMenuId").value;
   const category = document.getElementById("menuFormCategory").value;
   const name = document.getElementById("menuFormName").value.trim();
   const price = document.getElementById("menuFormPrice").value.trim();
   const description = document.getElementById("menuFormDesc").value.trim();
 
+  setButtonLoading(submitBtn, true, id ? "Updating..." : "Saving...");
   try {
     if (id) {
       const { error } = await supabaseClient.from('menu_items').update({ category, name, price, description }).eq('id', id);
@@ -394,6 +547,8 @@ async function handleMenuSubmit(e) {
   } catch (err) {
     console.error("Error saving menu item:", err);
     showToast("Could not save menu item. Please try again.", "error");
+  } finally {
+    setButtonLoading(submitBtn, false);
   }
 }
 
@@ -457,6 +612,7 @@ function findEventByKey(key) {
 
 async function loadAdminEvents() {
   if (!supabaseClient) return;
+  renderTableLoading("eventsTableBody", 4, "Loading events...");
   try {
     const { data, error } = await supabaseClient.from('events').select('*').order('created_at', { ascending: false });
     if (!error && data) {
@@ -518,6 +674,7 @@ function renderAdminEventsTable() {
 
 async function handleEventSubmit(e) {
   e.preventDefault();
+  const submitBtn = document.getElementById("eventSubmitBtn");
   const editKey = document.getElementById("editEventIndex").value;
   const title = document.getElementById("eventFormTitle").value.trim();
   const date = document.getElementById("eventFormDate").value.trim();
@@ -532,30 +689,35 @@ async function handleEventSubmit(e) {
   const newEventObj = { title, date, image, description, images: imagesArray };
   const { ev: existingEv, idx: existingIdx } = editKey ? findEventByKey(editKey) : { ev: null, idx: -1 };
 
-  if (supabaseClient) {
-    try {
-      if (existingEv?.id) {
-        const { error } = await supabaseClient.from('events').update(newEventObj).eq('id', existingEv.id);
-        if (error) throw error;
-        showToast("Event updated successfully.", "success");
-      } else {
-        const { error } = await supabaseClient.from('events').insert([newEventObj]);
-        if (error) throw error;
-        showToast("Event saved successfully.", "success");
+  setButtonLoading(submitBtn, true, existingEv ? "Updating..." : "Saving...");
+  try {
+    if (supabaseClient) {
+      try {
+        if (existingEv?.id) {
+          const { error } = await supabaseClient.from('events').update(newEventObj).eq('id', existingEv.id);
+          if (error) throw error;
+          showToast("Event updated successfully.", "success");
+        } else {
+          const { error } = await supabaseClient.from('events').insert([newEventObj]);
+          if (error) throw error;
+          showToast("Event saved successfully.", "success");
+        }
+        resetEventForm();
+        loadAdminEvents();
+        return;
+      } catch (err) {
+        console.error("Supabase events error, saving locally:", err);
+        saveEventLocally(newEventObj, existingIdx, "Event saved locally.");
+        resetEventForm();
+        return;
       }
-      resetEventForm();
-      loadAdminEvents();
-      return;
-    } catch (err) {
-      console.error("Supabase events error, saving locally:", err);
-      saveEventLocally(newEventObj, existingIdx, "Event saved locally.");
-      resetEventForm();
-      return;
     }
-  }
 
-  saveEventLocally(newEventObj, existingIdx, "Event saved locally.");
-  resetEventForm();
+    saveEventLocally(newEventObj, existingIdx, "Event saved locally.");
+    resetEventForm();
+  } finally {
+    setButtonLoading(submitBtn, false);
+  }
 }
 
 function saveEventLocally(newEventObj, idx, message) {
@@ -633,6 +795,7 @@ let catUploadWidget = null;
 
 async function loadAdminCats() {
   if (!supabaseClient) return;
+  renderTableLoading("catsTableBody", 4, "Calling the kitties...");
   try {
     const { data, error } = await supabaseClient.from('cats').select('*').order('created_at', { ascending: true });
     if (error) throw error;
@@ -641,6 +804,7 @@ async function loadAdminCats() {
     renderAdminChart();
   } catch (err) {
     console.error("Error loading cats from Supabase:", err);
+    renderAdminCatsTable();
   }
 }
 
@@ -655,7 +819,23 @@ function renderAdminCatsTable() {
     return;
   }
 
-  tbody.innerHTML = adminCatsList.map(cat => {
+  const query = (document.getElementById("catSearchInput")?.value || "").trim().toLowerCase();
+  const categoryFilter = document.getElementById("catFilterCategory")?.value || "All";
+
+  const filteredCats = adminCatsList.filter(cat => {
+    const matchesCategory = categoryFilter === "All" || (cat.category || "") === categoryFilter;
+    if (!matchesCategory) return false;
+    if (!query) return true;
+    const haystack = `${cat.name || ""} ${cat.category || ""} ${cat.description || ""}`.toLowerCase();
+    return haystack.includes(query);
+  });
+
+  if (filteredCats.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-gray-500 text-xs">No cats match your search or family filter.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = filteredCats.map(cat => {
     const cleanImg = safeUrl(cat.image, '');
     const thumbHtml = cleanImg
       ? `<img src="${escapeHtml(cleanImg)}" alt="${escapeHtml(cat.name)}" class="w-12 h-14 rounded-lg object-cover bg-gray-800">`
@@ -737,12 +917,14 @@ async function handleCatSubmit(e) {
   e.preventDefault();
   if (!supabaseClient) return;
 
+  const submitBtn = document.getElementById("catSubmitBtn");
   const id = document.getElementById("editCatId").value;
   const name = document.getElementById("catFormName").value.trim();
   const category = document.getElementById("catFormCategory").value;
   const description = document.getElementById("catFormDesc").value.trim();
   const image = safeUrl(document.getElementById("catFormImage").value.trim(), '');
 
+  setButtonLoading(submitBtn, true, id ? "Updating..." : "Saving...");
   try {
     if (id) {
       const { error } = await supabaseClient.from('cats').update({ name, category, description, image }).eq('id', id);
@@ -758,6 +940,8 @@ async function handleCatSubmit(e) {
   } catch (err) {
     console.error("Error saving cat:", err);
     showToast("Could not save cat. Please try again.", "error");
+  } finally {
+    setButtonLoading(submitBtn, false);
   }
 }
 

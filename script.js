@@ -34,6 +34,55 @@ function safeUrl(url, fallback = '') {
   return fallback;
 }
 
+function getWalkingCatLoaderHtml(message = 'Loading...', { compact = false, dark = false } = {}) {
+  const sizeStyle = compact ? 'style="width:54px;height:38px;"' : '';
+  const textClass = dark ? 'text-gray-300' : 'text-brand-muted';
+
+  return `
+    <div role="status" aria-live="polite" class="hmc-cat-loader py-4">
+      <svg class="hmc-cat-walk-svg" ${sizeStyle} viewBox="0 0 84 54" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <rect class="hmc-leg-back-b" x="24" y="30" width="5" height="15" rx="2.5" fill="#D97724"/>
+        <rect class="hmc-leg-front-b" x="48" y="30" width="5" height="15" rx="2.5" fill="#D97724"/>
+        <path class="hmc-cat-tail" d="M22 25C13 23 10 13 15 9" stroke="#F59E0B" stroke-width="5" stroke-linecap="round"/>
+        <g class="hmc-cat-body">
+          <rect x="21" y="20" width="35" height="15" rx="7.5" fill="#F59E0B"/>
+          <path d="M33 20.5V25M39 20.5V25.5M45 20.5V25" stroke="#B45309" stroke-width="2" stroke-linecap="round"/>
+          <circle cx="58" cy="20" r="10" fill="#F59E0B"/>
+          <polygon points="50,13 52,5 57,11" fill="#F59E0B"/>
+          <polygon points="60,11 65,5 66,13" fill="#F59E0B"/>
+          <polygon points="51.5,12 52.5,7.5 55.5,11" fill="#FDBA74"/>
+          <polygon points="61,11 64,7.5 64.5,12" fill="#FDBA74"/>
+          <circle cx="61.5" cy="19" r="1.4" fill="#1F2937"/>
+          <circle cx="66.5" cy="21.5" r="1.3" fill="#FB7185"/>
+          <path d="M62 23.5C63.5 24.8 65.5 24.8 67 23.5" stroke="#78350F" stroke-width="1.4" stroke-linecap="round"/>
+          <rect x="49" y="24" width="11" height="2.6" rx="1.3" fill="#00A896"/>
+        </g>
+        <rect class="hmc-leg-back-a" x="28" y="30" width="5.5" height="16" rx="2.75" fill="#FBBF24"/>
+        <rect class="hmc-leg-front-a" x="52" y="30" width="5.5" height="16" rx="2.75" fill="#FBBF24"/>
+      </svg>
+      <div class="hmc-paw-trail flex items-center gap-1.5" aria-hidden="true">
+        <span>🐾</span><span>🐾</span><span>🐾</span>
+      </div>
+      <p class="text-xs font-semibold ${textClass}">${escapeHtml(message)}</p>
+    </div>
+  `;
+}
+
+function dismissPageOpenLoader() {
+  const loader = document.getElementById("pageOpenLoader");
+  if (!loader || loader.dataset.dismissed === "true") return;
+  loader.dataset.dismissed = "true";
+  loader.classList.add("opacity-0", "pointer-events-none");
+  window.setTimeout(() => {
+    loader.classList.add("hidden");
+  }, 320);
+}
+
+window.addEventListener("load", () => {
+  window.setTimeout(dismissPageOpenLoader, 300);
+});
+window.setTimeout(dismissPageOpenLoader, 1500);
+
 function normalizeGalleryImages(images) {
   if (Array.isArray(images)) {
     return images.map(u => safeUrl(u, '')).filter(Boolean);
@@ -96,15 +145,22 @@ function updateStoreStatus() {
 }
 
 let allMenuData = [];
+let isMenuLoading = true;
 
 async function loadFrontendMenu() {
-  if (!supabaseClient) return;
+  isMenuLoading = true;
+  if (!supabaseClient) {
+    isMenuLoading = false;
+    return;
+  }
   try {
     const { data, error } = await supabaseClient.from('menu_items').select('*');
     if (error) throw error;
     allMenuData = Array.isArray(data) ? data : [];
   } catch (err) {
     console.error("Error fetching menu items:", err);
+  } finally {
+    isMenuLoading = false;
   }
 }
 
@@ -112,6 +168,9 @@ async function loadFrontendEvents() {
   const eventsContainer = document.getElementById("eventsGrid");
   const eventCountBadge = document.getElementById("eventCountBadge");
   if (!eventsContainer) return;
+
+  if (eventCountBadge) eventCountBadge.textContent = "Loading events...";
+  eventsContainer.innerHTML = `<div class="col-span-full flex justify-center py-8">${getWalkingCatLoaderHtml("Gathering events...")}</div>`;
 
   let events = [];
   if (supabaseClient) {
@@ -147,7 +206,12 @@ async function loadFrontendEvents() {
   events.sort((a, b) => parseEventDate(a.date) - parseEventDate(b.date));
   renderedEvents = events;
 
-  if (eventCountBadge) eventCountBadge.textContent = `${events.length} Upcoming Events`;
+  if (eventCountBadge) eventCountBadge.textContent = `${events.length} Events`;
+
+  if (events.length === 0) {
+    eventsContainer.innerHTML = `<p class="col-span-full text-center text-gray-400 text-sm py-8">No events posted yet.</p>`;
+    return;
+  }
 
   eventsContainer.innerHTML = events.map((ev, index) => {
     const bannerUrl = safeUrl(ev.image, DEFAULT_BANNER_URL);
@@ -296,6 +360,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const popupAboutBtn = document.getElementById("popupAboutBtn");
 
   setTimeout(() => {
+    dismissPageOpenLoader();
     if (welcomePopup && popupCard) {
       welcomePopup.classList.remove("opacity-0", "pointer-events-none");
       popupCard.classList.remove("scale-90");
@@ -356,6 +421,11 @@ document.addEventListener("DOMContentLoaded", () => {
   function renderDrawerItems(items, sortOrder = "default") {
     if (!drawerItemsGrid) return;
 
+    if (isMenuLoading && allMenuData.length === 0) {
+      drawerItemsGrid.innerHTML = `<div class="col-span-2 flex justify-center py-8">${getWalkingCatLoaderHtml("Fetching menu treats...", { compact: true })}</div>`;
+      return;
+    }
+
     const sorted = [...items];
     if (sortOrder === "low-high") {
       sorted.sort((a, b) => parseFloat(String(a.price ?? '').replace(/[^0-9.]/g, '')) - parseFloat(String(b.price ?? '').replace(/[^0-9.]/g, '')));
@@ -380,7 +450,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   menuBubbles.forEach(bubble => {
-    bubble.addEventListener("click", () => {
+    bubble.addEventListener("click", async () => {
       const category = bubble.getAttribute("data-category");
       activeCategory = category;
       logVisitorInteraction('menu_click', category);
@@ -388,14 +458,20 @@ document.addEventListener("DOMContentLoaded", () => {
       if (drawerCategoryTitle) drawerCategoryTitle.textContent = category;
       if (drawerCategoryIcon) drawerCategoryIcon.textContent = categoryIcons[category] || "🍽️";
 
-      const filtered = allMenuData.filter(item => item.category && item.category.toLowerCase() === category.toLowerCase());
-      renderDrawerItems(filtered, priceSortSelect?.value || "default");
-
       if (menuDrawerContainer) {
         menuDrawerContainer.style.maxHeight = "1000px";
         menuDrawerContainer.style.opacity = "1";
         menuDrawerContainer.scrollIntoView({ behavior: "smooth", block: "nearest" });
       }
+
+      if (isMenuLoading && allMenuData.length === 0) {
+        renderDrawerItems([], priceSortSelect?.value || "default");
+        await loadFrontendMenu();
+        if (activeCategory !== category) return;
+      }
+
+      const filtered = allMenuData.filter(item => item.category && item.category.toLowerCase() === category.toLowerCase());
+      renderDrawerItems(filtered, priceSortSelect?.value || "default");
     });
   });
 

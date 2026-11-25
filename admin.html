@@ -52,7 +52,36 @@
         <p class="text-xs text-brand-turquoise font-medium mt-1">Hello Meow Cafe CMS Master Dashboard</p>
       </div>
 
-      <form id="internalLoginForm" onsubmit="handleInternalLogin(event)" class="space-y-5">
+      <div id="adminSessionLoader" class="py-4 flex justify-center">
+        <div role="status" aria-live="polite" class="hmc-cat-loader">
+          <svg class="hmc-cat-walk-svg" viewBox="0 0 84 54" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <rect class="hmc-leg-back-b" x="24" y="30" width="5" height="15" rx="2.5" fill="#D97724"/>
+            <rect class="hmc-leg-front-b" x="48" y="30" width="5" height="15" rx="2.5" fill="#D97724"/>
+            <path class="hmc-cat-tail" d="M22 25C13 23 10 13 15 9" stroke="#F59E0B" stroke-width="5" stroke-linecap="round"/>
+            <g class="hmc-cat-body">
+              <rect x="21" y="20" width="35" height="15" rx="7.5" fill="#F59E0B"/>
+              <path d="M33 20.5V25M39 20.5V25.5M45 20.5V25" stroke="#B45309" stroke-width="2" stroke-linecap="round"/>
+              <circle cx="58" cy="20" r="10" fill="#F59E0B"/>
+              <polygon points="50,13 52,5 57,11" fill="#F59E0B"/>
+              <polygon points="60,11 65,5 66,13" fill="#F59E0B"/>
+              <polygon points="51.5,12 52.5,7.5 55.5,11" fill="#FDBA74"/>
+              <polygon points="61,11 64,7.5 64.5,12" fill="#FDBA74"/>
+              <circle cx="61.5" cy="19" r="1.4" fill="#1F2937"/>
+              <circle cx="66.5" cy="21.5" r="1.3" fill="#FB7185"/>
+              <path d="M62 23.5C63.5 24.8 65.5 24.8 67 23.5" stroke="#78350F" stroke-width="1.4" stroke-linecap="round"/>
+              <rect x="49" y="24" width="11" height="2.6" rx="1.3" fill="#00A896"/>
+            </g>
+            <rect class="hmc-leg-back-a" x="28" y="30" width="5.5" height="16" rx="2.75" fill="#FBBF24"/>
+            <rect class="hmc-leg-front-a" x="52" y="30" width="5.5" height="16" rx="2.75" fill="#FBBF24"/>
+          </svg>
+          <div class="hmc-paw-trail flex items-center gap-1.5" aria-hidden="true">
+            <span>🐾</span><span>🐾</span><span>🐾</span>
+          </div>
+          <p class="text-xs font-semibold text-gray-300">Checking admin session...</p>
+        </div>
+      </div>
+
+      <form id="internalLoginForm" onsubmit="handleInternalLogin(event)" class="space-y-5 hidden">
         <div>
           <label class="block text-xs font-semibold text-gray-300 mb-1.5 uppercase tracking-wider">Admin Email</label>
           <input type="email" id="internalEmail" required placeholder="admin@hellomeowcafe.com.ph" class="w-full px-4 py-3 rounded-xl bg-gray-950 border border-gray-800 text-white text-sm focus:outline-none focus:border-brand-turquoise transition-colors">
@@ -67,7 +96,7 @@
           Incorrect credentials. Please try again.
         </div>
 
-        <button type="submit" class="w-full py-3.5 rounded-xl bg-brand-orange text-white font-heading font-bold text-xs uppercase tracking-wider hover:bg-brand-orange/90 transition-all shadow-lg shadow-brand-orange/20 cursor-pointer">
+        <button type="submit" id="internalLoginBtn" class="w-full py-3.5 rounded-xl bg-brand-orange text-white font-heading font-bold text-xs uppercase tracking-wider hover:bg-brand-orange/90 transition-all shadow-lg shadow-brand-orange/20 cursor-pointer">
           Sign In to Dashboard
         </button>
       </form>
@@ -87,7 +116,7 @@
         <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
         Supabase Live Sync Active
       </span>
-      <button onclick="adminLogout()" class="px-4 py-2 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 text-xs font-bold transition-colors border border-rose-500/30 cursor-pointer">
+      <button onclick="adminLogout()" id="adminLogoutBtn" class="px-4 py-2 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 text-xs font-bold transition-colors border border-rose-500/30 cursor-pointer">
         Logout 🚪
       </button>
     </div>
@@ -174,10 +203,29 @@
       </div>
 
       <div class="bg-gray-900 rounded-3xl p-6 md:p-8 border border-gray-800 shadow-xl">
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 pb-4 border-b border-gray-800">
+        <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-6 pb-4 border-b border-gray-800">
           <div>
             <h3 class="font-heading font-bold text-xl text-white">📋 Supabase Menu Inventory</h3>
             <p class="text-xs text-gray-400">Live records pulled from your Supabase `menu_items` table.</p>
+          </div>
+          <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full lg:w-auto">
+            <input type="search" id="menuSearchInput" oninput="renderAdminMenuTable()" placeholder="Search menu name or description..." aria-label="Search menu items" class="w-full sm:w-64 px-3.5 py-2 rounded-xl bg-gray-950 border border-gray-800 text-white text-xs focus:outline-none focus:border-brand-turquoise">
+            <select id="menuFilterCategory" onchange="renderAdminMenuTable()" aria-label="Filter menu by category" class="px-3.5 py-2 rounded-xl bg-gray-950 border border-gray-800 text-white text-xs focus:outline-none focus:border-brand-turquoise">
+              <option value="All">All Categories</option>
+              <option value="Must Try!">Must Try!</option>
+              <option value="Rice Meal">Rice Meal</option>
+              <option value="Pasta">Pasta</option>
+              <option value="Sandwich">Sandwich</option>
+              <option value="Salad">Salad</option>
+              <option value="Waffle">Waffle</option>
+              <option value="Ramen">Ramen</option>
+              <option value="Appetizers">Appetizers</option>
+              <option value="Cocktails">Cocktails</option>
+              <option value="Coffee">Coffee</option>
+              <option value="Non-Coffee">Non-Coffee</option>
+              <option value="Refreshment">Refreshment</option>
+              <option value="Dessert">Dessert</option>
+            </select>
           </div>
         </div>
 
@@ -351,10 +399,26 @@
       </div>
 
       <div class="bg-gray-900 rounded-3xl p-6 md:p-8 border border-gray-800 shadow-xl">
-        <div class="flex justify-between items-center mb-6 pb-4 border-b border-gray-800">
+        <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-6 pb-4 border-b border-gray-800">
           <div>
             <h3 class="font-heading font-bold text-xl text-white">🐱 Current Roster</h3>
             <p class="text-xs text-gray-400">Shown on the public site sorted by category.</p>
+          </div>
+          <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full lg:w-auto">
+            <input type="search" id="catSearchInput" oninput="renderAdminCatsTable()" placeholder="Search cat name or description..." aria-label="Search cats" class="w-full sm:w-64 px-3.5 py-2 rounded-xl bg-gray-950 border border-gray-800 text-white text-xs focus:outline-none focus:border-brand-turquoise">
+            <select id="catFilterCategory" onchange="renderAdminCatsTable()" aria-label="Filter cats by family" class="px-3.5 py-2 rounded-xl bg-gray-950 border border-gray-800 text-white text-xs focus:outline-none focus:border-brand-turquoise">
+              <option value="All">All Families</option>
+              <option value="The British Shorthair Family">The British Shorthair Family</option>
+              <option value="British Shorthair Gang">British Shorthair Gang</option>
+              <option value="The Mama Cats!">The Mama Cats!</option>
+              <option value="The Ragdoll Family">The Ragdoll Family</option>
+              <option value="The Ninja Tag Team">The Ninja Tag Team</option>
+              <option value="Our Spayed Single Ladies">Our Spayed Single Ladies</option>
+              <option value="The Youngsters">The Youngsters</option>
+              <option value="The Juniors">The Juniors</option>
+              <option value="The Escape Artist">The Escape Artist</option>
+              <option value="The Legit Cuddle Bugs">The Legit Cuddle Bugs</option>
+            </select>
           </div>
         </div>
 

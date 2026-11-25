@@ -54,6 +54,35 @@
 </head>
 <body class="min-h-screen flex flex-col antialiased selection:bg-brand-turquoise selection:text-white">
 
+  <div id="pageOpenLoader" class="fixed inset-0 z-[110] bg-gradient-to-b from-[#1d8fa3] to-brand-dark flex items-center justify-center transition-opacity duration-300">
+    <div role="status" aria-live="polite" class="hmc-cat-loader text-white">
+      <svg class="hmc-cat-walk-svg" viewBox="0 0 84 54" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <rect class="hmc-leg-back-b" x="24" y="30" width="5" height="15" rx="2.5" fill="#D97724"/>
+        <rect class="hmc-leg-front-b" x="48" y="30" width="5" height="15" rx="2.5" fill="#D97724"/>
+        <path class="hmc-cat-tail" d="M22 25C13 23 10 13 15 9" stroke="#F59E0B" stroke-width="5" stroke-linecap="round"/>
+        <g class="hmc-cat-body">
+          <rect x="21" y="20" width="35" height="15" rx="7.5" fill="#F59E0B"/>
+          <path d="M33 20.5V25M39 20.5V25.5M45 20.5V25" stroke="#B45309" stroke-width="2" stroke-linecap="round"/>
+          <circle cx="58" cy="20" r="10" fill="#F59E0B"/>
+          <polygon points="50,13 52,5 57,11" fill="#F59E0B"/>
+          <polygon points="60,11 65,5 66,13" fill="#F59E0B"/>
+          <polygon points="51.5,12 52.5,7.5 55.5,11" fill="#FDBA74"/>
+          <polygon points="61,11 64,7.5 64.5,12" fill="#FDBA74"/>
+          <circle cx="61.5" cy="19" r="1.4" fill="#1F2937"/>
+          <circle cx="66.5" cy="21.5" r="1.3" fill="#FB7185"/>
+          <path d="M62 23.5C63.5 24.8 65.5 24.8 67 23.5" stroke="#78350F" stroke-width="1.4" stroke-linecap="round"/>
+          <rect x="49" y="24" width="11" height="2.6" rx="1.3" fill="#00A896"/>
+        </g>
+        <rect class="hmc-leg-back-a" x="28" y="30" width="5.5" height="16" rx="2.75" fill="#FBBF24"/>
+        <rect class="hmc-leg-front-a" x="52" y="30" width="5.5" height="16" rx="2.75" fill="#FBBF24"/>
+      </svg>
+      <div class="hmc-paw-trail flex items-center gap-1.5" aria-hidden="true">
+        <span>🐾</span><span>🐾</span><span>🐾</span>
+      </div>
+      <p class="text-xs font-bold text-white/95 tracking-wide">Waking up the kitties...</p>
+    </div>
+  </div>
+
   <header id="mainHeader" class="fixed top-0 left-0 w-full z-50 transition-all duration-300 bg-transparent py-4 px-6 md:px-12 flex items-center justify-between">
     <a href="#home" class="logo-container group">
       <img decoding="async" src="https://res.cloudinary.com/tfk63bnl/image/upload/f_auto,q_auto/hmc_logo" alt="Hello Meow Cafe Logo" class="logo-img group-hover:scale-105 transition-transform">
@@ -578,7 +607,7 @@
   </div>
 
   <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script defer src="script.js?v=2.1"></script>
+  <script defer src="script.js?v=2.2"></script>
   <script defer src="roster.js"></script>
 </body>
 </html>
