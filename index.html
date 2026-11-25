@@ -534,11 +534,11 @@
     </div>
   </footer>
 
-  <div id="welcomePopup" class="fixed inset-0 bg-black/70 backdrop-blur-md z-[100] flex items-center justify-center p-4 transition-all duration-300 opacity-0 pointer-events-none">
+  <div id="welcomePopup" class="fixed inset-0 bg-black/70 z-[100] flex items-center justify-center p-4 transition-all duration-300 opacity-0 pointer-events-none">
     <div id="popupCard" class="relative max-w-md w-full transform scale-90 transition-all duration-300 flex flex-col items-center">
-      <div class="w-full bg-gradient-to-b from-[#26A5BA] to-[#1d8fa3] rounded-[2.5rem] shadow-2xl border border-white/25 flex flex-col items-center justify-center px-6 py-8 text-center relative z-10 overflow-hidden">
+      <div class="w-full bg-gradient-to-b from-[#1CA9C9] to-[#148AA6] rounded-[2.5rem] shadow-2xl border border-white/25 flex flex-col items-center justify-center px-6 py-8 text-center relative z-10 overflow-hidden">
 
-        <button type="button" id="closeWelcomePopupBtn" onclick="document.getElementById('welcomePopup').classList.add('opacity-0', 'pointer-events-none')" aria-label="Close welcome popup" class="absolute top-4 right-4 w-9 h-9 rounded-full bg-white/15 hover:bg-white/30 text-white flex items-center justify-center text-sm font-bold transition-colors z-20 cursor-pointer">
+        <button type="button" id="closeWelcomePopupBtn" onclick="document.getElementById('welcomePopup').classList.add('opacity-0', 'pointer-events-none')" aria-label="Close welcome popup" class="absolute top-4 right-4 w-9 h-9 rounded-full bg-white/20 hover:bg-white/30 text-white flex items-center justify-center text-sm font-bold transition-colors z-20 cursor-pointer">
           ✕
         </button>
 
@@ -546,8 +546,8 @@
           Hello Meow!
         </h2>
 
-        <div class="w-24 h-24 my-3 z-10 rounded-2xl overflow-hidden flex items-center justify-center bg-[#1d8fa3]/40">
-          <video autoplay muted loop playsinline class="w-full h-full object-cover">
+        <div class="w-32 h-32 sm:w-36 sm:h-36 my-3 z-10 flex items-center justify-center overflow-hidden">
+          <video autoplay muted loop playsinline class="w-full h-full object-contain mix-blend-screen scale-110">
             <source src="https://res.cloudinary.com/tfk63bnl/video/upload/v1793692925/Enhancer-Ultra_HD-AQM-vmNT0ZMuihRrngkxRer_E6P473b7XxXxdkkHeLufFDwvLpWfJk7UUqokUo9OfemtqtVfZlD_JwgGxYmtmsrAWACjzpGGoxWobfVzSA_processed.webm" type="video/webm">
           </video>
         </div>
@@ -560,10 +560,10 @@
           <button type="button" id="popupAboutBtn" class="py-3 px-3 rounded-xl bg-white text-brand-dark font-heading font-bold text-xs tracking-wide hover:bg-brand-turquoise-light hover:-translate-y-0.5 transition-all shadow-md text-center flex items-center justify-center gap-1.5 cursor-pointer">
             <span>ℹ️</span> About Us
           </button>
-          <a href="https://hellomeowcafe.storehub.me/collections/all?page=1" target="_blank" rel="noopener noreferrer" class="popup-link py-3 px-3 rounded-xl bg-white/20 hover:bg-white/30 hover:-translate-y-0.5 backdrop-blur-md text-white border border-white/30 font-heading font-semibold text-xs tracking-wide transition-all shadow-sm text-center flex items-center justify-center gap-1.5 font-sans">
+          <a href="https://hellomeowcafe.storehub.me/collections/all?page=1" target="_blank" rel="noopener noreferrer" class="popup-link py-3 px-3 rounded-xl bg-white/20 hover:bg-white/30 hover:-translate-y-0.5 text-white border border-white/30 font-heading font-semibold text-xs tracking-wide transition-all shadow-sm text-center flex items-center justify-center gap-1.5 font-sans">
             <span>🛒</span> Order Now
           </a>
-          <a href="https://www.facebook.com/hellomeowcafe" target="_blank" rel="noopener noreferrer" class="popup-link py-3 px-3 rounded-xl bg-white/20 hover:bg-white/30 hover:-translate-y-0.5 backdrop-blur-md text-white border border-white/30 font-heading font-semibold text-xs tracking-wide transition-all shadow-sm text-center flex items-center justify-center gap-1.5 font-sans">
+          <a href="https://www.facebook.com/hellomeowcafe" target="_blank" rel="noopener noreferrer" class="popup-link py-3 px-3 rounded-xl bg-white/20 hover:bg-white/30 hover:-translate-y-0.5 text-white border border-white/30 font-heading font-semibold text-xs tracking-wide transition-all shadow-sm text-center flex items-center justify-center gap-1.5 font-sans">
             <span>🤝</span> Franchise Now
           </a>
           <a href="https://www.facebook.com/hellomeowcafe" target="_blank" rel="noopener noreferrer" class="popup-link py-3 px-3 rounded-xl bg-brand-orange hover:bg-brand-orange-hover hover:-translate-y-0.5 text-white font-heading font-bold text-xs tracking-wide transition-all shadow-md text-center flex items-center justify-center gap-1.5 font-sans">

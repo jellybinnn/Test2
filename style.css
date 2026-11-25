@@ -1,4 +1,4 @@
-font-face {
+@font-face {
   font-family: "Lucidity Condensed";
   src: url("fonts/LucidityCondensed.woff2") format("woff2"),
        url("fonts/LucidityCondensed.ttf") format("truetype");
@@ -21,6 +21,8 @@ font-face {
   --text-muted: #64748b;
   --border-color: #e2e8f0;
   --white: #ffffff;
+  --jamaica-sea: #1CA9C9;
+  --jamaica-sea-dark: #148AA6;
 }
 
 * {
@@ -39,6 +41,13 @@ font-face {
   font-weight: 400 !important;
   -webkit-font-smoothing: subpixel-antialiased;
   text-rendering: geometricPrecision;
+}
+
+.logo-title sup,
+.font-lucidity sup {
+  font-family: inherit !important;
+  font-size: 0.55em;
+  line-height: 0;
 }
 
 body {
@@ -89,24 +98,29 @@ body {
   }
 }
 
-header {
+#mainHeader {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
-  padding: 1.2rem 5%;
   display: flex;
   justify-content: space-between;
   align-items: center;
   z-index: 100;
   background-color: transparent;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: none;
+  transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              padding 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-header.scrolled {
-  background-color: rgba(255, 255, 255, 0.95);
-  padding: 0.9rem 5%;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+#mainHeader.scrolled {
+  background-color: var(--jamaica-sea);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  padding-top: 0.9rem;
+  padding-bottom: 0.9rem;
+  box-shadow: 0 6px 24px rgba(20, 138, 166, 0.28);
 }
 
 .logo-container {

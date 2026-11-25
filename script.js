@@ -312,18 +312,17 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   const header = document.getElementById("mainHeader");
+  const heroSection = document.getElementById("home");
   const handleScroll = () => {
     if (!header) return;
-    if (window.scrollY > 30) {
-      header.classList.add("bg-brand-dark/95", "backdrop-blur-md", "shadow-md", "py-3");
-      header.classList.remove("bg-transparent", "py-4");
-    } else {
-      header.classList.remove("bg-brand-dark/95", "backdrop-blur-md", "shadow-md", "py-3");
-      header.classList.add("bg-transparent", "py-4");
-    }
+    const pastHero = heroSection
+      ? window.scrollY >= heroSection.offsetTop + heroSection.offsetHeight - header.offsetHeight
+      : window.scrollY > 30;
+    header.classList.toggle("scrolled", pastHero);
   };
 
-  window.addEventListener("scroll", handleScroll);
+  window.addEventListener("scroll", handleScroll, { passive: true });
+  window.addEventListener("resize", handleScroll, { passive: true });
   handleScroll();
 
   const mobileToggle = document.getElementById("mobileMenuToggle");

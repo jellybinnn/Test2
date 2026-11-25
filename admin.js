@@ -22,10 +22,50 @@ const CAT_CATEGORY_ORDER = [
 let supabaseClient = null;
 try {
   if (window.supabase && SUPABASE_URL) {
-    supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: {
+        persistSession: false,
+        autoRefreshToken: false,
+        detectSessionInUrl: false
+      }
+    });
   }
 } catch (e) {
   console.error("Supabase initialization error:", e);
+}
+
+function clearSupabaseAuthStorage() {
+  try {
+    const projectRef = new URL(SUPABASE_URL).hostname.split('.')[0];
+    const keysToRemove = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k && (k.startsWith(`sb-${projectRef}-`) || k.includes('supabase.auth.token'))) {
+        keysToRemove.push(k);
+      }
+    }
+    keysToRemove.forEach(k => localStorage.removeItem(k));
+  } catch (_) {
+    // Ignore storage access errors
+  }
+}
+
+function sendKeepaliveSignOut() {
+  clearSupabaseAuthStorage();
+  if (!SUPABASE_URL || !SUPABASE_ANON_KEY || typeof fetch !== 'function') return;
+  try {
+    fetch(`${SUPABASE_URL}/auth/v1/logout?scope=local`, {
+      method: 'POST',
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      keepalive: true
+    }).catch(() => {});
+  } catch (_) {
+    // Ignore network errors during page teardown
+  }
 }
 
 function escapeHtml(str) {
@@ -213,8 +253,33 @@ function hideLoginError() {
   errEl.classList.add("hidden");
 }
 
-document.addEventListener("DOMContentLoaded", async () => {
+let isClosingCms = false;
+
+function lockLoginOverlayForClose() {
+  isClosingCms = true;
   sessionStorage.removeItem("hmc_admin_auth");
+  clearSupabaseAuthStorage();
+  setLoginCheckingState(false);
+  document.getElementById("adminLoginOverlay")?.classList.remove("hidden");
+  sendKeepaliveSignOut();
+  if (supabaseClient) {
+    supabaseClient.auth.signOut({ scope: 'local' }).catch(() => {});
+  }
+}
+
+window.addEventListener("pagehide", lockLoginOverlayForClose);
+window.addEventListener("beforeunload", lockLoginOverlayForClose);
+window.addEventListener("pageshow", () => {
+  if (isClosingCms) {
+    setLoginCheckingState(false);
+    document.getElementById("adminLoginOverlay")?.classList.remove("hidden");
+  }
+});
+
+document.addEventListener("DOMContentLoaded", async () => {
+  isClosingCms = false;
+  sessionStorage.removeItem("hmc_admin_auth");
+  clearSupabaseAuthStorage();
   setLoginCheckingState(true);
   document.getElementById("adminLoginOverlay")?.classList.remove("hidden");
 
@@ -262,6 +327,7 @@ async function handleInternalLogin(e) {
 
   setButtonLoading(loginBtn, true, "Signing in...");
   try {
+    isClosingCms = false;
     const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
     if (error || !data?.session) {
       console.error("Admin sign-in error:", error);
@@ -281,6 +347,7 @@ async function adminLogout() {
   const logoutBtn = document.getElementById("adminLogoutBtn");
   setButtonLoading(logoutBtn, true, "Signing out...");
   try {
+    clearSupabaseAuthStorage();
     if (supabaseClient) {
       await supabaseClient.auth.signOut();
     }

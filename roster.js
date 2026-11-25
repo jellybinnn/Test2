@@ -18,6 +18,9 @@
   var lastTrigger = null;
   var currentFilter = 'All';
 
+  var previousBodyOverflow = '';
+  var previousBodyPaddingRight = '';
+
   var SWIPE_CLOSE_THRESHOLD = 110;
   var SWIPE_VELOCITY_THRESHOLD = 0.55;
   var HORIZONTAL_SWIPE_THRESHOLD = 65;
@@ -109,6 +112,21 @@
       if (currentFilter === 'All') return true;
       return (cat.category || '').toLowerCase() === currentFilter.toLowerCase();
     });
+  }
+
+  function lockPageScroll() {
+    previousBodyOverflow = document.body.style.overflow;
+    previousBodyPaddingRight = document.body.style.paddingRight;
+    var scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+    document.body.style.overflow = 'hidden';
+    if (scrollbarWidth > 0) {
+      document.body.style.paddingRight = scrollbarWidth + 'px';
+    }
+  }
+
+  function unlockPageScroll() {
+    document.body.style.overflow = previousBodyOverflow;
+    document.body.style.paddingRight = previousBodyPaddingRight;
   }
 
   function resetSheetDrag(dialog) {
@@ -358,8 +376,10 @@
 
     lastTrigger = trigger || null;
     sheet.classList.remove('hidden');
-    document.body.style.overflow = 'hidden';
-    document.getElementById('catSheetDialog').focus();
+    lockPageScroll();
+    if (dialog && typeof dialog.focus === 'function') {
+      dialog.focus({ preventScroll: true });
+    }
   }
 
   function closeCatSheet() {
@@ -372,9 +392,11 @@
       dialog.style.opacity = '';
     }
     sheet.classList.add('hidden');
-    document.body.style.overflow = '';
+    unlockPageScroll();
     activeCatIndex = -1;
-    if (lastTrigger && typeof lastTrigger.focus === 'function') lastTrigger.focus();
+    if (lastTrigger && typeof lastTrigger.focus === 'function') {
+      lastTrigger.focus({ preventScroll: true });
+    }
     lastTrigger = null;
   }
 
