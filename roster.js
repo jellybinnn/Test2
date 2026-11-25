@@ -18,6 +18,10 @@
   var lastTrigger = null;
   var currentFilter = 'All';
 
+  var SWIPE_CLOSE_THRESHOLD = 110;
+  var SWIPE_VELOCITY_THRESHOLD = 0.55;
+  var HORIZONTAL_SWIPE_THRESHOLD = 65;
+
   function esc(str) {
     return String(str ?? '')
       .replace(/&/g, '&amp;')
@@ -53,9 +57,120 @@
     });
   }
 
+  function resetSheetDrag(dialog) {
+    if (!dialog) return;
+    dialog.style.transition = 'transform 0.24s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.24s ease';
+    dialog.style.transform = 'translateY(0px)';
+    dialog.style.opacity = '1';
+    window.setTimeout(function () {
+      dialog.style.transition = '';
+      dialog.style.transform = '';
+      dialog.style.opacity = '';
+    }, 250);
+  }
+
+  function bindSwipeGestures(dialog) {
+    if (!dialog || dialog.dataset.swipeBound) return;
+    dialog.dataset.swipeBound = 'true';
+
+    var startX = 0;
+    var startY = 0;
+    var startTime = 0;
+    var deltaX = 0;
+    var deltaY = 0;
+    var gestureMode = null; // 'vertical' | 'horizontal' | null
+    var isDismissing = false;
+
+    dialog.addEventListener('touchstart', function (e) {
+      if (isDismissing || !e.touches || e.touches.length !== 1) return;
+      if (e.target.closest('button, a, [data-cat-nav], [data-sheet-close]')) {
+        gestureMode = null;
+        return;
+      }
+
+      startX = e.touches[0].clientX;
+      startY = e.touches[0].clientY;
+      startTime = Date.now();
+      deltaX = 0;
+      deltaY = 0;
+      gestureMode = null;
+
+      dialog.style.transition = 'none';
+    }, { passive: true });
+
+    dialog.addEventListener('touchmove', function (e) {
+      if (isDismissing || !e.touches || e.touches.length !== 1) return;
+      if (e.target.closest('button, a, [data-cat-nav], [data-sheet-close]')) return;
+
+      deltaX = e.touches[0].clientX - startX;
+      deltaY = e.touches[0].clientY - startY;
+
+      if (!gestureMode) {
+        if (Math.abs(deltaY) > 10 && Math.abs(deltaY) > Math.abs(deltaX) * 1.15) {
+          gestureMode = 'vertical';
+        } else if (Math.abs(deltaX) > 14 && Math.abs(deltaX) > Math.abs(deltaY) * 1.25) {
+          gestureMode = 'horizontal';
+        }
+      }
+
+      if (gestureMode === 'vertical' && deltaY > 0) {
+        e.preventDefault();
+        var dampedY = deltaY > 180 ? 180 + (deltaY - 180) * 0.35 : deltaY;
+        var opacity = Math.max(0.45, 1 - dampedY / 420);
+        dialog.style.transform = 'translateY(' + dampedY + 'px)';
+        dialog.style.opacity = String(opacity);
+      }
+    }, { passive: false });
+
+    function finishTouch() {
+      if (isDismissing) return;
+
+      if (gestureMode === 'vertical' && deltaY > 0) {
+        var elapsed = Math.max(1, Date.now() - startTime);
+        var velocityY = deltaY / elapsed;
+        var shouldClose = deltaY > SWIPE_CLOSE_THRESHOLD || (deltaY > 45 && velocityY > SWIPE_VELOCITY_THRESHOLD);
+
+        if (shouldClose) {
+          isDismissing = true;
+          dialog.style.transition = 'transform 0.22s ease-in, opacity 0.22s ease-in';
+          dialog.style.transform = 'translateY(100%)';
+          dialog.style.opacity = '0';
+          window.setTimeout(function () {
+            dialog.style.transition = '';
+            dialog.style.transform = '';
+            dialog.style.opacity = '';
+            isDismissing = false;
+            closeCatSheet();
+          }, 220);
+        } else {
+          resetSheetDrag(dialog);
+        }
+      } else if (gestureMode === 'horizontal' && visibleCats.length > 1) {
+        if (deltaX <= -HORIZONTAL_SWIPE_THRESHOLD) {
+          stepCatSheet(1);
+        } else if (deltaX >= HORIZONTAL_SWIPE_THRESHOLD) {
+          stepCatSheet(-1);
+        }
+        resetSheetDrag(dialog);
+      } else {
+        resetSheetDrag(dialog);
+      }
+
+      gestureMode = null;
+      deltaX = 0;
+      deltaY = 0;
+    }
+
+    dialog.addEventListener('touchend', finishTouch, { passive: true });
+    dialog.addEventListener('touchcancel', finishTouch, { passive: true });
+  }
+
   function bindSheet(el) {
     if (el.dataset.bound) return;
     el.dataset.bound = 'true';
+    var dialog = el.querySelector('#catSheetDialog');
+    bindSwipeGestures(dialog);
+
     el.addEventListener('click', function (e) {
       var navBtn = e.target.closest('[data-cat-nav]');
       if (navBtn) {
@@ -81,7 +196,7 @@
       '<div class="absolute inset-x-0 bottom-0 md:inset-0 md:flex md:items-center md:justify-center p-6 pointer-events-none">' +
         '<div id="catSheetDialog" role="dialog" aria-modal="true" aria-labelledby="catSheetName" tabindex="-1" ' +
              'class="pointer-events-auto relative w-full md:max-w-md min-h-[640px] max-h-[96vh] flex flex-col justify-between bg-white rounded-[40px] shadow-2xl outline-none overflow-hidden">' +
-          '<div class="flex justify-center pt-2 md:hidden shrink-0"><div class="w-12 h-2 rounded-full bg-[#1D8A99]/45"></div></div>' +
+          '<div data-swipe-handle class="flex justify-center pt-2 md:hidden shrink-0"><div class="w-12 h-2 rounded-full bg-[#1D8A99]/45"></div></div>' +
           '<button type="button" data-sheet-close aria-label="Close profile" ' +
                   'class="pointer-events-auto absolute top-4 right-4 z-40 w-12 h-12 shrink-0 rounded-2xl bg-white/95 hover:bg-[#1D8A99]/15 text-[#1D8A99] border border-[#1D8A99]/30 shadow-md flex items-center justify-center cursor-pointer transition-colors">' +
             '<svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">' +
@@ -106,6 +221,13 @@
     var canNavigate = total > 1;
     var prevIndex = (index - 1 + total) % total;
     var nextIndex = (index + 1) % total;
+
+    var blurredBackdrop = hasPhoto
+      ? '<div aria-hidden="true" class="pointer-events-none absolute inset-x-0 top-0 h-52 rounded-2xl overflow-hidden">' +
+          '<img src="' + esc(cat.image) + '" alt="" class="w-full h-full object-cover object-top scale-125 blur-sm opacity-65">' +
+          '<div class="absolute inset-0 bg-gradient-to-b from-[#1D8A99]/35 via-[#1D8A99]/15 to-white"></div>' +
+        '</div>'
+      : '<div aria-hidden="true" class="pointer-events-none absolute inset-x-0 top-0 h-44 rounded-2xl bg-gradient-to-b from-[#1D8A99]/35 via-[#1D8A99]/15 to-transparent"></div>';
 
     var avatarMedia = hasPhoto
       ? '<img src="' + esc(cat.image) + '" alt="' + esc(cat.name) + '" class="w-full h-full object-cover">'
@@ -132,7 +254,7 @@
 
     body.innerHTML =
       '<div class="relative flex-1 flex flex-col justify-between overflow-hidden rounded-2xl p-4">' +
-        '<div aria-hidden="true" class="pointer-events-none absolute inset-x-0 top-0 h-40 rounded-2xl bg-gradient-to-b from-[#1D8A99]/35 via-[#1D8A99]/15 to-transparent"></div>' +
+        blurredBackdrop +
         '<span aria-hidden="true" style="color: transparent; text-shadow: 0 1px 1px rgba(255,255,255,0.85), 0 -1px 1px rgba(29,138,153,0.22); -webkit-text-stroke: 1px rgba(29,138,153,0.14);" class="pointer-events-none select-none absolute top-2 left-2 text-5xl -rotate-12">🐾</span>' +
         '<span aria-hidden="true" style="color: transparent; text-shadow: 0 1px 1px rgba(255,255,255,0.9), 0 -1px 1px rgba(15,23,42,0.14); -webkit-text-stroke: 1px rgba(15,23,42,0.08);" class="pointer-events-none select-none absolute bottom-16 right-2 text-6xl rotate-12">🐾</span>' +
         '<div class="relative z-10 flex items-center justify-center shrink-0">' +
@@ -172,6 +294,12 @@
     activeCatIndex = foundIdx;
 
     var sheet = ensureSheet();
+    var dialog = sheet.querySelector('#catSheetDialog');
+    if (dialog) {
+      dialog.style.transition = '';
+      dialog.style.transform = '';
+      dialog.style.opacity = '';
+    }
     renderCatSheetContent(visibleCats[activeCatIndex], activeCatIndex, visibleCats.length);
 
     lastTrigger = trigger || null;
@@ -183,6 +311,12 @@
   function closeCatSheet() {
     var sheet = document.getElementById('catProfileSheet');
     if (!sheet || sheet.classList.contains('hidden')) return;
+    var dialog = sheet.querySelector('#catSheetDialog');
+    if (dialog) {
+      dialog.style.transition = '';
+      dialog.style.transform = '';
+      dialog.style.opacity = '';
+    }
     sheet.classList.add('hidden');
     document.body.style.overflow = '';
     activeCatIndex = -1;

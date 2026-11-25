@@ -238,6 +238,15 @@ nav a {
   }
 }
 
+#catSheetDialog {
+  touch-action: pan-x;
+  will-change: transform, opacity;
+}
+
+[data-swipe-handle] {
+  touch-action: none;
+}
+
 .custom-scrollbar::-webkit-scrollbar {
   width: 6px;
 }
