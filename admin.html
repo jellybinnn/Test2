@@ -5,14 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>HMC CMS Panel</title>
   <link rel="icon" type="image/png" href="https://res.cloudinary.com/tfk63bnl/image/upload/f_auto,q_auto/hmc_logo">
-  
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
-  
+
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://upload-widget.cloudinary.com/global/all.js" type="text/javascript"></script>
+  <script src="https://upload-widget.cloudinary.com/global/all.js"></script>
   <script>
     tailwind.config = {
       theme: {
@@ -33,21 +33,22 @@
           },
           fontFamily: {
             sans: ['"Plus Jakarta Sans"', 'sans-serif'],
-            heading: ['"Outfit"', 'sans-serif'],
+            heading: ['"Outfit"', 'sans-serif']
           }
         }
       }
     }
   </script>
-  
+
   <link rel="stylesheet" href="admin.css">
 </head>
 <body class="min-h-screen bg-gray-950 text-gray-100 flex flex-col antialiased selection:bg-brand-turquoise selection:text-white">
 
+  <!-- Admin Login Overlay -->
   <div id="adminLoginOverlay" class="fixed inset-0 bg-gray-950/95 backdrop-blur-md z-[100] flex items-center justify-center p-6 hidden">
     <div class="max-w-md w-full bg-gray-900 rounded-3xl p-8 border border-gray-800 shadow-2xl">
       <div class="text-center mb-8">
-        <img src="https://res.cloudinary.com/tfk63bnl/image/upload/f_auto,q_auto/hmc_logo" alt="Logo" class="w-16 h-16 rounded-full object-cover border-2 border-brand-turquoise mx-auto mb-4 shadow-lg">
+        <img src="https://res.cloudinary.com/tfk63bnl/image/upload/f_auto,q_auto/hmc_logo" alt="Hello Meow Cafe Logo" class="w-16 h-16 rounded-full object-cover border-2 border-brand-turquoise mx-auto mb-4 shadow-lg">
         <h2 class="font-heading font-extrabold text-2xl text-white tracking-tight">Admin Portal Login</h2>
         <p class="text-xs text-brand-turquoise font-medium mt-1">Hello Meow Cafe CMS Master Dashboard</p>
       </div>
@@ -83,12 +84,12 @@
 
       <form id="internalLoginForm" onsubmit="handleInternalLogin(event)" class="space-y-5 hidden">
         <div>
-          <label class="block text-xs font-semibold text-gray-300 mb-1.5 uppercase tracking-wider">Admin Email</label>
+          <label for="internalEmail" class="block text-xs font-semibold text-gray-300 mb-1.5 uppercase tracking-wider">Admin Email</label>
           <input type="email" id="internalEmail" required placeholder="admin@hellomeowcafe.com.ph" class="w-full px-4 py-3 rounded-xl bg-gray-950 border border-gray-800 text-white text-sm focus:outline-none focus:border-brand-turquoise transition-colors">
         </div>
 
         <div>
-          <label class="block text-xs font-semibold text-gray-300 mb-1.5 uppercase tracking-wider">Admin Password</label>
+          <label for="internalPassword" class="block text-xs font-semibold text-gray-300 mb-1.5 uppercase tracking-wider">Admin Password</label>
           <input type="password" id="internalPassword" required placeholder="Enter secure password..." class="w-full px-4 py-3 rounded-xl bg-gray-950 border border-gray-800 text-white text-sm focus:outline-none focus:border-brand-turquoise transition-colors">
         </div>
 
@@ -103,12 +104,13 @@
     </div>
   </div>
 
+  <!-- Top Navigation Header -->
   <header class="bg-gray-900 border-b border-gray-800 sticky top-0 z-50 px-6 py-4 flex items-center justify-between">
     <div class="flex items-center gap-3">
-      <img src="https://res.cloudinary.com/tfk63bnl/image/upload/f_auto,q_auto/hmc_logo" alt="Logo" class="w-10 h-10 rounded-full object-cover border border-brand-turquoise">
+      <img src="https://res.cloudinary.com/tfk63bnl/image/upload/f_auto,q_auto/hmc_logo" alt="Hello Meow Cafe Logo" class="w-10 h-10 rounded-full object-cover border border-brand-turquoise">
       <div>
         <h1 class="font-heading font-extrabold text-lg text-white tracking-tight">HMC CMS Admin Panel</h1>
-        <p class="text-xs text-brand-turquoise font-medium">Supabase Connected Menu, Events & Cat Roster Management</p>
+        <p class="text-xs text-brand-turquoise font-medium">Supabase Connected Menu, Events &amp; Cat Roster Management</p>
       </div>
     </div>
     <div class="flex items-center gap-3">
@@ -116,7 +118,7 @@
         <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
         Supabase Live Sync Active
       </span>
-      <button onclick="adminLogout()" id="adminLogoutBtn" class="px-4 py-2 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 text-xs font-bold transition-colors border border-rose-500/30 cursor-pointer">
+      <button type="button" onclick="adminLogout()" id="adminLogoutBtn" class="px-4 py-2 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 text-xs font-bold transition-colors border border-rose-500/30 cursor-pointer">
         Logout 🚪
       </button>
     </div>
@@ -124,19 +126,20 @@
 
   <main class="flex-1 max-w-7xl w-full mx-auto p-6 md:p-10 space-y-10">
 
+    <!-- Section Tabs -->
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-gray-900 p-4 rounded-2xl border border-gray-800">
       <div class="flex flex-wrap items-center gap-2">
-        <button onclick="switchTab('menu')" id="navMenuBtn" class="px-5 py-2.5 rounded-xl font-heading font-bold text-xs uppercase tracking-wider bg-brand-orange text-white shadow-md transition-all cursor-pointer">
+        <button type="button" onclick="switchTab('menu')" id="navMenuBtn" class="px-5 py-2.5 rounded-xl font-heading font-bold text-xs uppercase tracking-wider bg-brand-orange text-white shadow-md transition-all cursor-pointer">
           🍔 Supabase Menu Manager (<span id="menuCountBadge">0</span>)
         </button>
-        <button onclick="switchTab('events')" id="navEventsBtn" class="px-5 py-2.5 rounded-xl font-heading font-bold text-xs uppercase tracking-wider bg-gray-800 text-gray-300 hover:bg-gray-700 transition-all cursor-pointer">
+        <button type="button" onclick="switchTab('events')" id="navEventsBtn" class="px-5 py-2.5 rounded-xl font-heading font-bold text-xs uppercase tracking-wider bg-gray-800 text-gray-300 hover:bg-gray-700 transition-all cursor-pointer">
           🗓 Events Manager (<span id="navEventCountBadge">0</span>)
         </button>
-        <button onclick="switchTab('cats')" id="navCatsBtn" class="px-5 py-2.5 rounded-xl font-heading font-bold text-xs uppercase tracking-wider bg-gray-800 text-gray-300 hover:bg-gray-700 transition-all cursor-pointer">
+        <button type="button" onclick="switchTab('cats')" id="navCatsBtn" class="px-5 py-2.5 rounded-xl font-heading font-bold text-xs uppercase tracking-wider bg-gray-800 text-gray-300 hover:bg-gray-700 transition-all cursor-pointer">
           🐱 Cat Roster (<span id="catCountBadge">0</span>)
         </button>
-        <button onclick="switchTab('graphs')" id="navGraphsBtn" class="px-5 py-2.5 rounded-xl font-heading font-bold text-xs uppercase tracking-wider bg-gray-800 text-gray-300 hover:bg-gray-700 transition-all cursor-pointer">
-          📊 Analytics & Graphs
+        <button type="button" onclick="switchTab('graphs')" id="navGraphsBtn" class="px-5 py-2.5 rounded-xl font-heading font-bold text-xs uppercase tracking-wider bg-gray-800 text-gray-300 hover:bg-gray-700 transition-all cursor-pointer">
+          📊 Analytics &amp; Graphs
         </button>
       </div>
     </div>
@@ -156,9 +159,9 @@
 
         <form id="menuForm" onsubmit="handleMenuSubmit(event)" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           <input type="hidden" id="editMenuId" value="">
-          
+
           <div>
-            <label class="block text-xs font-semibold text-gray-300 mb-1.5">Category</label>
+            <label for="menuFormCategory" class="block text-xs font-semibold text-gray-300 mb-1.5">Category</label>
             <select id="menuFormCategory" class="w-full px-4 py-3 rounded-xl bg-gray-950 border border-gray-800 text-white text-sm focus:outline-none focus:border-brand-turquoise">
               <option value="Must Try!">Must Try!</option>
               <option value="Rice Meal">Rice Meal</option>
@@ -177,17 +180,17 @@
           </div>
 
           <div>
-            <label class="block text-xs font-semibold text-gray-300 mb-1.5">Item Name</label>
+            <label for="menuFormName" class="block text-xs font-semibold text-gray-300 mb-1.5">Item Name</label>
             <input type="text" id="menuFormName" required placeholder="e.g. White Almond Coffee" class="w-full px-4 py-3 rounded-xl bg-gray-950 border border-gray-800 text-white text-sm focus:outline-none focus:border-brand-turquoise">
           </div>
 
           <div>
-            <label class="block text-xs font-semibold text-gray-300 mb-1.5">Price</label>
+            <label for="menuFormPrice" class="block text-xs font-semibold text-gray-300 mb-1.5">Price</label>
             <input type="text" id="menuFormPrice" required placeholder="e.g. ₱175.00" class="w-full px-4 py-3 rounded-xl bg-gray-950 border border-gray-800 text-white text-sm focus:outline-none focus:border-brand-turquoise">
           </div>
 
           <div class="sm:col-span-2 lg:col-span-3">
-            <label class="block text-xs font-semibold text-gray-300 mb-1.5">Description</label>
+            <label for="menuFormDesc" class="block text-xs font-semibold text-gray-300 mb-1.5">Description</label>
             <input type="text" id="menuFormDesc" required placeholder="Short appetizing description..." class="w-full px-4 py-3 rounded-xl bg-gray-950 border border-gray-800 text-white text-sm focus:outline-none focus:border-brand-turquoise">
           </div>
 
@@ -240,8 +243,7 @@
                 <th class="p-4 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody id="menuTableBody" class="divide-y divide-gray-800">
-            </tbody>
+            <tbody id="menuTableBody" class="divide-y divide-gray-800"></tbody>
           </table>
         </div>
       </div>
@@ -264,27 +266,27 @@
           <input type="hidden" id="editEventIndex" value="">
 
           <div>
-            <label class="block text-xs font-semibold text-gray-300 mb-1.5">Event Title</label>
+            <label for="eventFormTitle" class="block text-xs font-semibold text-gray-300 mb-1.5">Event Title</label>
             <input type="text" id="eventFormTitle" required placeholder="e.g. Rescue Adoption Sunday" class="w-full px-4 py-3 rounded-xl bg-gray-950 border border-gray-800 text-white text-sm focus:outline-none focus:border-brand-turquoise">
           </div>
 
           <div>
-            <label class="block text-xs font-semibold text-gray-300 mb-1.5">Date Display</label>
+            <label for="eventFormDate" class="block text-xs font-semibold text-gray-300 mb-1.5">Date Display</label>
             <input type="text" id="eventFormDate" required placeholder="e.g. November 15, 2026" class="w-full px-4 py-3 rounded-xl bg-gray-950 border border-gray-800 text-white text-sm focus:outline-none focus:border-brand-turquoise">
           </div>
 
           <div class="sm:col-span-2">
-            <label class="block text-xs font-semibold text-gray-300 mb-1.5">Banner Image URL</label>
+            <label for="eventFormImage" class="block text-xs font-semibold text-gray-300 mb-1.5">Banner Image URL</label>
             <input type="url" id="eventFormImage" placeholder="https://res.cloudinary.com/..." class="w-full px-4 py-2.5 rounded-xl bg-gray-950 border border-gray-800 text-white text-sm focus:outline-none focus:border-brand-turquoise">
           </div>
 
           <div class="sm:col-span-2">
-            <label class="block text-xs font-semibold text-gray-300 mb-1.5">Additional Event Gallery Photos (Cloudinary URLs separated by commas)</label>
+            <label for="eventFormGalleryUrls" class="block text-xs font-semibold text-gray-300 mb-1.5">Additional Event Gallery Photos (Cloudinary URLs separated by commas)</label>
             <input type="text" id="eventFormGalleryUrls" placeholder="https://res.cloudinary.com/.../img1.jpg, https://res.cloudinary.com/.../img2.jpg" class="w-full px-4 py-3 rounded-xl bg-gray-950 border border-gray-800 text-white text-sm focus:outline-none focus:border-brand-turquoise">
           </div>
 
           <div class="sm:col-span-2">
-            <label class="block text-xs font-semibold text-gray-300 mb-1.5">Event Description</label>
+            <label for="eventFormDesc" class="block text-xs font-semibold text-gray-300 mb-1.5">Event Description</label>
             <textarea id="eventFormDesc" required rows="3" placeholder="Provide details about the event..." class="w-full px-4 py-3 rounded-xl bg-gray-950 border border-gray-800 text-white text-sm focus:outline-none focus:border-brand-turquoise"></textarea>
           </div>
 
@@ -301,9 +303,7 @@
 
       <div class="bg-gray-900 rounded-3xl p-6 md:p-8 border border-gray-800 shadow-xl">
         <div class="flex justify-between items-center mb-6 pb-4 border-b border-gray-800">
-          <div>
-            <h3 class="font-heading font-bold text-xl text-white">🗓 Scheduled Events (<span id="tableEventCountBadge">0</span>)</h3>
-          </div>
+          <h3 class="font-heading font-bold text-xl text-white">🗓 Scheduled Events (<span id="tableEventCountBadge">0</span>)</h3>
         </div>
 
         <div class="overflow-x-auto custom-scrollbar">
@@ -316,8 +316,7 @@
                 <th class="p-4 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody id="eventsTableBody" class="divide-y divide-gray-800">
-            </tbody>
+            <tbody id="eventsTableBody" class="divide-y divide-gray-800"></tbody>
           </table>
         </div>
       </div>
@@ -340,7 +339,7 @@
           <input type="hidden" id="editCatId" value="">
 
           <div class="md:col-span-1">
-            <label class="block text-xs font-semibold text-gray-300 mb-1.5">Photo (Optional)</label>
+            <span class="block text-xs font-semibold text-gray-300 mb-1.5">Photo (Optional)</span>
             <div class="aspect-[4/5] w-full max-w-[220px] rounded-2xl overflow-hidden bg-gray-950 border border-dashed border-gray-700 flex items-center justify-center mb-3">
               <img id="catPhotoPreview" src="" alt="Cat photo preview" class="hidden w-full h-full object-cover">
               <span id="catPhotoPlaceholder" class="text-xs text-gray-500 text-center px-4">No photo yet (Optional)</span>
@@ -353,12 +352,12 @@
 
           <div class="md:col-span-2 space-y-5">
             <div>
-              <label class="block text-xs font-semibold text-gray-300 mb-1.5">Cat Name</label>
+              <label for="catFormName" class="block text-xs font-semibold text-gray-300 mb-1.5">Cat Name</label>
               <input type="text" id="catFormName" required maxlength="60" placeholder="e.g. Silver" class="w-full px-4 py-3 rounded-xl bg-gray-950 border border-gray-800 text-white text-sm focus:outline-none focus:border-brand-turquoise">
             </div>
 
             <div>
-              <label class="block text-xs font-semibold text-gray-300 mb-1.5">Category / Family</label>
+              <label for="catFormCategory" class="block text-xs font-semibold text-gray-300 mb-1.5">Category / Family</label>
               <select id="catFormCategory" class="w-full px-4 py-3 rounded-xl bg-gray-950 border border-gray-800 text-white text-sm focus:outline-none focus:border-brand-turquoise">
                 <option value="The British Shorthair Family">The British Shorthair Family</option>
                 <option value="British Shorthair Gang">British Shorthair Gang</option>
@@ -374,12 +373,12 @@
             </div>
 
             <div>
-              <label class="block text-xs font-semibold text-gray-300 mb-1.5">Description</label>
+              <label for="catFormDesc" class="block text-xs font-semibold text-gray-300 mb-1.5">Description</label>
               <textarea id="catFormDesc" required rows="3" maxlength="200" placeholder="e.g. The Alpha Cat" class="w-full px-4 py-3 rounded-xl bg-gray-950 border border-gray-800 text-white text-sm focus:outline-none focus:border-brand-turquoise"></textarea>
             </div>
 
             <div>
-              <label class="block text-xs font-semibold text-gray-300 mb-1.5">Photo URL <span class="text-gray-500 font-normal">(optional — leave blank if no photo yet)</span></label>
+              <label for="catFormImage" class="block text-xs font-semibold text-gray-300 mb-1.5">Photo URL <span class="text-gray-500 font-normal">(optional — leave blank if no photo yet)</span></label>
               <input type="url" id="catFormImage" placeholder="https://res.cloudinary.com/..." oninput="updateCatPhotoPreview(this.value)" class="w-full px-4 py-3 rounded-xl bg-gray-950 border border-gray-800 text-white text-sm focus:outline-none focus:border-brand-turquoise">
             </div>
 
@@ -432,8 +431,7 @@
                 <th class="p-4 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody id="catsTableBody" class="divide-y divide-gray-800">
-            </tbody>
+            <tbody id="catsTableBody" class="divide-y divide-gray-800"></tbody>
           </table>
         </div>
       </div>
@@ -444,15 +442,14 @@
       <div class="bg-gray-900 rounded-3xl p-6 md:p-8 border border-gray-800 shadow-xl">
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 pb-4 border-b border-gray-800">
           <div>
-            <h2 class="font-heading font-bold text-xl text-white">📊 System Analytics, Traffic & Interactions</h2>
+            <h2 class="font-heading font-bold text-xl text-white">📊 System Analytics, Traffic &amp; Interactions</h2>
             <p class="text-xs text-gray-400 mt-0.5">Live breakdown of your Supabase database counts, website visits, and visitor interactions.</p>
           </div>
-          <button onclick="loadAdminMenu(); loadAdminEvents(); loadAdminCats(); loadAdminAnalytics();" class="px-4 py-2 rounded-xl bg-brand-turquoise/20 text-brand-turquoise hover:bg-brand-turquoise/30 text-xs font-bold transition-colors cursor-pointer">
+          <button type="button" onclick="loadAdminMenu(); loadAdminEvents(); loadAdminCats(); loadAdminAnalytics();" class="px-4 py-2 rounded-xl bg-brand-turquoise/20 text-brand-turquoise hover:bg-brand-turquoise/30 text-xs font-bold transition-colors cursor-pointer">
             🔄 Refresh Data
           </button>
         </div>
 
-        <!-- 5-Column Metric Stat Cards -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5 mb-8">
           <div class="bg-gray-950 p-5 rounded-2xl border border-gray-800 flex items-center justify-between">
             <div>
@@ -491,10 +488,9 @@
           </div>
         </div>
 
-        <!-- Chart Container -->
         <div class="bg-gray-950 p-6 rounded-2xl border border-gray-800">
           <div class="flex justify-between items-center mb-4">
-            <h3 class="font-heading font-bold text-sm text-gray-300 uppercase tracking-wider">Index Database & Live Visitor Traffic Overview</h3>
+            <h3 class="font-heading font-bold text-sm text-gray-300 uppercase tracking-wider">Index Database &amp; Live Visitor Traffic Overview</h3>
             <span class="text-xs text-gray-500">Live Supabase Sync</span>
           </div>
           <div class="relative h-80 w-full">
@@ -506,6 +502,7 @@
 
   </main>
 
+  <!-- Cat Preview Sheet -->
   <div id="catProfileSheet" class="fixed inset-0 z-[120] hidden">
     <div data-sheet-backdrop class="absolute inset-0 bg-black/70 backdrop-blur-sm"></div>
     <div class="absolute inset-x-0 bottom-0 md:inset-0 md:flex md:items-center md:justify-center pointer-events-none">
@@ -521,6 +518,7 @@
     </div>
   </div>
 
+  <!-- Confirmation Modal -->
   <div id="adminConfirmModal" role="dialog" aria-modal="true" aria-labelledby="adminConfirmTitle" class="fixed inset-0 z-[130] hidden flex items-center justify-center p-4">
     <div id="adminConfirmBackdrop" onclick="closeConfirmModal(false)" class="absolute inset-0 bg-black/75 backdrop-blur-sm"></div>
     <div class="relative w-full max-w-sm bg-gray-900 border border-gray-800 rounded-3xl p-6 shadow-2xl space-y-5">
@@ -539,6 +537,7 @@
     </div>
   </div>
 
+  <!-- Toast Notification -->
   <div id="adminToast" role="status" aria-live="polite" class="fixed bottom-5 right-5 z-[140] hidden max-w-sm px-4 py-3 rounded-2xl border text-xs font-bold shadow-2xl transition-all"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>

@@ -12,7 +12,6 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Caveat:wght@700&display=swap">
   <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Caveat:wght@700&display=swap" rel="stylesheet">
 
   <script src="https://cdn.tailwindcss.com"></script>
@@ -54,6 +53,7 @@
 </head>
 <body class="min-h-screen flex flex-col antialiased selection:bg-brand-turquoise selection:text-white">
 
+  <!-- Page Open Loader -->
   <div id="pageOpenLoader" class="fixed inset-0 z-[110] bg-gradient-to-b from-[#1d8fa3] to-brand-dark flex items-center justify-center transition-opacity duration-300">
     <div role="status" aria-live="polite" class="hmc-cat-loader text-white">
       <svg class="hmc-cat-walk-svg" viewBox="0 0 84 54" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -83,6 +83,7 @@
     </div>
   </div>
 
+  <!-- Header & Navigation -->
   <header id="mainHeader" class="fixed top-0 left-0 w-full z-50 transition-all duration-300 bg-transparent py-4 px-6 md:px-12 flex items-center justify-between">
     <a href="#home" class="logo-container group">
       <img decoding="async" src="https://res.cloudinary.com/tfk63bnl/image/upload/f_auto,q_auto/hmc_logo" alt="Hello Meow Cafe Logo" class="logo-img group-hover:scale-105 transition-transform">
@@ -112,23 +113,24 @@
       </a>
 
       <button id="mobileMenuToggle" aria-label="Toggle Menu" class="mobile-menu-btn lg:hidden p-2.5 rounded-xl bg-black/30 backdrop-blur-md text-white hover:bg-black/50 transition-colors">
-        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
         </svg>
       </button>
     </div>
   </header>
 
+  <!-- Mobile Drawer -->
   <div id="mobileMenuOverlay" class="fixed inset-0 bg-black/50 z-50 opacity-0 pointer-events-none transition-opacity duration-300 lg:hidden">
-    <div id="mobileMenuDrawer" class="absolute top-0 right-0 w-4/5 max-w-sm h-full bg-white shadow-2xl p-6 flex flex-col justify-between transform translate-x-full transition-transform duration-300 !text-left !items-start" style="text-align: left !important;">
-      <div class="w-full" style="text-align: left !important;">
+    <div id="mobileMenuDrawer" class="absolute top-0 right-0 w-4/5 max-w-sm h-full bg-white shadow-2xl p-6 flex flex-col justify-between items-start text-left transform translate-x-full transition-transform duration-300">
+      <div class="w-full text-left">
         <div class="flex items-center justify-between pb-6 border-b border-gray-100 w-full">
           <div class="flex items-center gap-3">
             <img decoding="async" src="https://res.cloudinary.com/tfk63bnl/image/upload/f_auto,q_auto/hmc_logo" alt="Logo" class="w-10 h-10 rounded-full object-cover">
             <span class="font-lucidity font-bold text-xl text-brand-dark">Hello Meow Cafe<sup class="text-xs font-sans align-super">&reg;</sup></span>
           </div>
-          <button id="mobileMenuClose" class="p-2 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-700">
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <button id="mobileMenuClose" aria-label="Close mobile menu" class="p-2 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-700">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
@@ -142,12 +144,12 @@
           </div>
         </div>
 
-        <nav class="mt-6 flex flex-col !items-start !text-left w-full gap-2 font-heading font-semibold text-brand-dark text-lg font-sans" style="text-align: left !important; align-items: flex-start !important;">
-          <a href="#home" class="mobile-nav-link hover:text-brand-turquoise transition-colors py-2 px-3 rounded-lg hover:bg-brand-cream w-full !text-left block font-sans" style="text-align: left !important;">Home</a>
-          <a href="#about" class="mobile-nav-link hover:text-brand-turquoise transition-colors py-2 px-3 rounded-lg hover:bg-brand-cream w-full !text-left block font-sans" style="text-align: left !important;">About Us</a>
-          <a href="#cat-lounge" class="mobile-nav-link hover:text-brand-turquoise transition-colors py-2 px-3 rounded-lg hover:bg-brand-cream w-full !text-left block font-sans" style="text-align: left !important;">Cat Lounge</a>
-          <a href="#menu" class="mobile-nav-link hover:text-brand-turquoise transition-colors py-2 px-3 rounded-lg hover:bg-brand-cream w-full !text-left block font-sans" style="text-align: left !important;">Cafe Menu</a>
-          <a href="#events" class="mobile-nav-link hover:text-brand-turquoise transition-colors py-2 px-3 rounded-lg hover:bg-brand-cream w-full !text-left block font-sans" style="text-align: left !important;">Events Gallery</a>
+        <nav class="mt-6 flex flex-col items-start text-left w-full gap-2 font-heading font-semibold text-brand-dark text-lg font-sans">
+          <a href="#home" class="mobile-nav-link hover:text-brand-turquoise transition-colors py-2 px-3 rounded-lg hover:bg-brand-cream w-full text-left block font-sans">Home</a>
+          <a href="#about" class="mobile-nav-link hover:text-brand-turquoise transition-colors py-2 px-3 rounded-lg hover:bg-brand-cream w-full text-left block font-sans">About Us</a>
+          <a href="#cat-lounge" class="mobile-nav-link hover:text-brand-turquoise transition-colors py-2 px-3 rounded-lg hover:bg-brand-cream w-full text-left block font-sans">Cat Lounge</a>
+          <a href="#menu" class="mobile-nav-link hover:text-brand-turquoise transition-colors py-2 px-3 rounded-lg hover:bg-brand-cream w-full text-left block font-sans">Cafe Menu</a>
+          <a href="#events" class="mobile-nav-link hover:text-brand-turquoise transition-colors py-2 px-3 rounded-lg hover:bg-brand-cream w-full text-left block font-sans">Events Gallery</a>
         </nav>
       </div>
 
@@ -159,6 +161,7 @@
     </div>
   </div>
 
+  <!-- Hero Section -->
   <section id="home" class="relative min-h-[92vh] flex items-center justify-center pt-28 pb-16 px-6 overflow-hidden">
     <div class="absolute inset-0 z-0">
       <video id="heroGif" autoplay muted loop playsinline preload="metadata" class="w-full h-full object-cover object-center">
@@ -188,7 +191,7 @@
         </a>
       </div>
 
-      <div class="mt-16 grid grid-cols-2 md:grid-cols-2 gap-6 max-w-2xl mx-auto border-t border-white/20 pt-8 text-left">
+      <div class="mt-16 grid grid-cols-2 gap-6 max-w-2xl mx-auto border-t border-white/20 pt-8 text-left">
         <div class="flex items-center gap-3">
           <div class="w-10 h-10 rounded-xl bg-brand-turquoise/60 flex items-center justify-center text-xl shadow-sm">☕</div>
           <div>
@@ -207,6 +210,7 @@
     </div>
   </section>
 
+  <!-- About Section -->
   <section id="about" class="py-24 px-6 md:px-12 max-w-6xl mx-auto">
     <div class="bg-white rounded-3xl p-8 sm:p-14 shadow-soft border border-gray-100 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
       <div>
@@ -264,6 +268,7 @@
     </div>
   </section>
 
+  <!-- Cat Lounge Section -->
   <section id="cat-lounge" class="py-20 px-6 md:px-12 bg-gradient-to-b from-brand-cream to-white border-y border-gray-100">
     <div class="max-w-5xl mx-auto">
       <div class="text-center max-w-2xl mx-auto mb-16">
@@ -310,6 +315,7 @@
     </div>
   </section>
 
+  <!-- Cat Roster Section -->
   <section id="catRosterSection" class="py-20 px-6 md:px-12 bg-white border-b border-gray-100">
     <div class="max-w-6xl mx-auto">
       <div class="text-center max-w-2xl mx-auto mb-8">
@@ -339,6 +345,7 @@
     </div>
   </section>
 
+  <!-- Menu Section -->
   <section id="menu" class="py-24 px-6 md:px-12 max-w-5xl mx-auto">
     <div class="text-center max-w-2xl mx-auto mb-12">
       <span class="text-brand-turquoise font-heading font-bold text-xs uppercase tracking-widest block mb-2">Delicious Offerings</span>
@@ -348,7 +355,7 @@
       <p class="text-brand-muted mt-3 font-sans">Click any category bubble below to expand and view items.</p>
     </div>
 
-    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-4" id="menuCategories">
+    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4" id="menuCategories">
       <button data-category="Must Try!" class="menu-bubble group p-5 rounded-2xl bg-white text-brand-dark shadow-card hover:shadow-soft hover:border-brand-turquoise transition-all text-center flex flex-col items-center justify-center gap-2 border border-gray-100 cursor-pointer">
         <span class="text-2xl">⭐</span>
         <span class="font-heading font-bold text-xs uppercase tracking-wider">Must Try!</span>
@@ -426,7 +433,7 @@
             </select>
 
             <button id="closeDrawerBtn" aria-label="Close menu drawer" class="p-2 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-500 transition-colors cursor-pointer">
-              <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
@@ -440,6 +447,7 @@
     </div>
   </section>
 
+  <!-- Events Gallery Section -->
   <section id="events" class="py-24 px-6 md:px-12 bg-gradient-to-b from-white to-brand-cream border-y border-gray-100">
     <div class="max-w-6xl mx-auto">
       <div class="flex flex-col md:flex-row justify-between items-center mb-12 gap-6 text-center md:text-left">
@@ -459,6 +467,7 @@
     </div>
   </section>
 
+  <!-- Testimonials Section -->
   <section class="py-20 px-6 md:px-12 bg-brand-cream border-y border-gray-100">
     <div class="max-w-4xl mx-auto text-center">
       <span class="text-brand-turquoise font-heading font-bold text-xs uppercase tracking-widest block mb-2">Guest Experiences</span>
@@ -484,6 +493,7 @@
     </div>
   </section>
 
+  <!-- Footer -->
   <footer class="bg-brand-dark text-white py-16 px-6 md:px-12 mt-auto">
     <div class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-10 mb-12">
       <div class="md:col-span-2">
@@ -534,6 +544,7 @@
     </div>
   </footer>
 
+  <!-- Welcome Popup -->
   <div id="welcomePopup" class="fixed inset-0 bg-black/70 z-[100] flex items-center justify-center p-4 transition-all duration-300 opacity-0 pointer-events-none">
     <div id="popupCard" class="relative max-w-md w-full transform scale-90 transition-all duration-300 flex flex-col items-center">
       <div class="w-full bg-gradient-to-b from-[#1CA9C9] to-[#148AA6] rounded-[2.5rem] shadow-2xl border border-white/25 flex flex-col items-center justify-center px-6 py-8 text-center relative z-10 overflow-hidden">
@@ -576,6 +587,7 @@
     </div>
   </div>
 
+  <!-- Cat Profile Sheet -->
   <div id="catProfileSheet" class="fixed inset-0 z-[120] hidden">
     <div data-sheet-backdrop class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
     <div class="absolute inset-x-0 bottom-0 md:inset-0 md:flex md:items-center md:justify-center pointer-events-none">
@@ -591,14 +603,15 @@
     </div>
   </div>
 
+  <!-- Event Detail Modal -->
   <div id="eventDetailModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] flex items-center justify-center p-4 hidden">
     <div class="bg-white rounded-3xl max-w-2xl w-full p-6 md:p-8 relative max-h-[90vh] overflow-y-auto shadow-2xl">
-      <button onclick="closeEventModal()" class="absolute top-4 right-4 bg-gray-100 hover:bg-gray-200 text-gray-700 w-9 h-9 rounded-full flex items-center justify-center font-bold text-lg transition-colors cursor-pointer">×</button>
-
+      <button onclick="closeEventModal()" aria-label="Close event modal" class="absolute top-4 right-4 bg-gray-100 hover:bg-gray-200 text-gray-700 w-9 h-9 rounded-full flex items-center justify-center font-bold text-lg transition-colors cursor-pointer">×</button>
       <div id="modalEventContent" class="space-y-6"></div>
     </div>
   </div>
 
+  <!-- Action Modal -->
   <div id="actionModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-300">
     <div id="modalContentWrapper" class="bg-white w-full max-w-lg rounded-3xl shadow-2xl p-8 relative transform scale-95 transition-transform duration-300 max-h-[90vh] overflow-y-auto">
       <button id="closeModalBtn" aria-label="Close modal" class="absolute top-6 right-6 w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-500 flex items-center justify-center transition-colors cursor-pointer">

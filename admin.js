@@ -19,6 +19,11 @@ const CAT_CATEGORY_ORDER = [
   'The Legit Cuddle Bugs'
 ];
 
+const TAB_ACTIVE_CLASS =
+  'px-5 py-2.5 rounded-xl font-heading font-bold text-xs uppercase tracking-wider bg-brand-orange text-white shadow-md transition-all cursor-pointer';
+const TAB_INACTIVE_CLASS =
+  'px-5 py-2.5 rounded-xl font-heading font-bold text-xs uppercase tracking-wider bg-gray-800 text-gray-300 hover:bg-gray-700 transition-all cursor-pointer';
+
 let supabaseClient = null;
 try {
   if (window.supabase && SUPABASE_URL) {
@@ -30,43 +35,13 @@ try {
       }
     });
   }
-} catch (e) {
-  console.error("Supabase initialization error:", e);
+} catch (err) {
+  console.error('Supabase initialization error:', err);
 }
 
-function clearSupabaseAuthStorage() {
-  try {
-    const projectRef = new URL(SUPABASE_URL).hostname.split('.')[0];
-    const keysToRemove = [];
-    for (let i = 0; i < localStorage.length; i++) {
-      const k = localStorage.key(i);
-      if (k && (k.startsWith(`sb-${projectRef}-`) || k.includes('supabase.auth.token'))) {
-        keysToRemove.push(k);
-      }
-    }
-    keysToRemove.forEach(k => localStorage.removeItem(k));
-  } catch (_) {
-    // Ignore storage access errors
-  }
-}
-
-function sendKeepaliveSignOut() {
-  clearSupabaseAuthStorage();
-  if (!SUPABASE_URL || !SUPABASE_ANON_KEY || typeof fetch !== 'function') return;
-  try {
-    fetch(`${SUPABASE_URL}/auth/v1/logout?scope=local`, {
-      method: 'POST',
-      headers: {
-        'apikey': SUPABASE_ANON_KEY,
-        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-        'Content-Type': 'application/json'
-      },
-      keepalive: true
-    }).catch(() => {});
-  } catch (_) {
-    // Ignore network errors during page teardown
-  }
-}
+// ============================================================================
+// Shared Utilities
+// ============================================================================
 
 function escapeHtml(str) {
   return String(str ?? '')
@@ -82,13 +57,10 @@ function safeUrl(url, fallback = '') {
   if (!trimmed) return fallback;
   try {
     const parsed = new URL(trimmed);
-    if (parsed.protocol === 'https:') {
-      return parsed.href;
-    }
+    return parsed.protocol === 'https:' ? parsed.href : fallback;
   } catch (_) {
-    // Invalid URL falls back safely
+    return fallback;
   }
-  return fallback;
 }
 
 function getWalkingCatLoaderHtml(message = 'Loading...', { compact = false, dark = true } = {}) {
@@ -138,11 +110,11 @@ function setButtonLoading(btn, isLoading, loadingText) {
       btn.dataset.originalText = btn.textContent;
     }
     btn.disabled = true;
-    btn.classList.add("opacity-60", "cursor-not-allowed");
+    btn.classList.add('opacity-60', 'cursor-not-allowed');
     btn.textContent = loadingText;
   } else {
     btn.disabled = false;
-    btn.classList.remove("opacity-60", "cursor-not-allowed");
+    btn.classList.remove('opacity-60', 'cursor-not-allowed');
     if (btn.dataset.originalText) {
       btn.textContent = btn.dataset.originalText;
       delete btn.dataset.originalText;
@@ -150,60 +122,55 @@ function setButtonLoading(btn, isLoading, loadingText) {
   }
 }
 
-function setLoginCheckingState(isChecking) {
-  const sessionLoader = document.getElementById("adminSessionLoader");
-  const loginForm = document.getElementById("internalLoginForm");
-  if (sessionLoader) sessionLoader.classList.toggle("hidden", !isChecking);
-  if (loginForm) loginForm.classList.toggle("hidden", isChecking);
+function setFormEditMode({ formId, hiddenId, titleId, submitId, cancelBtnId, titleText, submitText, isEditing }) {
+  if (!isEditing) {
+    document.getElementById(formId)?.reset();
+    const hiddenEl = document.getElementById(hiddenId);
+    if (hiddenEl) hiddenEl.value = '';
+  }
+  const titleEl = document.getElementById(titleId);
+  const submitEl = document.getElementById(submitId);
+  const cancelEl = document.getElementById(cancelBtnId);
+  if (titleEl) titleEl.textContent = titleText;
+  if (submitEl) submitEl.textContent = submitText;
+  cancelEl?.classList.toggle('hidden', !isEditing);
 }
 
-function getCatCategoryRank(category) {
-  const normalized = String(category ?? '').trim().toLowerCase();
-  const idx = CAT_CATEGORY_ORDER.findIndex(c => c.toLowerCase() === normalized);
-  return idx === -1 ? CAT_CATEGORY_ORDER.length : idx;
-}
-
-function sortAdminCatsByCategoryOrder(list) {
-  return list.slice().sort((a, b) => {
-    const rankDiff = getCatCategoryRank(a.category) - getCatCategoryRank(b.category);
-    if (rankDiff !== 0) return rankDiff;
-    const timeA = a.created_at ? new Date(a.created_at).getTime() : 0;
-    const timeB = b.created_at ? new Date(b.created_at).getTime() : 0;
-    return timeA - timeB;
-  });
-}
+// ============================================================================
+// Toast & Confirmation Modal
+// ============================================================================
 
 let toastTimeoutId = null;
 
 function showToast(message, type = 'success') {
-  const toast = document.getElementById("adminToast");
+  const toast = document.getElementById('adminToast');
   if (!toast) return;
 
   if (toastTimeoutId) clearTimeout(toastTimeoutId);
 
   const styles = {
-    success: "bg-gray-900 border-emerald-500/40 text-emerald-300",
-    error:   "bg-gray-900 border-rose-500/40 text-rose-300",
-    info:    "bg-gray-900 border-brand-turquoise/40 text-brand-turquoise"
+    success: 'bg-gray-900 border-emerald-500/40 text-emerald-300',
+    error: 'bg-gray-900 border-rose-500/40 text-rose-300',
+    info: 'bg-gray-900 border-brand-turquoise/40 text-brand-turquoise'
   };
 
   toast.textContent = message;
   toast.className = `fixed bottom-5 right-5 z-[140] max-w-sm px-4 py-3 rounded-2xl border text-xs font-bold shadow-2xl transition-all ${styles[type] || styles.info}`;
-  toast.classList.remove("hidden");
+  toast.classList.remove('hidden');
 
-  toastTimeoutId = setTimeout(() => {
-    toast.classList.add("hidden");
+  toastTimeoutId = window.setTimeout(() => {
+    toast.classList.add('hidden');
   }, 3200);
 }
 
 let confirmResolver = null;
 let confirmLastTrigger = null;
 
-function openConfirmModal({ title = "Confirm Action", message = "Are you sure?", confirmText = "Delete" } = {}) {
-  const modal = document.getElementById("adminConfirmModal");
-  const titleEl = document.getElementById("adminConfirmTitle");
-  const msgEl = document.getElementById("adminConfirmMessage");
-  const okBtn = document.getElementById("adminConfirmOkBtn");
+function openConfirmModal({ title = 'Confirm Action', message = 'Are you sure?', confirmText = 'Delete' } = {}) {
+  const modal = document.getElementById('adminConfirmModal');
+  const titleEl = document.getElementById('adminConfirmTitle');
+  const msgEl = document.getElementById('adminConfirmMessage');
+  const okBtn = document.getElementById('adminConfirmOkBtn');
 
   if (!modal || !titleEl || !msgEl || !okBtn) {
     return Promise.resolve(false);
@@ -214,7 +181,7 @@ function openConfirmModal({ title = "Confirm Action", message = "Are you sure?",
   msgEl.textContent = message;
   okBtn.textContent = confirmText;
 
-  modal.classList.remove("hidden");
+  modal.classList.remove('hidden');
   okBtn.focus();
 
   return new Promise((resolve) => {
@@ -223,69 +190,110 @@ function openConfirmModal({ title = "Confirm Action", message = "Are you sure?",
 }
 
 function closeConfirmModal(confirmed) {
-  const modal = document.getElementById("adminConfirmModal");
-  if (!modal || modal.classList.contains("hidden")) return;
+  const modal = document.getElementById('adminConfirmModal');
+  if (!modal || modal.classList.contains('hidden')) return;
 
-  modal.classList.add("hidden");
+  modal.classList.add('hidden');
   const resolve = confirmResolver;
   confirmResolver = null;
 
-  if (confirmLastTrigger && typeof confirmLastTrigger.focus === "function") {
+  if (confirmLastTrigger && typeof confirmLastTrigger.focus === 'function') {
     confirmLastTrigger.focus();
   }
   confirmLastTrigger = null;
 
-  if (typeof resolve === "function") {
+  if (typeof resolve === 'function') {
     resolve(Boolean(confirmed));
   }
 }
 
-function showLoginError(message) {
-  const errEl = document.getElementById("internalErrorMsg");
-  if (!errEl) return;
-  errEl.textContent = message;
-  errEl.classList.remove("hidden");
-}
-
-function hideLoginError() {
-  const errEl = document.getElementById("internalErrorMsg");
-  if (!errEl) return;
-  errEl.classList.add("hidden");
-}
+// ============================================================================
+// Authentication & Session Lifecycle
+// ============================================================================
 
 let isClosingCms = false;
 
+function clearSupabaseAuthStorage() {
+  try {
+    const projectRef = new URL(SUPABASE_URL).hostname.split('.')[0];
+    const keysToRemove = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && (key.startsWith(`sb-${projectRef}-`) || key.includes('supabase.auth.token'))) {
+        keysToRemove.push(key);
+      }
+    }
+    keysToRemove.forEach((key) => localStorage.removeItem(key));
+  } catch (_) {
+    // Ignore storage access errors
+  }
+}
+
+function sendKeepaliveSignOut() {
+  clearSupabaseAuthStorage();
+  if (!SUPABASE_URL || !SUPABASE_ANON_KEY || typeof fetch !== 'function') return;
+  try {
+    fetch(`${SUPABASE_URL}/auth/v1/logout?scope=local`, {
+      method: 'POST',
+      headers: {
+        apikey: SUPABASE_ANON_KEY,
+        Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      keepalive: true
+    }).catch(() => {});
+  } catch (_) {
+    // Ignore network errors during page teardown
+  }
+}
+
+function setLoginCheckingState(isChecking) {
+  document.getElementById('adminSessionLoader')?.classList.toggle('hidden', !isChecking);
+  document.getElementById('internalLoginForm')?.classList.toggle('hidden', isChecking);
+}
+
+function showLoginError(message) {
+  const errEl = document.getElementById('internalErrorMsg');
+  if (!errEl) return;
+  errEl.textContent = message;
+  errEl.classList.remove('hidden');
+}
+
+function hideLoginError() {
+  document.getElementById('internalErrorMsg')?.classList.add('hidden');
+}
+
 function lockLoginOverlayForClose() {
   isClosingCms = true;
-  sessionStorage.removeItem("hmc_admin_auth");
+  sessionStorage.removeItem('hmc_admin_auth');
   clearSupabaseAuthStorage();
   setLoginCheckingState(false);
-  document.getElementById("adminLoginOverlay")?.classList.remove("hidden");
+  document.getElementById('adminLoginOverlay')?.classList.remove('hidden');
   sendKeepaliveSignOut();
   if (supabaseClient) {
     supabaseClient.auth.signOut({ scope: 'local' }).catch(() => {});
   }
 }
 
-window.addEventListener("pagehide", lockLoginOverlayForClose);
-window.addEventListener("beforeunload", lockLoginOverlayForClose);
-window.addEventListener("pageshow", () => {
+window.addEventListener('pagehide', lockLoginOverlayForClose);
+window.addEventListener('beforeunload', lockLoginOverlayForClose);
+window.addEventListener('pageshow', () => {
   if (isClosingCms) {
     setLoginCheckingState(false);
-    document.getElementById("adminLoginOverlay")?.classList.remove("hidden");
+    document.getElementById('adminLoginOverlay')?.classList.remove('hidden');
   }
 });
 
-document.addEventListener("DOMContentLoaded", async () => {
+document.addEventListener('DOMContentLoaded', async () => {
   isClosingCms = false;
-  sessionStorage.removeItem("hmc_admin_auth");
+  sessionStorage.removeItem('hmc_admin_auth');
   clearSupabaseAuthStorage();
   setLoginCheckingState(true);
-  document.getElementById("adminLoginOverlay")?.classList.remove("hidden");
+  document.getElementById('adminLoginOverlay')?.classList.remove('hidden');
 
   if (!supabaseClient) {
     setLoginCheckingState(false);
-    showLoginError("Authentication service unavailable.");
+    showLoginError('Authentication service unavailable.');
     return;
   }
 
@@ -296,12 +304,12 @@ document.addEventListener("DOMContentLoaded", async () => {
       return;
     }
 
-    document.getElementById("adminLoginOverlay")?.classList.add("hidden");
+    document.getElementById('adminLoginOverlay')?.classList.add('hidden');
     initAdminDashboard();
   } catch (err) {
-    console.error("Session check error:", err);
+    console.error('Session check error:', err);
     setLoginCheckingState(false);
-    showLoginError("Could not verify session. Please sign in.");
+    showLoginError('Could not verify session. Please sign in.');
   }
 });
 
@@ -310,33 +318,33 @@ async function handleInternalLogin(e) {
   hideLoginError();
 
   if (!supabaseClient) {
-    showLoginError("Authentication service unavailable.");
+    showLoginError('Authentication service unavailable.');
     return;
   }
 
-  const emailEl = document.getElementById("internalEmail");
-  const passEl = document.getElementById("internalPassword");
-  const loginBtn = document.getElementById("internalLoginBtn");
+  const emailEl = document.getElementById('internalEmail');
+  const passEl = document.getElementById('internalPassword');
+  const loginBtn = document.getElementById('internalLoginBtn');
   const email = (emailEl?.value || '').trim();
   const password = passEl?.value || '';
 
   if (!email || !password) {
-    showLoginError("Please enter both email and password.");
+    showLoginError('Please enter both email and password.');
     return;
   }
 
-  setButtonLoading(loginBtn, true, "Signing in...");
+  setButtonLoading(loginBtn, true, 'Signing in...');
   try {
     isClosingCms = false;
     const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
     if (error || !data?.session) {
-      console.error("Admin sign-in error:", error);
-      showLoginError("Invalid credentials. Please check your email and password.");
+      console.error('Admin sign-in error:', error);
+      showLoginError('Invalid credentials. Please check your email and password.');
       return;
     }
 
-    if (passEl) passEl.value = "";
-    document.getElementById("adminLoginOverlay")?.classList.add("hidden");
+    if (passEl) passEl.value = '';
+    document.getElementById('adminLoginOverlay')?.classList.add('hidden');
     initAdminDashboard();
   } finally {
     setButtonLoading(loginBtn, false);
@@ -344,22 +352,21 @@ async function handleInternalLogin(e) {
 }
 
 async function adminLogout() {
-  const logoutBtn = document.getElementById("adminLogoutBtn");
-  setButtonLoading(logoutBtn, true, "Signing out...");
+  const logoutBtn = document.getElementById('adminLogoutBtn');
+  setButtonLoading(logoutBtn, true, 'Signing out...');
   try {
     clearSupabaseAuthStorage();
     if (supabaseClient) {
       await supabaseClient.auth.signOut();
     }
   } catch (err) {
-    console.error("Sign-out error:", err);
+    console.error('Sign-out error:', err);
   } finally {
     setButtonLoading(logoutBtn, false);
   }
 
-  sessionStorage.removeItem("hmc_admin_auth");
+  sessionStorage.removeItem('hmc_admin_auth');
 
-  // Clear in-memory dashboard state without reloading the page
   adminMenuList = [];
   adminEventsList = [];
   adminCatsList = [];
@@ -370,14 +377,16 @@ async function adminLogout() {
     adminStatsChart = null;
   }
 
-  const menuSearch = document.getElementById("menuSearchInput");
-  const menuCatFilter = document.getElementById("menuFilterCategory");
-  const catSearch = document.getElementById("catSearchInput");
-  const catFilter = document.getElementById("catFilterCategory");
-  if (menuSearch) menuSearch.value = "";
-  if (menuCatFilter) menuCatFilter.value = "All";
-  if (catSearch) catSearch.value = "";
-  if (catFilter) catFilter.value = "All";
+  const filterResets = [
+    ['menuSearchInput', ''],
+    ['menuFilterCategory', 'All'],
+    ['catSearchInput', ''],
+    ['catFilterCategory', 'All']
+  ];
+  filterResets.forEach(([id, value]) => {
+    const el = document.getElementById(id);
+    if (el) el.value = value;
+  });
 
   resetMenuForm();
   resetEventForm();
@@ -387,12 +396,12 @@ async function adminLogout() {
   renderAdminEventsTable();
   renderAdminCatsTable();
   renderAdminChart();
-  switchTab("menu");
+  switchTab('menu');
 
   hideLoginError();
   setLoginCheckingState(false);
-  document.getElementById("adminLoginOverlay")?.classList.remove("hidden");
-  document.getElementById("internalEmail")?.focus();
+  document.getElementById('adminLoginOverlay')?.classList.remove('hidden');
+  document.getElementById('internalEmail')?.focus();
 }
 
 function initAdminDashboard() {
@@ -402,7 +411,36 @@ function initAdminDashboard() {
   loadAdminAnalytics();
 }
 
+// ============================================================================
+// Navigation & Analytics
+// ============================================================================
+
 let adminAnalyticsData = { visits: 0, interactions: 0 };
+let adminStatsChart = null;
+
+function switchTab(tab) {
+  const tabs = {
+    menu: { section: 'menuSection', button: 'navMenuBtn' },
+    events: { section: 'eventsSection', button: 'navEventsBtn' },
+    cats: { section: 'catsSection', button: 'navCatsBtn' },
+    graphs: { section: 'graphsSection', button: 'navGraphsBtn' }
+  };
+
+  Object.entries(tabs).forEach(([name, ids]) => {
+    const section = document.getElementById(ids.section);
+    const button = document.getElementById(ids.button);
+    if (!section || !button) return;
+
+    const isActive = name === tab;
+    section.classList.toggle('hidden', !isActive);
+    button.className = isActive ? TAB_ACTIVE_CLASS : TAB_INACTIVE_CLASS;
+
+    if (isActive && tab === 'graphs') {
+      loadAdminAnalytics();
+      renderAdminChart();
+    }
+  });
+}
 
 async function loadAdminAnalytics() {
   if (!supabaseClient) return;
@@ -427,27 +465,30 @@ async function loadAdminAnalytics() {
     };
     renderAdminChart();
   } catch (err) {
-    console.error("Error loading analytics:", err);
+    console.error('Error loading analytics:', err);
   }
 }
 
-let adminStatsChart = null;
-
 function renderAdminChart() {
-  const ctx = document.getElementById('adminStatsChart');
-
   const menuCount = adminMenuList.length;
   const eventsCount = adminEventsList.length;
   const catsCount = adminCatsList.length;
   const totalVisits = adminAnalyticsData.visits;
   const totalInteractions = adminAnalyticsData.interactions;
 
-  if (document.getElementById('statMenuCount')) document.getElementById('statMenuCount').textContent = menuCount;
-  if (document.getElementById('statEventCount')) document.getElementById('statEventCount').textContent = eventsCount;
-  if (document.getElementById('statCatCount')) document.getElementById('statCatCount').textContent = catsCount;
-  if (document.getElementById('statTrafficCount')) document.getElementById('statTrafficCount').textContent = totalVisits.toLocaleString();
-  if (document.getElementById('statInteractionCount')) document.getElementById('statInteractionCount').textContent = totalInteractions.toLocaleString();
+  const statUpdates = [
+    ['statMenuCount', menuCount],
+    ['statEventCount', eventsCount],
+    ['statCatCount', catsCount],
+    ['statTrafficCount', totalVisits.toLocaleString()],
+    ['statInteractionCount', totalInteractions.toLocaleString()]
+  ];
+  statUpdates.forEach(([id, value]) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = value;
+  });
 
+  const ctx = document.getElementById('adminStatsChart');
   if (!ctx) return;
 
   if (adminStatsChart) {
@@ -500,40 +541,15 @@ function renderAdminChart() {
   });
 }
 
-const TAB_ACTIVE_CLASS = "px-5 py-2.5 rounded-xl font-heading font-bold text-xs uppercase tracking-wider bg-brand-orange text-white shadow-md transition-all cursor-pointer";
-const TAB_INACTIVE_CLASS = "px-5 py-2.5 rounded-xl font-heading font-bold text-xs uppercase tracking-wider bg-gray-800 text-gray-300 hover:bg-gray-700 transition-all cursor-pointer";
-
-function switchTab(tab) {
-  const tabs = {
-    menu:   { section: "menuSection",   button: "navMenuBtn" },
-    events: { section: "eventsSection", button: "navEventsBtn" },
-    cats:   { section: "catsSection",   button: "navCatsBtn" },
-    graphs: { section: "graphsSection", button: "navGraphsBtn" }
-  };
-
-  Object.entries(tabs).forEach(([name, ids]) => {
-    const section = document.getElementById(ids.section);
-    const button = document.getElementById(ids.button);
-    if (!section || !button) return;
-    if (name === tab) {
-      section.classList.remove("hidden");
-      button.className = TAB_ACTIVE_CLASS;
-      if (tab === 'graphs') {
-        loadAdminAnalytics();
-        renderAdminChart();
-      }
-    } else {
-      section.classList.add("hidden");
-      button.className = TAB_INACTIVE_CLASS;
-    }
-  });
-}
+// ============================================================================
+// Menu Management
+// ============================================================================
 
 let adminMenuList = [];
 
 async function loadAdminMenu() {
   if (!supabaseClient) return;
-  renderTableLoading("menuTableBody", 5, "Loading menu items...");
+  renderTableLoading('menuTableBody', 5, 'Loading menu items...');
   try {
     const { data, error } = await supabaseClient.from('menu_items').select('*').order('category');
     if (error) throw error;
@@ -541,126 +557,141 @@ async function loadAdminMenu() {
     renderAdminMenuTable();
     renderAdminChart();
   } catch (err) {
-    console.error("Error loading menu:", err);
+    console.error('Error loading menu:', err);
     renderAdminMenuTable();
   }
 }
 
 function renderAdminMenuTable() {
-  const tbody = document.getElementById("menuTableBody");
-  const badge = document.getElementById("menuCountBadge");
+  const tbody = document.getElementById('menuTableBody');
+  const badge = document.getElementById('menuCountBadge');
   if (badge) badge.textContent = adminMenuList.length;
   if (!tbody) return;
 
   if (adminMenuList.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-gray-500 text-xs">No menu items found in Supabase.</td></tr>`;
+    tbody.innerHTML = '<tr><td colspan="5" class="p-6 text-center text-gray-500 text-xs">No menu items found in Supabase.</td></tr>';
     return;
   }
 
-  const query = (document.getElementById("menuSearchInput")?.value || "").trim().toLowerCase();
-  const categoryFilter = document.getElementById("menuFilterCategory")?.value || "All";
+  const query = (document.getElementById('menuSearchInput')?.value || '').trim().toLowerCase();
+  const categoryFilter = document.getElementById('menuFilterCategory')?.value || 'All';
 
-  const filteredMenu = adminMenuList.filter(item => {
-    const matchesCategory = categoryFilter === "All" || (item.category || "") === categoryFilter;
-    if (!matchesCategory) return false;
+  const filteredMenu = adminMenuList.filter((item) => {
+    if (categoryFilter !== 'All' && (item.category || '') !== categoryFilter) return false;
     if (!query) return true;
-    const haystack = `${item.name || ""} ${item.category || ""} ${item.description || ""} ${item.price || ""}`.toLowerCase();
+    const haystack = `${item.name || ''} ${item.category || ''} ${item.description || ''} ${item.price || ''}`.toLowerCase();
     return haystack.includes(query);
   });
 
   if (filteredMenu.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-gray-500 text-xs">No menu items match your search or category filter.</td></tr>`;
+    tbody.innerHTML = '<tr><td colspan="5" class="p-6 text-center text-gray-500 text-xs">No menu items match your search or category filter.</td></tr>';
     return;
   }
 
-  tbody.innerHTML = filteredMenu.map(item => `
+  tbody.innerHTML = filteredMenu.map((item) => `
     <tr class="hover:bg-gray-800/50 transition-colors">
       <td class="p-4 font-semibold text-brand-turquoise text-xs">${escapeHtml(item.category)}</td>
       <td class="p-4 font-bold text-white">${escapeHtml(item.name)}</td>
       <td class="p-4 text-brand-orange font-bold">${escapeHtml(item.price)}</td>
       <td class="p-4 text-gray-400 text-xs max-w-xs truncate">${escapeHtml(item.description || '')}</td>
       <td class="p-4 text-right space-x-2">
-        <button onclick="editMenuItem('${escapeHtml(item.id)}')" class="px-3 py-1.5 rounded-lg bg-brand/20 text-brand-turquoise hover:bg-brand/40 text-xs font-bold transition-colors cursor-pointer">Edit</button>
-        <button onclick="deleteMenuItem('${escapeHtml(item.id)}')" class="px-3 py-1.5 rounded-lg bg-rose-500/20 text-rose-300 hover:bg-rose-500/30 text-xs font-bold transition-colors cursor-pointer">Delete</button>
+        <button type="button" onclick="editMenuItem('${escapeHtml(item.id)}')" class="px-3 py-1.5 rounded-lg bg-brand/20 text-brand-turquoise hover:bg-brand/40 text-xs font-bold transition-colors cursor-pointer">Edit</button>
+        <button type="button" onclick="deleteMenuItem('${escapeHtml(item.id)}')" class="px-3 py-1.5 rounded-lg bg-rose-500/20 text-rose-300 hover:bg-rose-500/30 text-xs font-bold transition-colors cursor-pointer">Delete</button>
       </td>
     </tr>
-  `).join("");
+  `).join('');
 }
 
 async function handleMenuSubmit(e) {
   e.preventDefault();
   if (!supabaseClient) return;
 
-  const submitBtn = document.getElementById("menuSubmitBtn");
-  const id = document.getElementById("editMenuId").value;
-  const category = document.getElementById("menuFormCategory").value;
-  const name = document.getElementById("menuFormName").value.trim();
-  const price = document.getElementById("menuFormPrice").value.trim();
-  const description = document.getElementById("menuFormDesc").value.trim();
+  const submitBtn = document.getElementById('menuSubmitBtn');
+  const id = document.getElementById('editMenuId').value;
+  const payload = {
+    category: document.getElementById('menuFormCategory').value,
+    name: document.getElementById('menuFormName').value.trim(),
+    price: document.getElementById('menuFormPrice').value.trim(),
+    description: document.getElementById('menuFormDesc').value.trim()
+  };
 
-  setButtonLoading(submitBtn, true, id ? "Updating..." : "Saving...");
+  setButtonLoading(submitBtn, true, id ? 'Updating...' : 'Saving...');
   try {
-    if (id) {
-      const { error } = await supabaseClient.from('menu_items').update({ category, name, price, description }).eq('id', id);
-      if (error) throw error;
-      showToast("Menu item updated successfully.", "success");
-    } else {
-      const { error } = await supabaseClient.from('menu_items').insert([{ category, name, price, description }]);
-      if (error) throw error;
-      showToast("Menu item saved to Supabase.", "success");
-    }
+    const query = id
+      ? supabaseClient.from('menu_items').update(payload).eq('id', id)
+      : supabaseClient.from('menu_items').insert([payload]);
+    const { error } = await query;
+    if (error) throw error;
+
+    showToast(id ? 'Menu item updated successfully.' : 'Menu item saved to Supabase.', 'success');
     resetMenuForm();
     loadAdminMenu();
   } catch (err) {
-    console.error("Error saving menu item:", err);
-    showToast("Could not save menu item. Please try again.", "error");
+    console.error('Error saving menu item:', err);
+    showToast('Could not save menu item. Please try again.', 'error');
   } finally {
     setButtonLoading(submitBtn, false);
   }
 }
 
 function editMenuItem(id) {
-  const item = adminMenuList.find(m => String(m.id) === String(id));
+  const item = adminMenuList.find((m) => String(m.id) === String(id));
   if (!item) return;
 
-  document.getElementById("editMenuId").value = item.id;
-  document.getElementById("menuFormCategory").value = item.category || 'Must Try!';
-  document.getElementById("menuFormName").value = item.name || '';
-  document.getElementById("menuFormPrice").value = item.price || '';
-  document.getElementById("menuFormDesc").value = item.description || '';
+  document.getElementById('editMenuId').value = item.id;
+  document.getElementById('menuFormCategory').value = item.category || 'Must Try!';
+  document.getElementById('menuFormName').value = item.name || '';
+  document.getElementById('menuFormPrice').value = item.price || '';
+  document.getElementById('menuFormDesc').value = item.description || '';
 
-  document.getElementById("menuFormTitle").textContent = "✏️ Edit Menu Item";
-  document.getElementById("menuSubmitBtn").textContent = "Update Supabase Record";
-  document.getElementById("menuCancelEditBtn").classList.remove("hidden");
+  setFormEditMode({
+    formId: 'menuForm',
+    hiddenId: 'editMenuId',
+    titleId: 'menuFormTitle',
+    submitId: 'menuSubmitBtn',
+    cancelBtnId: 'menuCancelEditBtn',
+    titleText: '✏️ Edit Menu Item',
+    submitText: 'Update Supabase Record',
+    isEditing: true
+  });
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 function resetMenuForm() {
-  document.getElementById("menuForm").reset();
-  document.getElementById("editMenuId").value = "";
-  document.getElementById("menuFormTitle").textContent = "➕ Add New Menu Item";
-  document.getElementById("menuSubmitBtn").textContent = "Save to Supabase";
-  document.getElementById("menuCancelEditBtn").classList.add("hidden");
+  setFormEditMode({
+    formId: 'menuForm',
+    hiddenId: 'editMenuId',
+    titleId: 'menuFormTitle',
+    submitId: 'menuSubmitBtn',
+    cancelBtnId: 'menuCancelEditBtn',
+    titleText: '➕ Add New Menu Item',
+    submitText: 'Save to Supabase',
+    isEditing: false
+  });
 }
 
 async function deleteMenuItem(id) {
   const confirmed = await openConfirmModal({
-    title: "Delete Menu Item",
-    message: "Are you sure you want to delete this menu item from Supabase?",
-    confirmText: "Delete"
+    title: 'Delete Menu Item',
+    message: 'Are you sure you want to delete this menu item from Supabase?',
+    confirmText: 'Delete'
   });
   if (!confirmed) return;
 
   try {
     const { error } = await supabaseClient.from('menu_items').delete().eq('id', id);
     if (error) throw error;
-    showToast("Menu item deleted.", "success");
+    showToast('Menu item deleted.', 'success');
     loadAdminMenu();
   } catch (err) {
-    console.error("Error deleting menu item:", err);
-    showToast("Could not delete menu item. Please try again.", "error");
+    console.error('Error deleting menu item:', err);
+    showToast('Could not delete menu item. Please try again.', 'error');
   }
 }
+
+// ============================================================================
+// Events Management
+// ============================================================================
 
 let adminEventsList = [];
 
@@ -677,37 +708,40 @@ function findEventByKey(key) {
   return { ev: idx >= 0 ? adminEventsList[idx] : null, idx };
 }
 
-async function loadAdminEvents() {
-  if (!supabaseClient) return;
-  renderTableLoading("eventsTableBody", 4, "Loading events...");
+function readLocalEvents() {
   try {
-    const { data, error } = await supabaseClient.from('events').select('*').order('created_at', { ascending: false });
-    if (!error && data) {
-      adminEventsList = data;
-    } else {
-      adminEventsList = JSON.parse(localStorage.getItem("hmc_local_events") || "[]");
-    }
-    renderAdminEventsTable();
-    renderAdminChart();
-  } catch (err) {
-    console.error("Error loading events:", err);
-    adminEventsList = JSON.parse(localStorage.getItem("hmc_local_events") || "[]");
-    renderAdminEventsTable();
-    renderAdminChart();
+    const parsed = JSON.parse(localStorage.getItem('hmc_local_events') || '[]');
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (_) {
+    return [];
   }
 }
 
+async function loadAdminEvents() {
+  if (!supabaseClient) return;
+  renderTableLoading('eventsTableBody', 4, 'Loading events...');
+  try {
+    const { data, error } = await supabaseClient.from('events').select('*').order('created_at', { ascending: false });
+    adminEventsList = !error && data ? data : readLocalEvents();
+  } catch (err) {
+    console.error('Error loading events:', err);
+    adminEventsList = readLocalEvents();
+  }
+  renderAdminEventsTable();
+  renderAdminChart();
+}
+
 function renderAdminEventsTable() {
-  const tbody = document.getElementById("eventsTableBody");
-  const navBadge = document.getElementById("navEventCountBadge");
-  const tableBadge = document.getElementById("tableEventCountBadge");
+  const tbody = document.getElementById('eventsTableBody');
+  const navBadge = document.getElementById('navEventCountBadge');
+  const tableBadge = document.getElementById('tableEventCountBadge');
 
   if (navBadge) navBadge.textContent = adminEventsList.length;
   if (tableBadge) tableBadge.textContent = adminEventsList.length;
   if (!tbody) return;
 
   if (adminEventsList.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-gray-500 text-xs">No events found.</td></tr>`;
+    tbody.innerHTML = '<tr><td colspan="4" class="p-6 text-center text-gray-500 text-xs">No events found.</td></tr>';
     return;
   }
 
@@ -731,105 +765,114 @@ function renderAdminEventsTable() {
         <td class="p-4 text-brand-orange font-semibold text-xs">${escapeHtml(ev.date)}</td>
         <td class="p-4 text-gray-400 text-xs max-w-xs truncate">${escapeHtml(ev.description || '')}</td>
         <td class="p-4 text-right space-x-2">
-          <button onclick="editEventItem('${escapeHtml(eventKey)}')" class="px-3 py-1.5 rounded-lg bg-brand/20 text-brand-turquoise hover:bg-brand/40 text-xs font-bold transition-colors cursor-pointer">Edit</button>
-          <button onclick="deleteEventItem('${escapeHtml(eventKey)}')" class="px-3 py-1.5 rounded-lg bg-rose-500/20 text-rose-300 hover:bg-rose-500/30 text-xs font-bold transition-colors cursor-pointer">Delete</button>
+          <button type="button" onclick="editEventItem('${escapeHtml(eventKey)}')" class="px-3 py-1.5 rounded-lg bg-brand/20 text-brand-turquoise hover:bg-brand/40 text-xs font-bold transition-colors cursor-pointer">Edit</button>
+          <button type="button" onclick="deleteEventItem('${escapeHtml(eventKey)}')" class="px-3 py-1.5 rounded-lg bg-rose-500/20 text-rose-300 hover:bg-rose-500/30 text-xs font-bold transition-colors cursor-pointer">Delete</button>
         </td>
       </tr>
     `;
-  }).join("");
+  }).join('');
+}
+
+function saveEventLocally(newEventObj, idx, message) {
+  if (idx >= 0) adminEventsList[idx] = { ...adminEventsList[idx], ...newEventObj };
+  else adminEventsList.unshift(newEventObj);
+  localStorage.setItem('hmc_local_events', JSON.stringify(adminEventsList));
+  showToast(message, 'info');
+  renderAdminEventsTable();
+  renderAdminChart();
 }
 
 async function handleEventSubmit(e) {
   e.preventDefault();
-  const submitBtn = document.getElementById("eventSubmitBtn");
-  const editKey = document.getElementById("editEventIndex").value;
-  const title = document.getElementById("eventFormTitle").value.trim();
-  const date = document.getElementById("eventFormDate").value.trim();
-  const rawImage = document.getElementById("eventFormImage").value.trim();
-  const image = safeUrl(rawImage, DEFAULT_BANNER_URL);
-  const galleryInput = document.getElementById("eventFormGalleryUrls").value;
-  const description = document.getElementById("eventFormDesc").value.trim();
+  const submitBtn = document.getElementById('eventSubmitBtn');
+  const editKey = document.getElementById('editEventIndex').value;
+  const galleryInput = document.getElementById('eventFormGalleryUrls').value;
 
-  const imagesArray = galleryInput
-    ? galleryInput.split(',').map(url => safeUrl(url, '')).filter(Boolean)
-    : [];
-  const newEventObj = { title, date, image, description, images: imagesArray };
+  const newEventObj = {
+    title: document.getElementById('eventFormTitle').value.trim(),
+    date: document.getElementById('eventFormDate').value.trim(),
+    image: safeUrl(document.getElementById('eventFormImage').value.trim(), DEFAULT_BANNER_URL),
+    description: document.getElementById('eventFormDesc').value.trim(),
+    images: galleryInput ? galleryInput.split(',').map((url) => safeUrl(url, '')).filter(Boolean) : []
+  };
+
   const { ev: existingEv, idx: existingIdx } = editKey ? findEventByKey(editKey) : { ev: null, idx: -1 };
 
-  setButtonLoading(submitBtn, true, existingEv ? "Updating..." : "Saving...");
+  setButtonLoading(submitBtn, true, existingEv ? 'Updating...' : 'Saving...');
   try {
     if (supabaseClient) {
       try {
-        if (existingEv?.id) {
-          const { error } = await supabaseClient.from('events').update(newEventObj).eq('id', existingEv.id);
-          if (error) throw error;
-          showToast("Event updated successfully.", "success");
-        } else {
-          const { error } = await supabaseClient.from('events').insert([newEventObj]);
-          if (error) throw error;
-          showToast("Event saved successfully.", "success");
-        }
+        const query = existingEv?.id
+          ? supabaseClient.from('events').update(newEventObj).eq('id', existingEv.id)
+          : supabaseClient.from('events').insert([newEventObj]);
+        const { error } = await query;
+        if (error) throw error;
+
+        showToast(existingEv?.id ? 'Event updated successfully.' : 'Event saved successfully.', 'success');
         resetEventForm();
         loadAdminEvents();
         return;
       } catch (err) {
-        console.error("Supabase events error, saving locally:", err);
-        saveEventLocally(newEventObj, existingIdx, "Event saved locally.");
-        resetEventForm();
-        return;
+        console.error('Supabase events error, saving locally:', err);
       }
     }
 
-    saveEventLocally(newEventObj, existingIdx, "Event saved locally.");
+    saveEventLocally(newEventObj, existingIdx, 'Event saved locally.');
     resetEventForm();
   } finally {
     setButtonLoading(submitBtn, false);
   }
 }
 
-function saveEventLocally(newEventObj, idx, message) {
-  if (idx >= 0) adminEventsList[idx] = { ...adminEventsList[idx], ...newEventObj };
-  else adminEventsList.unshift(newEventObj);
-  localStorage.setItem("hmc_local_events", JSON.stringify(adminEventsList));
-  showToast(message, "info");
-  renderAdminEventsTable();
-  renderAdminChart();
-}
-
 function editEventItem(key) {
   const { ev, idx } = findEventByKey(key);
   if (!ev) return;
 
-  document.getElementById("editEventIndex").value = getEventKey(ev, idx);
-  document.getElementById("eventFormTitle").value = ev.title || '';
-  document.getElementById("eventFormDate").value = ev.date || '';
-  document.getElementById("eventFormImage").value = safeUrl(ev.image, '');
-  document.getElementById("eventFormDesc").value = ev.description || '';
+  document.getElementById('editEventIndex').value = getEventKey(ev, idx);
+  document.getElementById('eventFormTitle').value = ev.title || '';
+  document.getElementById('eventFormDate').value = ev.date || '';
+  document.getElementById('eventFormImage').value = safeUrl(ev.image, '');
+  document.getElementById('eventFormDesc').value = ev.description || '';
 
-  let galleryUrlsStr = "";
-  if (Array.isArray(ev.images)) galleryUrlsStr = ev.images.map(u => safeUrl(u, '')).filter(Boolean).join(', ');
-  else if (typeof ev.images === 'string') galleryUrlsStr = ev.images.split(',').map(u => safeUrl(u, '')).filter(Boolean).join(', ');
-  document.getElementById("eventFormGalleryUrls").value = galleryUrlsStr;
+  let galleryUrlsStr = '';
+  if (Array.isArray(ev.images)) {
+    galleryUrlsStr = ev.images.map((u) => safeUrl(u, '')).filter(Boolean).join(', ');
+  } else if (typeof ev.images === 'string') {
+    galleryUrlsStr = ev.images.split(',').map((u) => safeUrl(u, '')).filter(Boolean).join(', ');
+  }
+  document.getElementById('eventFormGalleryUrls').value = galleryUrlsStr;
 
-  document.getElementById("eventFormTitleText").textContent = "✏️ Edit Event";
-  document.getElementById("eventSubmitBtn").textContent = "Update Event";
-  document.getElementById("eventCancelEditBtn").classList.remove("hidden");
+  setFormEditMode({
+    formId: 'eventForm',
+    hiddenId: 'editEventIndex',
+    titleId: 'eventFormTitleText',
+    submitId: 'eventSubmitBtn',
+    cancelBtnId: 'eventCancelEditBtn',
+    titleText: '✏️ Edit Event',
+    submitText: 'Update Event',
+    isEditing: true
+  });
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 function resetEventForm() {
-  document.getElementById("eventForm").reset();
-  document.getElementById("editEventIndex").value = "";
-  document.getElementById("eventFormTitleText").textContent = "➕ Add New Event";
-  document.getElementById("eventSubmitBtn").textContent = "Save Event";
-  document.getElementById("eventCancelEditBtn").classList.add("hidden");
+  setFormEditMode({
+    formId: 'eventForm',
+    hiddenId: 'editEventIndex',
+    titleId: 'eventFormTitleText',
+    submitId: 'eventSubmitBtn',
+    cancelBtnId: 'eventCancelEditBtn',
+    titleText: '➕ Add New Event',
+    submitText: 'Save Event',
+    isEditing: false
+  });
 }
 
 async function deleteEventItem(key) {
   const confirmed = await openConfirmModal({
-    title: "Delete Event",
-    message: "Are you sure you want to delete this event?",
-    confirmText: "Delete"
+    title: 'Delete Event',
+    message: 'Are you sure you want to delete this event?',
+    confirmText: 'Delete'
   });
   if (!confirmed) return;
 
@@ -840,29 +883,52 @@ async function deleteEventItem(key) {
     try {
       const { error } = await supabaseClient.from('events').delete().eq('id', ev.id);
       if (error) throw error;
-      showToast("Event deleted.", "success");
+      showToast('Event deleted.', 'success');
       loadAdminEvents();
       return;
     } catch (err) {
-      console.error("Error deleting event from Supabase:", err);
-      showToast("Could not delete event from Supabase.", "error");
+      console.error('Error deleting event from Supabase:', err);
+      showToast('Could not delete event from Supabase.', 'error');
       return;
     }
   }
 
   adminEventsList.splice(idx, 1);
-  localStorage.setItem("hmc_local_events", JSON.stringify(adminEventsList));
+  localStorage.setItem('hmc_local_events', JSON.stringify(adminEventsList));
   renderAdminEventsTable();
   renderAdminChart();
-  showToast("Event removed locally.", "info");
+  showToast('Event removed locally.', 'info');
 }
+
+// ============================================================================
+// Cat Roster Management & Preview
+// ============================================================================
 
 let adminCatsList = [];
 let catUploadWidget = null;
+let previewLastTrigger = null;
+let previewCatsList = [];
+let previewCatIndex = -1;
+
+function getCatCategoryRank(category) {
+  const normalized = String(category ?? '').trim().toLowerCase();
+  const idx = CAT_CATEGORY_ORDER.findIndex((c) => c.toLowerCase() === normalized);
+  return idx === -1 ? CAT_CATEGORY_ORDER.length : idx;
+}
+
+function sortAdminCatsByCategoryOrder(list) {
+  return list.slice().sort((a, b) => {
+    const rankDiff = getCatCategoryRank(a.category) - getCatCategoryRank(b.category);
+    if (rankDiff !== 0) return rankDiff;
+    const timeA = a.created_at ? new Date(a.created_at).getTime() : 0;
+    const timeB = b.created_at ? new Date(b.created_at).getTime() : 0;
+    return timeA - timeB;
+  });
+}
 
 async function loadAdminCats() {
   if (!supabaseClient) return;
-  renderTableLoading("catsTableBody", 4, "Calling the kitties...");
+  renderTableLoading('catsTableBody', 4, 'Calling the kitties...');
   try {
     const { data, error } = await supabaseClient.from('cats').select('*').order('created_at', { ascending: true });
     if (error) throw error;
@@ -870,43 +936,42 @@ async function loadAdminCats() {
     renderAdminCatsTable();
     renderAdminChart();
   } catch (err) {
-    console.error("Error loading cats from Supabase:", err);
+    console.error('Error loading cats from Supabase:', err);
     renderAdminCatsTable();
   }
 }
 
 function renderAdminCatsTable() {
-  const tbody = document.getElementById("catsTableBody");
-  const badge = document.getElementById("catCountBadge");
+  const tbody = document.getElementById('catsTableBody');
+  const badge = document.getElementById('catCountBadge');
   if (badge) badge.textContent = adminCatsList.length;
   if (!tbody) return;
 
   if (adminCatsList.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-gray-500 text-xs">No cats in roster yet. Add one above!</td></tr>`;
+    tbody.innerHTML = '<tr><td colspan="4" class="p-6 text-center text-gray-500 text-xs">No cats in roster yet. Add one above!</td></tr>';
     return;
   }
 
-  const query = (document.getElementById("catSearchInput")?.value || "").trim().toLowerCase();
-  const categoryFilter = document.getElementById("catFilterCategory")?.value || "All";
+  const query = (document.getElementById('catSearchInput')?.value || '').trim().toLowerCase();
+  const categoryFilter = document.getElementById('catFilterCategory')?.value || 'All';
 
-  const filteredCats = adminCatsList.filter(cat => {
-    const matchesCategory = categoryFilter === "All" || (cat.category || "") === categoryFilter;
-    if (!matchesCategory) return false;
+  const filteredCats = adminCatsList.filter((cat) => {
+    if (categoryFilter !== 'All' && (cat.category || '') !== categoryFilter) return false;
     if (!query) return true;
-    const haystack = `${cat.name || ""} ${cat.category || ""} ${cat.description || ""}`.toLowerCase();
+    const haystack = `${cat.name || ''} ${cat.category || ''} ${cat.description || ''}`.toLowerCase();
     return haystack.includes(query);
   });
 
   if (filteredCats.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-gray-500 text-xs">No cats match your search or family filter.</td></tr>`;
+    tbody.innerHTML = '<tr><td colspan="4" class="p-6 text-center text-gray-500 text-xs">No cats match your search or family filter.</td></tr>';
     return;
   }
 
-  tbody.innerHTML = filteredCats.map(cat => {
+  tbody.innerHTML = filteredCats.map((cat) => {
     const cleanImg = safeUrl(cat.image, '');
     const thumbHtml = cleanImg
       ? `<img src="${escapeHtml(cleanImg)}" alt="${escapeHtml(cat.name)}" class="w-12 h-14 rounded-lg object-cover bg-gray-800">`
-      : `<div class="w-12 h-14 rounded-lg bg-gray-800 flex items-center justify-center text-xl">🐱</div>`;
+      : '<div class="w-12 h-14 rounded-lg bg-gray-800 flex items-center justify-center text-xl">🐱</div>';
 
     return `
       <tr class="hover:bg-gray-800/50 transition-colors">
@@ -919,36 +984,38 @@ function renderAdminCatsTable() {
         <td class="p-4 text-brand-turquoise text-xs font-semibold">${escapeHtml(cat.category || 'Resident')}</td>
         <td class="p-4 text-gray-400 text-xs max-w-sm">${escapeHtml(cat.description)}</td>
         <td class="p-4 text-right space-x-2 whitespace-nowrap">
-          <button onclick="previewCat('${escapeHtml(cat.id)}')" class="px-3 py-1.5 rounded-lg bg-gray-800 text-gray-200 hover:bg-gray-700 text-xs font-bold transition-colors cursor-pointer">Preview</button>
-          <button onclick="editCat('${escapeHtml(cat.id)}')" class="px-3 py-1.5 rounded-lg bg-brand/20 text-brand-turquoise hover:bg-brand/40 text-xs font-bold transition-colors cursor-pointer">Edit</button>
-          <button onclick="deleteCat('${escapeHtml(cat.id)}')" class="px-3 py-1.5 rounded-lg bg-rose-500/20 text-rose-300 hover:bg-rose-500/30 text-xs font-bold transition-colors cursor-pointer">Delete</button>
+          <button type="button" onclick="previewCat('${escapeHtml(cat.id)}')" class="px-3 py-1.5 rounded-lg bg-gray-800 text-gray-200 hover:bg-gray-700 text-xs font-bold transition-colors cursor-pointer">Preview</button>
+          <button type="button" onclick="editCat('${escapeHtml(cat.id)}')" class="px-3 py-1.5 rounded-lg bg-brand/20 text-brand-turquoise hover:bg-brand/40 text-xs font-bold transition-colors cursor-pointer">Edit</button>
+          <button type="button" onclick="deleteCat('${escapeHtml(cat.id)}')" class="px-3 py-1.5 rounded-lg bg-rose-500/20 text-rose-300 hover:bg-rose-500/30 text-xs font-bold transition-colors cursor-pointer">Delete</button>
         </td>
       </tr>
     `;
-  }).join("");
+  }).join('');
 }
 
 function updateCatPhotoPreview(url) {
-  const img = document.getElementById("catPhotoPreview");
-  const placeholder = document.getElementById("catPhotoPlaceholder");
+  const img = document.getElementById('catPhotoPreview');
+  const placeholder = document.getElementById('catPhotoPlaceholder');
   if (!img || !placeholder) return;
+
   const cleanUrl = safeUrl(url, '');
   if (cleanUrl) {
     img.src = cleanUrl;
-    img.classList.remove("hidden");
-    placeholder.classList.add("hidden");
+    img.classList.remove('hidden');
+    placeholder.classList.add('hidden');
   } else {
-    img.removeAttribute("src");
-    img.classList.add("hidden");
-    placeholder.classList.remove("hidden");
+    img.removeAttribute('src');
+    img.classList.add('hidden');
+    placeholder.classList.remove('hidden');
   }
 }
 
 function openCatUploadWidget() {
   if (!window.cloudinary) {
-    showToast("Upload widget unavailable.", "error");
+    showToast('Upload widget unavailable.', 'error');
     return;
   }
+
   if (!catUploadWidget) {
     catUploadWidget = window.cloudinary.createUploadWidget(
       {
@@ -966,12 +1033,12 @@ function openCatUploadWidget() {
         showSkipCropButton: true
       },
       (error, result) => {
-        if (!error && result && result.event === "success") {
+        if (!error && result && result.event === 'success') {
           const url = safeUrl(result.info.secure_url, '');
           if (url) {
-            document.getElementById("catFormImage").value = url;
+            document.getElementById('catFormImage').value = url;
             updateCatPhotoPreview(url);
-            showToast("Photo uploaded.", "success");
+            showToast('Photo uploaded.', 'success');
           }
         }
       }
@@ -984,103 +1051,115 @@ async function handleCatSubmit(e) {
   e.preventDefault();
   if (!supabaseClient) return;
 
-  const submitBtn = document.getElementById("catSubmitBtn");
-  const id = document.getElementById("editCatId").value;
-  const name = document.getElementById("catFormName").value.trim();
-  const category = document.getElementById("catFormCategory").value;
-  const description = document.getElementById("catFormDesc").value.trim();
-  const image = safeUrl(document.getElementById("catFormImage").value.trim(), '');
+  const submitBtn = document.getElementById('catSubmitBtn');
+  const id = document.getElementById('editCatId').value;
+  const payload = {
+    name: document.getElementById('catFormName').value.trim(),
+    category: document.getElementById('catFormCategory').value,
+    description: document.getElementById('catFormDesc').value.trim(),
+    image: safeUrl(document.getElementById('catFormImage').value.trim(), '')
+  };
 
-  setButtonLoading(submitBtn, true, id ? "Updating..." : "Saving...");
+  setButtonLoading(submitBtn, true, id ? 'Updating...' : 'Saving...');
   try {
-    if (id) {
-      const { error } = await supabaseClient.from('cats').update({ name, category, description, image }).eq('id', id);
-      if (error) throw error;
-      showToast("Cat updated successfully.", "success");
-    } else {
-      const { error } = await supabaseClient.from('cats').insert([{ name, category, description, image }]);
-      if (error) throw error;
-      showToast("Cat added to the roster.", "success");
-    }
+    const query = id
+      ? supabaseClient.from('cats').update(payload).eq('id', id)
+      : supabaseClient.from('cats').insert([payload]);
+    const { error } = await query;
+    if (error) throw error;
+
+    showToast(id ? 'Cat updated successfully.' : 'Cat added to the roster.', 'success');
     resetCatForm();
     loadAdminCats();
   } catch (err) {
-    console.error("Error saving cat:", err);
-    showToast("Could not save cat. Please try again.", "error");
+    console.error('Error saving cat:', err);
+    showToast('Could not save cat. Please try again.', 'error');
   } finally {
     setButtonLoading(submitBtn, false);
   }
 }
 
 function editCat(id) {
-  const cat = adminCatsList.find(c => String(c.id) === String(id));
+  const cat = adminCatsList.find((c) => String(c.id) === String(id));
   if (!cat) return;
 
   const cleanImg = safeUrl(cat.image, '');
-  document.getElementById("editCatId").value = cat.id;
-  document.getElementById("catFormName").value = cat.name || '';
-  document.getElementById("catFormCategory").value = cat.category || 'The British Shorthair Family';
-  document.getElementById("catFormDesc").value = cat.description || '';
-  document.getElementById("catFormImage").value = cleanImg;
+  document.getElementById('editCatId').value = cat.id;
+  document.getElementById('catFormName').value = cat.name || '';
+  document.getElementById('catFormCategory').value = cat.category || 'The British Shorthair Family';
+  document.getElementById('catFormDesc').value = cat.description || '';
+  document.getElementById('catFormImage').value = cleanImg;
   updateCatPhotoPreview(cleanImg);
 
-  document.getElementById("catFormTitleText").textContent = "✏️ Edit Cat";
-  document.getElementById("catSubmitBtn").textContent = "Update Cat";
-  document.getElementById("catCancelEditBtn").classList.remove("hidden");
+  setFormEditMode({
+    formId: 'catForm',
+    hiddenId: 'editCatId',
+    titleId: 'catFormTitleText',
+    submitId: 'catSubmitBtn',
+    cancelBtnId: 'catCancelEditBtn',
+    titleText: '✏️ Edit Cat',
+    submitText: 'Update Cat',
+    isEditing: true
+  });
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 function resetCatForm() {
-  document.getElementById("catForm").reset();
-  document.getElementById("editCatId").value = "";
-  updateCatPhotoPreview("");
-  document.getElementById("catFormTitleText").textContent = "➕ Add Cat to Roster";
-  document.getElementById("catSubmitBtn").textContent = "Save Cat";
-  document.getElementById("catCancelEditBtn").classList.add("hidden");
+  setFormEditMode({
+    formId: 'catForm',
+    hiddenId: 'editCatId',
+    titleId: 'catFormTitleText',
+    submitId: 'catSubmitBtn',
+    cancelBtnId: 'catCancelEditBtn',
+    titleText: '➕ Add Cat to Roster',
+    submitText: 'Save Cat',
+    isEditing: false
+  });
+  updateCatPhotoPreview('');
 }
 
 async function deleteCat(id) {
   const confirmed = await openConfirmModal({
-    title: "Remove Cat",
-    message: "Remove this cat from the roster?",
-    confirmText: "Remove"
+    title: 'Remove Cat',
+    message: 'Remove this cat from the roster?',
+    confirmText: 'Remove'
   });
   if (!confirmed) return;
 
   try {
     const { error } = await supabaseClient.from('cats').delete().eq('id', id);
     if (error) throw error;
-    showToast("Cat removed from roster.", "success");
+    showToast('Cat removed from roster.', 'success');
     loadAdminCats();
   } catch (err) {
-    console.error("Error deleting cat:", err);
-    showToast("Could not remove cat. Please try again.", "error");
+    console.error('Error deleting cat:', err);
+    showToast('Could not remove cat. Please try again.', 'error');
   }
 }
 
-let previewLastTrigger = null;
-let previewCatsList = [];
-let previewCatIndex = -1;
-
 function previewCat(id) {
   if (!adminCatsList.length) return;
-  const idx = adminCatsList.findIndex(c => String(c.id) === String(id));
+  const idx = adminCatsList.findIndex((c) => String(c.id) === String(id));
   if (idx === -1) return;
+
   previewCatsList = adminCatsList;
   previewCatIndex = idx;
   openCatPreview(previewCatsList[previewCatIndex], document.activeElement);
 }
 
 function previewCatFromForm() {
-  const name = document.getElementById("catFormName").value.trim();
-  const category = document.getElementById("catFormCategory").value;
-  const description = document.getElementById("catFormDesc").value.trim();
-  const image = document.getElementById("catFormImage").value.trim();
+  const name = document.getElementById('catFormName').value.trim();
   if (!name) {
-    showToast("Add a cat name first to preview.", "info");
+    showToast('Add a cat name first to preview.', 'info');
     return;
   }
-  previewCatsList = [{ name, category, description, image }];
+
+  previewCatsList = [{
+    name,
+    category: document.getElementById('catFormCategory').value,
+    description: document.getElementById('catFormDesc').value.trim(),
+    image: document.getElementById('catFormImage').value.trim()
+  }];
   previewCatIndex = 0;
   openCatPreview(previewCatsList[0], document.activeElement);
 }
@@ -1092,16 +1171,15 @@ function stepCatPreview(step) {
 }
 
 function renderCatPreviewBody(cat, index, total) {
-  const body = document.getElementById("catSheetBody");
+  const body = document.getElementById('catSheetBody');
   if (!body || !cat) return;
 
   const displayImg = safeUrl(cat.image, DEFAULT_CAT_IMAGE);
   const displayCat = cat.category || 'The British Shorthair Family';
-  const canNavigate = total > 1;
   const prevIndex = (index - 1 + total) % total;
   const nextIndex = (index + 1) % total;
 
-  const navHtml = canNavigate
+  const navHtml = total > 1
     ? `
       <div class="mt-5 pt-4 border-t border-gray-100 flex items-center justify-between gap-3">
         <button type="button" data-preview-nav="-1" aria-label="Previous cat: ${escapeHtml(previewCatsList[prevIndex]?.name || 'Previous')}" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 font-heading font-bold text-xs cursor-pointer transition-colors">
@@ -1129,7 +1207,7 @@ function renderCatPreviewBody(cat, index, total) {
         </div>
       </div>
       <div class="relative z-10 mt-5 text-left">
-        <h3 class="font-bold text-2xl text-gray-900 leading-tight break-words">${escapeHtml(cat.name)}</h3>
+        <h3 id="catSheetName" class="font-bold text-2xl text-gray-900 leading-tight break-words">${escapeHtml(cat.name)}</h3>
         <span class="mt-2 inline-block px-3 py-1 rounded-full bg-brand-turquoise-light text-brand-dark text-xs font-bold">${escapeHtml(displayCat)}</span>
         <p class="mt-3 text-base text-gray-700 leading-relaxed">${escapeHtml(cat.description)}</p>
       </div>
@@ -1139,53 +1217,59 @@ function renderCatPreviewBody(cat, index, total) {
 }
 
 function openCatPreview(cat, trigger) {
-  const sheet = document.getElementById("catProfileSheet");
-  const body = document.getElementById("catSheetBody");
+  const sheet = document.getElementById('catProfileSheet');
+  const body = document.getElementById('catSheetBody');
   if (!sheet || !body) return;
 
   renderCatPreviewBody(cat, previewCatIndex >= 0 ? previewCatIndex : 0, previewCatsList.length || 1);
 
   previewLastTrigger = trigger || null;
-  sheet.classList.remove("hidden");
-  document.body.style.overflow = "hidden";
+  sheet.classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
 }
 
 function closeCatPreview() {
-  const sheet = document.getElementById("catProfileSheet");
-  if (!sheet || sheet.classList.contains("hidden")) return;
-  sheet.classList.add("hidden");
-  document.body.style.overflow = "";
+  const sheet = document.getElementById('catProfileSheet');
+  if (!sheet || sheet.classList.contains('hidden')) return;
+
+  sheet.classList.add('hidden');
+  document.body.style.overflow = '';
   previewCatIndex = -1;
-  if (previewLastTrigger) previewLastTrigger.focus();
+  previewLastTrigger?.focus();
   previewLastTrigger = null;
 }
 
-document.addEventListener("click", (e) => {
-  const previewNavBtn = e.target.closest("[data-preview-nav]");
+document.addEventListener('click', (e) => {
+  const previewNavBtn = e.target.closest('[data-preview-nav]');
   if (previewNavBtn) {
-    const step = Number(previewNavBtn.getAttribute("data-preview-nav"));
+    const step = Number(previewNavBtn.getAttribute('data-preview-nav'));
     if (!Number.isNaN(step)) stepCatPreview(step);
     return;
   }
-  if (e.target.closest("[data-sheet-close]") || e.target.hasAttribute("data-sheet-backdrop")) closeCatPreview();
+  if (e.target.closest('[data-sheet-close]') || e.target.hasAttribute('data-sheet-backdrop')) {
+    closeCatPreview();
+  }
 });
-document.addEventListener("keydown", (e) => {
-  const confirmModal = document.getElementById("adminConfirmModal");
-  if (confirmModal && !confirmModal.classList.contains("hidden")) {
-    if (e.key === "Escape") closeConfirmModal(false);
+
+document.addEventListener('keydown', (e) => {
+  const confirmModal = document.getElementById('adminConfirmModal');
+  if (confirmModal && !confirmModal.classList.contains('hidden')) {
+    if (e.key === 'Escape') closeConfirmModal(false);
     return;
   }
-  const sheet = document.getElementById("catProfileSheet");
-  const isSheetOpen = sheet && !sheet.classList.contains("hidden");
-  if (e.key === "Escape") {
+
+  const sheet = document.getElementById('catProfileSheet');
+  const isSheetOpen = sheet && !sheet.classList.contains('hidden');
+  if (e.key === 'Escape') {
     closeCatPreview();
     return;
   }
   if (!isSheetOpen) return;
-  if (e.key === "ArrowLeft") {
+
+  if (e.key === 'ArrowLeft') {
     e.preventDefault();
     stepCatPreview(-1);
-  } else if (e.key === "ArrowRight") {
+  } else if (e.key === 'ArrowRight') {
     e.preventDefault();
     stepCatPreview(1);
   }

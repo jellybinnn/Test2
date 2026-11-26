@@ -1,5 +1,4 @@
 (function () {
-  var DEFAULT_CAT_IMAGE = 'https://res.cloudinary.com/tfk63bnl/image/upload/f_auto,q_auto/hmc_logo';
   var CATEGORY_ORDER = [
     'The British Shorthair Family',
     'British Shorthair Gang',
@@ -12,18 +11,23 @@
     'The Escape Artist',
     'The Legit Cuddle Bugs'
   ];
+
+  var FILTER_BTN_INACTIVE =
+    'cat-filter-btn px-4 py-2 rounded-2xl text-xs font-bold bg-gray-100 text-gray-600 hover:bg-gray-200 transition-all cursor-pointer';
+  var FILTER_BTN_ACTIVE =
+    'cat-filter-btn px-4 py-2 rounded-2xl text-xs font-bold bg-[#C85A32] text-white shadow-sm transition-all cursor-pointer';
+
+  var SWIPE_CLOSE_THRESHOLD = 110;
+  var SWIPE_VELOCITY_THRESHOLD = 0.55;
+  var HORIZONTAL_SWIPE_THRESHOLD = 65;
+
   var catsData = [];
   var visibleCats = [];
   var activeCatIndex = -1;
   var lastTrigger = null;
   var currentFilter = 'All';
-
   var previousBodyOverflow = '';
   var previousBodyPaddingRight = '';
-
-  var SWIPE_CLOSE_THRESHOLD = 110;
-  var SWIPE_VELOCITY_THRESHOLD = 0.55;
-  var HORIZONTAL_SWIPE_THRESHOLD = 65;
 
   function esc(str) {
     return String(str ?? '')
@@ -67,25 +71,22 @@
 
   function renderRosterLoading() {
     var grid = document.getElementById('catRosterGrid');
-    if (!grid) return;
-    grid.innerHTML = '<div class="col-span-full w-full flex justify-center py-8">' + getRosterWalkingCatHtml('Calling the kitties...') + '</div>';
+    if (grid) {
+      grid.innerHTML = '<div class="col-span-full w-full flex justify-center py-8">' + getRosterWalkingCatHtml('Calling the kitties...') + '</div>';
+    }
   }
 
   function renderRosterError() {
     var grid = document.getElementById('catRosterGrid');
     if (!grid) return;
+
     grid.innerHTML =
       '<div class="col-span-full w-full text-center py-8 px-4 rounded-2xl bg-gray-50 border border-gray-200">' +
         '<p class="text-xs font-semibold text-gray-700 mb-3">Could not load our cat roster right now.</p>' +
         '<button type="button" id="retryCatRosterBtn" class="px-4 py-2 rounded-xl bg-[#C85A32] hover:bg-[#AE4B28] text-white text-xs font-bold cursor-pointer transition-colors">Try Again</button>' +
       '</div>';
 
-    var retryBtn = document.getElementById('retryCatRosterBtn');
-    if (retryBtn) {
-      retryBtn.addEventListener('click', function () {
-        loadCatRoster();
-      });
-    }
+    document.getElementById('retryCatRosterBtn')?.addEventListener('click', loadCatRoster);
   }
 
   function getCategoryRank(category) {
@@ -107,9 +108,9 @@
   }
 
   function getFilteredCats() {
-    var sortedCats = sortCatsByCategoryOrder(catsData);
-    return sortedCats.filter(function (cat) {
-      if (currentFilter === 'All') return true;
+    var sorted = sortCatsByCategoryOrder(catsData);
+    if (currentFilter === 'All') return sorted;
+    return sorted.filter(function (cat) {
       return (cat.category || '').toLowerCase() === currentFilter.toLowerCase();
     });
   }
@@ -129,15 +130,20 @@
     document.body.style.paddingRight = previousBodyPaddingRight;
   }
 
-  function resetSheetDrag(dialog) {
+  function resetSheetTransform(dialog) {
+    if (!dialog) return;
+    dialog.style.transition = '';
+    dialog.style.transform = '';
+    dialog.style.opacity = '';
+  }
+
+  function animateSheetBack(dialog) {
     if (!dialog) return;
     dialog.style.transition = 'transform 0.24s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.24s ease';
     dialog.style.transform = 'translateY(0px)';
     dialog.style.opacity = '1';
     window.setTimeout(function () {
-      dialog.style.transition = '';
-      dialog.style.transform = '';
-      dialog.style.opacity = '';
+      resetSheetTransform(dialog);
     }, 250);
   }
 
@@ -150,7 +156,7 @@
     var startTime = 0;
     var deltaX = 0;
     var deltaY = 0;
-    var gestureMode = null; // 'vertical' | 'horizontal' | null
+    var gestureMode = null;
     var isDismissing = false;
 
     dialog.addEventListener('touchstart', function (e) {
@@ -166,7 +172,6 @@
       deltaX = 0;
       deltaY = 0;
       gestureMode = null;
-
       dialog.style.transition = 'none';
     }, { passive: true });
 
@@ -188,9 +193,8 @@
       if (gestureMode === 'vertical' && deltaY > 0) {
         e.preventDefault();
         var dampedY = deltaY > 180 ? 180 + (deltaY - 180) * 0.35 : deltaY;
-        var opacity = Math.max(0.45, 1 - dampedY / 420);
         dialog.style.transform = 'translateY(' + dampedY + 'px)';
-        dialog.style.opacity = String(opacity);
+        dialog.style.opacity = String(Math.max(0.45, 1 - dampedY / 420));
       }
     }, { passive: false });
 
@@ -208,14 +212,12 @@
           dialog.style.transform = 'translateY(100%)';
           dialog.style.opacity = '0';
           window.setTimeout(function () {
-            dialog.style.transition = '';
-            dialog.style.transform = '';
-            dialog.style.opacity = '';
+            resetSheetTransform(dialog);
             isDismissing = false;
             closeCatSheet();
           }, 220);
         } else {
-          resetSheetDrag(dialog);
+          animateSheetBack(dialog);
         }
       } else if (gestureMode === 'horizontal' && visibleCats.length > 1) {
         if (deltaX <= -HORIZONTAL_SWIPE_THRESHOLD) {
@@ -223,9 +225,9 @@
         } else if (deltaX >= HORIZONTAL_SWIPE_THRESHOLD) {
           stepCatSheet(-1);
         }
-        resetSheetDrag(dialog);
+        animateSheetBack(dialog);
       } else {
-        resetSheetDrag(dialog);
+        animateSheetBack(dialog);
       }
 
       gestureMode = null;
@@ -240,8 +242,7 @@
   function bindSheet(el) {
     if (el.dataset.bound) return;
     el.dataset.bound = 'true';
-    var dialog = el.querySelector('#catSheetDialog');
-    bindSwipeGestures(dialog);
+    bindSwipeGestures(el.querySelector('#catSheetDialog'));
 
     el.addEventListener('click', function (e) {
       var navBtn = e.target.closest('[data-cat-nav]');
@@ -258,7 +259,10 @@
 
   function ensureSheet() {
     var el = document.getElementById('catProfileSheet');
-    if (el) { bindSheet(el); return el; }
+    if (el) {
+      bindSheet(el);
+      return el;
+    }
 
     el = document.createElement('div');
     el.id = 'catProfileSheet';
@@ -288,9 +292,8 @@
     var body = document.getElementById('catSheetBody');
     if (!body || !cat) return;
 
-    var hasPhoto = cat.image && cat.image.trim() !== '';
+    var hasPhoto = Boolean(cat.image && cat.image.trim() !== '');
     var catCategory = cat.category || 'Resident';
-    var canNavigate = total > 1;
     var prevIndex = (index - 1 + total) % total;
     var nextIndex = (index + 1) % total;
 
@@ -308,7 +311,7 @@
           '<span class="text-xs font-bold uppercase tracking-wider opacity-90">No Photo Yet</span>' +
         '</div>';
 
-    var navHtml = canNavigate
+    var navHtml = total > 1
       ? '<div class="mt-4 pt-4 border-t border-[#1D8A99]/20 flex items-center justify-between gap-4 shrink-0">' +
           '<button type="button" data-cat-nav="-1" aria-label="Previous cat: ' + esc(visibleCats[prevIndex]?.name || 'Previous') + '" ' +
                   'class="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-white hover:bg-[#1D8A99]/15 text-[#1D8A99] border border-[#1D8A99]/35 font-heading font-bold text-xs cursor-pointer transition-colors">' +
@@ -367,11 +370,7 @@
 
     var sheet = ensureSheet();
     var dialog = sheet.querySelector('#catSheetDialog');
-    if (dialog) {
-      dialog.style.transition = '';
-      dialog.style.transform = '';
-      dialog.style.opacity = '';
-    }
+    resetSheetTransform(dialog);
     renderCatSheetContent(visibleCats[activeCatIndex], activeCatIndex, visibleCats.length);
 
     lastTrigger = trigger || null;
@@ -385,12 +384,7 @@
   function closeCatSheet() {
     var sheet = document.getElementById('catProfileSheet');
     if (!sheet || sheet.classList.contains('hidden')) return;
-    var dialog = sheet.querySelector('#catSheetDialog');
-    if (dialog) {
-      dialog.style.transition = '';
-      dialog.style.transform = '';
-      dialog.style.opacity = '';
-    }
+    resetSheetTransform(sheet.querySelector('#catSheetDialog'));
     sheet.classList.add('hidden');
     unlockPageScroll();
     activeCatIndex = -1;
@@ -417,68 +411,80 @@
     }
   });
 
+  function bindRosterGridEvents(grid) {
+    if (grid.dataset.sheetBound) return;
+    grid.dataset.sheetBound = 'true';
+
+    function handleActivateCard(e) {
+      var card = e.target.closest('[data-cat-id]');
+      if (!card) return;
+      if (e.type === 'keydown' && e.key !== 'Enter' && e.key !== ' ') return;
+      if (e.type === 'keydown') e.preventDefault();
+      var id = card.getAttribute('data-cat-id');
+      var catObj = catsData.find(function (c) {
+        return String(c.id) === String(id);
+      });
+      openCatSheet(catObj, card);
+    }
+
+    grid.addEventListener('click', handleActivateCard);
+    grid.addEventListener('keydown', handleActivateCard);
+  }
+
   function renderRoster() {
-    const grid = document.getElementById('catRosterGrid');
+    var grid = document.getElementById('catRosterGrid');
     if (!grid) return;
 
     var filtered = getFilteredCats();
-
     if (filtered.length === 0) {
       grid.innerHTML = '<div class="col-span-5 text-center text-gray-400 py-8 text-sm">No cats found in this category yet.</div>';
       return;
     }
 
-    grid.innerHTML = filtered.map((cat) => {
-      var hasPhoto = cat.image && cat.image.trim() !== '';
+    grid.innerHTML = filtered.map(function (cat) {
+      var hasPhoto = Boolean(cat.image && cat.image.trim() !== '');
       var catCategory = cat.category || 'Resident';
 
       var visualHtml = hasPhoto
-        ? `<img src="${esc(cat.image)}" alt="${esc(cat.name)}" loading="lazy" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">`
-        : `<div class="absolute inset-0 bg-gradient-to-br from-[#1D8A99] to-[#156975] flex flex-col items-center justify-start pt-8 p-6 text-center">
-             <span class="text-5xl mb-2 opacity-85">🐱</span>
-             <span class="text-[10px] uppercase tracking-widest text-white/75 font-bold">Photo Coming Soon</span>
-           </div>`;
+        ? '<img src="' + esc(cat.image) + '" alt="' + esc(cat.name) + '" loading="lazy" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">'
+        : '<div class="absolute inset-0 bg-gradient-to-br from-[#1D8A99] to-[#156975] flex flex-col items-center justify-start pt-8 p-6 text-center">' +
+            '<span class="text-5xl mb-2 opacity-85">🐱</span>' +
+            '<span class="text-[10px] uppercase tracking-widest text-white/75 font-bold">Photo Coming Soon</span>' +
+          '</div>';
 
-      return `
-        <article data-cat-id="${esc(cat.id)}" role="button" tabindex="0" aria-label="View ${esc(cat.name)}'s profile"
-          class="group relative shrink-0 w-48 sm:w-56 md:w-auto snap-start aspect-[4/5] rounded-2xl overflow-hidden shadow-card border border-gray-100 cursor-pointer focus:outline-none focus-visible:ring-4 focus-visible:ring-[#1D8A99]">
-          <span aria-hidden="true" class="absolute top-2 left-2 z-10 w-8 h-8 rounded-lg bg-[#C85A32] text-white flex items-center justify-center text-xs shadow">🐾</span>
-          ${visualHtml}
-          <div class="absolute inset-x-0 bottom-0 p-4 pt-12 bg-gradient-to-t from-black/90 via-black/60 to-transparent text-white">
-            <span class="inline-block px-2 py-1 rounded-lg bg-[#1D8A99] text-[10px] font-bold mb-1 leading-tight">${esc(catCategory)}</span>
-            <h3 class="font-heading font-bold text-sm leading-tight">${esc(cat.name)}</h3>
-            <p class="text-xs text-white/95 leading-snug mt-1">${esc(cat.description)}</p>
-          </div>
-        </article>
-      `;
+      return (
+        '<article data-cat-id="' + esc(cat.id) + '" role="button" tabindex="0" aria-label="View ' + esc(cat.name) + '\'s profile" ' +
+                 'class="group relative shrink-0 w-48 sm:w-56 md:w-auto snap-start aspect-[4/5] rounded-2xl overflow-hidden shadow-card border border-gray-100 cursor-pointer focus:outline-none focus-visible:ring-4 focus-visible:ring-[#1D8A99]">' +
+          '<span aria-hidden="true" class="absolute top-2 left-2 z-10 w-8 h-8 rounded-lg bg-[#C85A32] text-white flex items-center justify-center text-xs shadow">🐾</span>' +
+          visualHtml +
+          '<div class="absolute inset-x-0 bottom-0 p-4 pt-12 bg-gradient-to-t from-black/90 via-black/60 to-transparent text-white">' +
+            '<span class="inline-block px-2 py-1 rounded-lg bg-[#1D8A99] text-[10px] font-bold mb-1 leading-tight">' + esc(catCategory) + '</span>' +
+            '<h3 class="font-heading font-bold text-sm leading-tight">' + esc(cat.name) + '</h3>' +
+            '<p class="text-xs text-white/95 leading-snug mt-1">' + esc(cat.description) + '</p>' +
+          '</div>' +
+        '</article>'
+      );
     }).join('');
 
-    if (!grid.dataset.sheetBound) {
-      grid.dataset.sheetBound = 'true';
+    bindRosterGridEvents(grid);
+  }
 
-      grid.addEventListener('click', function (e) {
-        var card = e.target.closest('[data-cat-id]');
-        if (card) {
-          var id = card.getAttribute('data-cat-id');
-          var catObj = catsData.find(c => String(c.id) === String(id));
-          openCatSheet(catObj, card);
-        }
+  function bindFilterButtons() {
+    var filterButtons = document.querySelectorAll('.cat-filter-btn');
+    filterButtons.forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        filterButtons.forEach(function (b) {
+          b.className = FILTER_BTN_INACTIVE;
+        });
+        btn.className = FILTER_BTN_ACTIVE;
+        currentFilter = btn.getAttribute('data-filter') || 'All';
+        renderRoster();
       });
-
-      grid.addEventListener('keydown', function (e) {
-        if (e.key !== 'Enter' && e.key !== ' ') return;
-        var card = e.target.closest('[data-cat-id]');
-        if (!card) return;
-        e.preventDefault();
-        var id = card.getAttribute('data-cat-id');
-        var catObj = catsData.find(c => String(c.id) === String(id));
-        openCatSheet(catObj, card);
-      });
-    }
+    });
   }
 
   async function loadCatRoster() {
-    const client = (typeof supabaseClient !== 'undefined') ? supabaseClient : null;
+    var client = typeof supabaseClient !== 'undefined' ? supabaseClient : null;
     if (!client) {
       renderRosterError();
       return;
@@ -487,26 +493,15 @@
     renderRosterLoading();
 
     try {
-      const { data, error } = await client
+      var res = await client
         .from('cats')
         .select('*')
         .order('created_at', { ascending: true });
 
-      if (error) throw error;
-      catsData = data || [];
+      if (res.error) throw res.error;
+      catsData = res.data || [];
       renderRoster();
-
-      var filterButtons = document.querySelectorAll('.cat-filter-btn');
-      filterButtons.forEach(btn => {
-        btn.onclick = function () {
-          filterButtons.forEach(b => {
-            b.className = "cat-filter-btn px-4 py-2 rounded-2xl text-xs font-bold bg-gray-100 text-gray-600 hover:bg-gray-200 transition-all cursor-pointer";
-          });
-          btn.className = "cat-filter-btn px-4 py-2 rounded-2xl text-xs font-bold bg-[#C85A32] text-white shadow-sm transition-all cursor-pointer";
-          currentFilter = btn.getAttribute('data-filter');
-          renderRoster();
-        };
-      });
+      bindFilterButtons();
     } catch (err) {
       console.error('Error loading cat roster from Supabase:', err);
       renderRosterError();

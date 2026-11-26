@@ -30,7 +30,7 @@
           }
         }
       }
-    }
+    };
   </script>
 </head>
 <body class="min-h-screen flex flex-col font-sans antialiased text-white bg-gradient-to-b from-brand-dark to-brand selection:bg-brand-turquoise selection:text-white">
@@ -83,9 +83,9 @@
 
   <script>
     if (location.protocol === 'file:' || /404\.html$/.test(location.pathname)) {
-      document.querySelectorAll('a[href^="/"]').forEach(function (a) {
-        var h = a.getAttribute('href');
-        a.setAttribute('href', 'index.html' + (h.length > 1 ? h.slice(1) : ''));
+      document.querySelectorAll('a[href^="/"]').forEach((link) => {
+        const href = link.getAttribute('href');
+        link.setAttribute('href', `index.html${href.length > 1 ? href.slice(1) : ''}`);
       });
     }
   </script>
